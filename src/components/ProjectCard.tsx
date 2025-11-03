@@ -1,7 +1,7 @@
 ﻿import React from "react";
+import type { Project } from "../utils/mock";
 import { Link } from "react-router-dom";
 import { currencyKRW, daysLeft, progressPct } from "../utils/format";
-import { Project } from "../utils/mock";
 import { ProgressBar } from "./ProgressBar";
 
 export const ProjectCard: React.FC<{ p: Project }> = ({ p }) => (
@@ -28,7 +28,9 @@ export const ProjectCard: React.FC<{ p: Project }> = ({ p }) => (
       <span>D-{daysLeft(p.endDate)}</span>
     </div>
     <div className="space-y-2">
-      <h3 className="text-lg font-semibold leading-tight text-neutral-900">{p.title}</h3>
+      <h3 className="text-lg font-semibold leading-tight text-neutral-900">
+        {p.title}
+      </h3>
       <p className="text-sm text-neutral-500">{p.summary}</p>
     </div>
     <div className="space-y-3 pt-2">

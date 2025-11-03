@@ -1,11 +1,11 @@
 ﻿import React from "react";
+import type { Reward } from "../utils/mock";
 import { currencyKRW } from "../utils/format";
-import { Reward } from "../utils/mock";
 
-export const RewardCard: React.FC<{ r: Reward; onSelect?: (rId: string) => void }> = ({
-  r,
-  onSelect,
-}) => (
+export const RewardCard: React.FC<{
+  r: Reward;
+  onSelect?: (rId: string) => void;
+}> = ({ r, onSelect }) => (
   <div
     className={`flex flex-col gap-4 rounded-2xl border border-neutral-200 p-5 ${
       r.available ? "" : "opacity-60"
