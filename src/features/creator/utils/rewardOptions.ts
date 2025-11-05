@@ -2,6 +2,14 @@ export type RewardOptionInputType = "select" | "text";
 
 export type RewardOptionMode = "none" | "single" | "set";
 
+export type RewardFormState = {
+  title: string;
+  price: number;
+  limitQty?: number; // 선택 값: 제한 없음이면 undefined
+  estShippingMonth?: string; // 선택 값
+  optionConfig: ReturnType<typeof createDefaultRewardOptionConfig>;
+};
+
 export type RewardOptionValue = {
   id: string;
   label: string;
