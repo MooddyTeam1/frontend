@@ -1,10 +1,14 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Container } from "../components/primitives/Container";
-import { ProgressBar } from "../components/ProgressBar";
-import { RewardCard } from "../components/RewardCard";
-import { currencyKRW, daysLeft, progressPct } from "../utils/format";
-import { mockProjects } from "../utils/mock";
+import { Container } from "../../shared/components/Container";
+import { ProgressBar } from "../../features/projects/components/ProgressBar";
+import { RewardCard } from "../../features/projects/components/RewardCard";
+import {
+  currencyKRW,
+  daysLeft,
+  progressPct,
+} from "../../shared/utils/format";
+import { mockProjects } from "../../features/projects/data/mockProjects";
 
 type TabKey = "story" | "updates" | "comments" | "faq";
 
@@ -15,11 +19,13 @@ const tabs: Array<{ key: TabKey; label: string }> = [
   { key: "faq", label: "FAQ" },
 ];
 
-const TabButton: React.FC<{ active: boolean; onClick: () => void; label: string }> = ({
-  active,
-  onClick,
-  label,
-}) => (
+type TabButtonProps = {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+};
+
+const TabButton: React.FC<TabButtonProps> = ({ active, onClick, label }) => (
   <button
     onClick={onClick}
     className={`border-b-2 px-0 pb-2 text-sm font-medium transition-colors ${
@@ -75,7 +81,9 @@ export const ProjectDetailPage: React.FC = () => {
             <span className="text-xs uppercase tracking-[0.3em] text-neutral-500">
               {project.category}
             </span>
-            <h1 className="text-4xl font-semibold text-neutral-900">{project.title}</h1>
+            <h1 className="text-4xl font-semibold text-neutral-900">
+              {project.title}
+            </h1>
           </div>
         </div>
 
@@ -107,17 +115,17 @@ export const ProjectDetailPage: React.FC = () => {
               {activeTab === "story" && <Markdown text={project.storyMarkdown} />}
               {activeTab === "updates" && (
                 <div className="rounded-2xl border border-neutral-200 p-6 text-sm text-neutral-500">
-                  아직 업데이트가 없습니다.
+                  아직 등록된 업데이트가 없습니다.
                 </div>
               )}
               {activeTab === "comments" && (
                 <div className="rounded-2xl border border-neutral-200 p-6 text-sm text-neutral-500">
-                  댓글 기능은 프로토타입에서는 제공되지 않습니다.
+                  댓글 기능은 프로토타입에서는 활성화되지 않았습니다.
                 </div>
               )}
               {activeTab === "faq" && (
                 <div className="rounded-2xl border border-neutral-200 p-6 text-sm text-neutral-500">
-                  FAQ가 준비중입니다.
+                  FAQ가 준비 중입니다.
                 </div>
               )}
             </div>
@@ -128,7 +136,7 @@ export const ProjectDetailPage: React.FC = () => {
               <div className="space-y-2">
                 <h2 className="text-lg font-semibold text-neutral-900">후원하기</h2>
                 <p className="text-sm text-neutral-500">
-                  리워드를 선택하고 결제 단계까지 단 몇 단계면 충분합니다.
+                  마음에 드는 리워드를 선택하고 응원 메시지를 남겨보세요.
                 </p>
               </div>
               <button
@@ -154,7 +162,7 @@ export const ProjectDetailPage: React.FC = () => {
                 {project.rewards.map((reward) => (
                   <RewardCard
                     key={reward.id}
-                    r={reward}
+                    reward={reward}
                     onSelect={(rewardId) =>
                       navigate(`/projects/${project.slug}/pledge?reward=${rewardId}`)
                     }
@@ -163,7 +171,7 @@ export const ProjectDetailPage: React.FC = () => {
               </div>
             ) : (
               <div className="rounded-3xl border border-neutral-200 p-10 text-center text-sm text-neutral-500">
-                선택 가능한 리워드가 없습니다.
+                준비된 리워드가 없습니다.
               </div>
             )}
           </aside>

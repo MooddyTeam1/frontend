@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { Container } from "./Container";
+import React from "react";
+import { Container } from "../Container";
 
 export const Footer: React.FC = () => (
   <footer className="border-t border-neutral-200 py-12 text-sm text-neutral-500">

@@ -1,9 +1,9 @@
-﻿import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Container } from "../components/primitives/Container";
-import { useQuery } from "../hooks/useQuery";
-import { currencyKRW } from "../utils/format";
-import { mockProjects } from "../utils/mock";
+import { Container } from "../../shared/components/Container";
+import { useQuery } from "../../shared/hooks/useQuery";
+import { currencyKRW } from "../../shared/utils/format";
+import { mockProjects } from "../../features/projects/data/mockProjects";
 
 type Step = "reward" | "shipping" | "payment";
 
@@ -110,10 +110,11 @@ export const PledgePage: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <button
+                    type="button"
                     onClick={() => setActiveStep("shipping")}
                     className="rounded-full border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-900 hover:text-white"
                   >
-                    다음 단계
+                    다음: 배송 정보
                   </button>
                 </div>
               </section>
@@ -125,33 +126,41 @@ export const PledgePage: React.FC = () => {
                 <input
                   placeholder="수령인"
                   value={address.name}
-                  onChange={(event) => setAddress({ ...address, name: event.target.value })}
-                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm text-neutral-700"
+                  onChange={(event) =>
+                    setAddress((prev) => ({ ...prev, name: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm"
                 />
                 <input
                   placeholder="연락처"
                   value={address.phone}
-                  onChange={(event) => setAddress({ ...address, phone: event.target.value })}
-                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm text-neutral-700"
+                  onChange={(event) =>
+                    setAddress((prev) => ({ ...prev, phone: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm"
                 />
                 <input
                   placeholder="주소"
                   value={address.address1}
-                  onChange={(event) => setAddress({ ...address, address1: event.target.value })}
-                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm text-neutral-700"
+                  onChange={(event) =>
+                    setAddress((prev) => ({ ...prev, address1: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm"
                 />
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-between pt-2">
                   <button
+                    type="button"
                     onClick={() => setActiveStep("reward")}
                     className="rounded-full border border-neutral-200 px-4 py-2 text-sm text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
                   >
                     이전
                   </button>
                   <button
+                    type="button"
                     onClick={() => setActiveStep("payment")}
                     className="rounded-full border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-900 hover:text-white"
                   >
-                    다음 단계
+                    다음: 결제
                   </button>
                 </div>
               </section>
@@ -159,13 +168,14 @@ export const PledgePage: React.FC = () => {
 
             {activeStep === "payment" && (
               <section className="space-y-4 rounded-3xl border border-neutral-200 p-6">
-                <h2 className="text-sm font-medium text-neutral-900">결제 방식</h2>
+                <h2 className="text-sm font-medium text-neutral-900">결제 수단</h2>
                 <div className="flex flex-wrap gap-2">
-                  {(["portone", "toss", "stripe"] as const).map((option) => (
+                  {["portone", "toss", "stripe"].map((option) => (
                     <button
                       key={option}
+                      type="button"
                       onClick={() => setGateway(option)}
-                      className={`rounded-full px-4 py-1 text-sm ${
+                      className={`rounded-full px-3 py-1 text-sm capitalize ${
                         gateway === option
                           ? "bg-neutral-900 text-white"
                           : "border border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
@@ -175,17 +185,20 @@ export const PledgePage: React.FC = () => {
                     </button>
                   ))}
                 </div>
-                <p className="rounded-2xl border border-dashed border-neutral-200 p-4 text-sm text-neutral-500">
-                  샌드박스 결제입니다. 실제로 과금되지 않으며, 결제 로직은 서버 환경에서 검증됩니다.
-                </p>
-                <div className="flex justify-end gap-3">
+                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-500">
+                  샌드박스 모드로 실제 결제는 진행되지 않습니다. 결제 인텐트를 모의로 생성하고
+                  PG 이동 시나리오를 안내합니다.
+                </div>
+                <div className="flex justify-between pt-2">
                   <button
+                    type="button"
                     onClick={() => setActiveStep("shipping")}
                     className="rounded-full border border-neutral-200 px-4 py-2 text-sm text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
                   >
                     이전
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       alert("결제 인텐트 생성 → PG 리다이렉트 (모의)");
                       navigate(`/projects/${project.slug}`);
@@ -202,15 +215,15 @@ export const PledgePage: React.FC = () => {
           <aside className="space-y-4 rounded-3xl border border-neutral-200 p-6">
             <h2 className="text-sm font-medium text-neutral-900">주문 요약</h2>
             <div className="space-y-2 text-sm text-neutral-600">
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between">
                 <span>리워드</span>
                 <span>{reward ? reward.title : "-"}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between">
                 <span>수량</span>
                 <span>{quantity}</span>
               </div>
-              <div className="flex justify-between font-medium text-neutral-900">
+              <div className="flex items-center justify-between font-semibold text-neutral-900">
                 <span>결제 금액</span>
                 <span>{currencyKRW(amount)}</span>
               </div>

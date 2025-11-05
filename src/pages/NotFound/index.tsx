@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { Link } from "react-router-dom";
-import { Container } from "../components/primitives/Container";
+import { Container } from "../../shared/components/Container";
 
 export const NotFound: React.FC = () => (
   <Container>

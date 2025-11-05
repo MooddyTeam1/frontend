@@ -1,4 +1,4 @@
-﻿export type Reward = {
+export type Reward = {
   id: string;
   title: string;
   price: number;
@@ -6,7 +6,7 @@
   limitQty?: number;
   soldQty: number;
   available: boolean;
-  estShippingMonth?: string; // YYYY-MM
+  estShippingMonth?: string;
 };
 
 export type Project = {
@@ -20,7 +20,7 @@ export type Project = {
   raised: number;
   backerCount: number;
   state: "DRAFT" | "REVIEW" | "LIVE" | "ENDED" | "REJECTED";
-  endDate: string; // ISO
+  endDate: string;
   storyMarkdown: string;
   rewards: Reward[];
 };
@@ -34,8 +34,8 @@ export const mockProjects: Project[] = [
     category: "디자인",
     coverImageUrl:
       "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1200&auto=format&fit=crop",
-    goalAmount: 10000000,
-    raised: 7800000,
+    goalAmount: 10_000_000,
+    raised: 7_800_000,
     backerCount: 412,
     state: "LIVE",
     endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6).toISOString(),
@@ -45,7 +45,7 @@ export const mockProjects: Project[] = [
       {
         id: "r1",
         title: "얼리버드",
-        price: 49000,
+        price: 49_000,
         description: "본체 1개 + 무료배송",
         limitQty: 200,
         soldQty: 180,
@@ -55,7 +55,7 @@ export const mockProjects: Project[] = [
       {
         id: "r2",
         title: "스탠다드",
-        price: 59000,
+        price: 59_000,
         description: "본체 1개",
         limitQty: 1000,
         soldQty: 220,
@@ -65,7 +65,7 @@ export const mockProjects: Project[] = [
       {
         id: "r3",
         title: "듀오 패키지",
-        price: 109000,
+        price: 109_000,
         description: "본체 2개",
         limitQty: 300,
         soldQty: 300,
@@ -82,8 +82,8 @@ export const mockProjects: Project[] = [
     category: "푸드",
     coverImageUrl:
       "https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=1200&auto=format&fit=crop",
-    goalAmount: 3000000,
-    raised: 1200000,
+    goalAmount: 3_000_000,
+    raised: 1_200_000,
     backerCount: 88,
     state: "LIVE",
     endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 13).toISOString(),
@@ -93,7 +93,7 @@ export const mockProjects: Project[] = [
       {
         id: "r1",
         title: "키트 기본",
-        price: 39000,
+        price: 39_000,
         description: "핸드드립 키트",
         limitQty: 500,
         soldQty: 120,
@@ -110,8 +110,8 @@ export const mockProjects: Project[] = [
     category: "테크",
     coverImageUrl:
       "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1200&auto=format&fit=crop",
-    goalAmount: 20000000,
-    raised: 21000000,
+    goalAmount: 20_000_000,
+    raised: 21_000_000,
     backerCount: 1088,
     state: "ENDED",
     endDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),

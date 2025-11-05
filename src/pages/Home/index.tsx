@@ -1,9 +1,9 @@
-﻿import React from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { Container } from "../components/primitives/Container";
-import { ProjectCard } from "../components/ProjectCard";
-import { currencyKRW } from "../utils/format";
-import { mockProjects } from "../utils/mock";
+import { Container } from "../../shared/components/Container";
+import { ProjectCard } from "../../features/projects/components/ProjectCard";
+import { currencyKRW } from "../../shared/utils/format";
+import { mockProjects } from "../../features/projects/data/mockProjects";
 
 export const HomePage: React.FC = () => {
   const trending = mockProjects.slice(0, 3);
@@ -45,11 +45,13 @@ export const HomePage: React.FC = () => {
             </div>
             {highlight ? (
               <div className="hidden flex-col gap-6 rounded-3xl border border-neutral-200 bg-neutral-100 p-8 md:flex">
-                <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Highlight</span>
+                <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                  Highlight
+                </span>
                 <h2 className="text-2xl font-semibold text-neutral-900">{highlight.title}</h2>
                 <p className="text-sm text-neutral-600">{highlight.summary}</p>
                 <div className="text-sm text-neutral-500">
-                  현재 {currencyKRW(highlight.raised)} 모금 · {highlight.backerCount}명 참여
+                  현재 {currencyKRW(highlight.raised)} · {highlight.backerCount}명 후원
                 </div>
                 <Link
                   to={`/projects/${highlight.slug}`}
@@ -68,12 +70,12 @@ export const HomePage: React.FC = () => {
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-neutral-900">Trending</h2>
             <Link to="/projects" className="text-sm text-neutral-500 hover:text-neutral-900">
-              모든 프로젝트 보기 →
+              모든 프로젝트 보기
             </Link>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {trending.map((project) => (
-              <ProjectCard key={project.id} p={project} />
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         </section>
@@ -85,12 +87,12 @@ export const HomePage: React.FC = () => {
               to="/projects?sort=ending_soon"
               className="text-sm text-neutral-500 hover:text-neutral-900"
             >
-              더 살펴보기 →
+              더 둘러보기
             </Link>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {endingSoon.map((project) => (
-              <ProjectCard key={project.id} p={project} />
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         </section>

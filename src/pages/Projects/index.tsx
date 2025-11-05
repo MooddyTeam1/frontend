@@ -1,9 +1,9 @@
-﻿import React from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { Container } from "../components/primitives/Container";
-import { ProjectCard } from "../components/ProjectCard";
-import { useQuery } from "../hooks/useQuery";
-import { mockProjects } from "../utils/mock";
+import { Container } from "../../shared/components/Container";
+import { ProjectCard } from "../../features/projects/components/ProjectCard";
+import { useQuery } from "../../shared/hooks/useQuery";
+import { mockProjects } from "../../features/projects/data/mockProjects";
 
 const sortOptions = [
   { key: "popular", label: "인기" },
@@ -35,9 +35,9 @@ export const ProjectsPage: React.FC = () => {
       <div className="space-y-12 py-16">
         <header className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-neutral-500">Explore</p>
-          <h1 className="text-3xl font-semibold text-neutral-900">모든 프로젝트</h1>
+          <h1 className="text-3xl font-semibold text-neutral-900">전체 프로젝트</h1>
           <p className="max-w-2xl text-sm text-neutral-500">
-            상상력을 지지하는 프로젝트들을 모았습니다. 정렬을 바꿔보며 새로운 아이디어를 탐색해보세요.
+            마음에 드는 프로젝트를 찾아보세요. 검색어와 정렬을 조합해 새로운 아이디어를 탐색할 수 있어요.
           </p>
         </header>
 
@@ -60,12 +60,12 @@ export const ProjectsPage: React.FC = () => {
 
         {list.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-neutral-200 p-16 text-center text-sm text-neutral-500">
-            검색 결과가 없습니다. 다른 키워드를 시도해보세요.
+            검색 결과가 없습니다. 다른 키워드를 입력해 보세요.
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-3">
             {list.map((project) => (
-              <ProjectCard key={project.id} p={project} />
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         )}

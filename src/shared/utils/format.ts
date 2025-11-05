@@ -1,4 +1,4 @@
-﻿export const currencyKRW = (n: number) =>
+export const currencyKRW = (n: number) =>
   new Intl.NumberFormat("ko-KR", {
     style: "currency",
     currency: "KRW",

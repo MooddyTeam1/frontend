@@ -1,6 +1,10 @@
-﻿import React from "react";
+import React from "react";
 
-export const ProgressBar: React.FC<{ value: number }> = ({ value }) => (
+type ProgressBarProps = {
+  value: number;
+};
+
+export const ProgressBar: React.FC<ProgressBarProps> = ({ value }) => (
   <div className="h-1 w-full rounded-full bg-neutral-200">
     <div
       className="h-1 rounded-full bg-neutral-900 transition-[width] duration-300"
