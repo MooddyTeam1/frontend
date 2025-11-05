@@ -150,6 +150,10 @@ const MakerView: React.FC<{ displayName: string; drafts: ProjectDraft[] }> = ({
   displayName,
   drafts,
 }) => {
+  const { user } = useAuth();
+  // TODO: 실제 API에서 메이커 ID 조회. 현재는 임시로 user.id 사용
+  const makerId = user?.id ? `maker-${user.id}` : undefined;
+  const makerPageUrl = makerId ? `/makers/${makerId}` : undefined;
   const liveCount = drafts.filter((draft) => draft.status === "LIVE").length;
   const reviewCount = drafts.filter(
     (draft) => draft.status === "REVIEW"
@@ -292,6 +296,14 @@ const MakerView: React.FC<{ displayName: string; drafts: ProjectDraft[] }> = ({
                 .join(", ") || "등록된 프로젝트가 없습니다."}
             </p>
           </div>
+          {makerPageUrl ? (
+            <Link
+              to={makerPageUrl}
+              className="mt-4 inline-flex items-center justify-center rounded-full border border-neutral-900 px-4 py-2 text-xs font-medium text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
+            >
+              메이커 페이지 보기
+            </Link>
+          ) : null}
         </div>
       </section>
     </div>
