@@ -1,8 +1,5 @@
 import React from "react";
-import type {
-  WizardStep,
-  WizardStepMeta,
-} from "../../../hooks/useCreatorWizard";
+import type { WizardStep, WizardStepMeta } from "../../hooks/useCreatorWizard";
 
 type StepperProps = {
   steps: WizardStepMeta[];

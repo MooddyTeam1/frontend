@@ -25,7 +25,9 @@ export const SignupPage: React.FC = () => {
     password: "",
     confirmPassword: "",
   });
-  const [errors, setErrors] = React.useState<Partial<Record<keyof typeof form, string>>>({});
+  const [errors, setErrors] = React.useState<
+    Partial<Record<keyof typeof form, string>>
+  >({});
   const [generalError, setGeneralError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
 
@@ -34,7 +36,7 @@ export const SignupPage: React.FC = () => {
     setGeneralError(null);
     const result = schema.safeParse(form);
     if (!result.success) {
-      const fieldErrors = result.error.formErrors.fieldErrors;
+      const fieldErrors = result.error.flatten().fieldErrors;
       setErrors({
         name: fieldErrors.name?.[0],
         email: fieldErrors.email?.[0],
@@ -50,7 +52,9 @@ export const SignupPage: React.FC = () => {
       await signup(result.data);
       navigate("/", { replace: true });
     } catch (error) {
-      setGeneralError(error instanceof Error ? error.message : "회원가입에 실패했습니다");
+      setGeneralError(
+        error instanceof Error ? error.message : "회원가입에 실패했습니다"
+      );
     } finally {
       setLoading(false);
     }
@@ -61,63 +65,93 @@ export const SignupPage: React.FC = () => {
       <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center py-16">
         <div className="space-y-6">
           <div className="space-y-2 text-center">
-            <h1 className="text-2xl font-semibold text-neutral-900">FUNDIT에 합류하세요</h1>
+            <h1 className="text-2xl font-semibold text-neutral-900">
+              FUNDIT에 합류하세요
+            </h1>
             <p className="text-sm text-neutral-500">
-              이름과 이메일만으로 간단히 계정을 만들 수 있어요. 가입 후 언제든 프로젝트를 후원하거나 개설할 수 있습니다.
+              이름과 이메일만으로 간단히 계정을 만들 수 있어요. 가입 후 언제든
+              프로젝트를 후원하거나 개설할 수 있습니다.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-neutral-200 p-6">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 rounded-3xl border border-neutral-200 p-6"
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-medium text-neutral-500" htmlFor="name">
+                <label
+                  className="text-xs font-medium text-neutral-500"
+                  htmlFor="name"
+                >
                   이름
                 </label>
                 <input
                   id="name"
                   value={form.name}
-                  onChange={(event) => setForm({ ...form, name: event.target.value })}
+                  onChange={(event) =>
+                    setForm({ ...form, name: event.target.value })
+                  }
                   className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700"
                   autoComplete="name"
                   placeholder="홍길동"
                 />
-                {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+                {errors.name && (
+                  <p className="text-xs text-red-500">{errors.name}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-medium text-neutral-500" htmlFor="email">
+                <label
+                  className="text-xs font-medium text-neutral-500"
+                  htmlFor="email"
+                >
                   이메일
                 </label>
                 <input
                   id="email"
                   type="email"
                   value={form.email}
-                  onChange={(event) => setForm({ ...form, email: event.target.value })}
+                  onChange={(event) =>
+                    setForm({ ...form, email: event.target.value })
+                  }
                   className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700"
                   autoComplete="email"
                   placeholder="name@example.com"
                 />
-                {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-xs text-red-500">{errors.email}</p>
+                )}
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-medium text-neutral-500" htmlFor="password">
+                <label
+                  className="text-xs font-medium text-neutral-500"
+                  htmlFor="password"
+                >
                   비밀번호
                 </label>
                 <input
                   id="password"
                   type="password"
                   value={form.password}
-                  onChange={(event) => setForm({ ...form, password: event.target.value })}
+                  onChange={(event) =>
+                    setForm({ ...form, password: event.target.value })
+                  }
                   className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700"
                   autoComplete="new-password"
                   placeholder="8자 이상 비밀번호"
                 />
-                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
+                {errors.password && (
+                  <p className="text-xs text-red-500">{errors.password}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-medium text-neutral-500" htmlFor="confirmPassword">
+                <label
+                  className="text-xs font-medium text-neutral-500"
+                  htmlFor="confirmPassword"
+                >
                   비밀번호 확인
                 </label>
                 <input
@@ -132,7 +166,9 @@ export const SignupPage: React.FC = () => {
                   placeholder="비밀번호 재입력"
                 />
                 {errors.confirmPassword && (
-                  <p className="text-xs text-red-500">{errors.confirmPassword}</p>
+                  <p className="text-xs text-red-500">
+                    {errors.confirmPassword}
+                  </p>
                 )}
               </div>
             </div>

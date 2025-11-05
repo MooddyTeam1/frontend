@@ -1,5 +1,5 @@
 import React from "react";
-import type { DraftReward } from "../../../hooks/useCreatorWizard";
+import type { DraftReward } from "../../hooks/useCreatorWizard";
 import { RewardOptionEditor } from "../RewardOptionEditor";
 import { currencyKRW } from "../../../../shared/utils/format";
 

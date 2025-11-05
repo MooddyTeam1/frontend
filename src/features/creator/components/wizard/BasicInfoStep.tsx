@@ -1,5 +1,5 @@
 import React from "react";
-import type { BasicInfoState } from "../../../hooks/useCreatorWizard";
+import type { BasicInfoState } from "../../hooks/useCreatorWizard";
 
 type BasicInfoStepProps = {
   basic: BasicInfoState;

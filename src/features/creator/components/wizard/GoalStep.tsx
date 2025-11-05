@@ -1,5 +1,5 @@
 import React from "react";
-import type { GoalState } from "../../../hooks/useCreatorWizard";
+import type { GoalState } from "../../hooks/useCreatorWizard";
 import { currencyKRW } from "../../../../shared/utils/format";
 
 type GoalStepProps = {

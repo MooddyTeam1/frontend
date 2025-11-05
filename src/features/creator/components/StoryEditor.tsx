@@ -123,7 +123,10 @@ const renderMarkdown = (markdown: string): React.ReactNode[] => {
   const flushList = () => {
     if (!listBuffer || listBuffer.items.length === 0) return;
     const items = listBuffer.items.map((item, index) => (
-      <li key={`li-${key}-${index}`} className="leading-relaxed text-neutral-700">
+      <li
+        key={`li-${key}-${index}`}
+        className="leading-relaxed text-neutral-700"
+      >
         {renderInline(item)}
       </li>
     ));
@@ -157,25 +160,47 @@ const renderMarkdown = (markdown: string): React.ReactNode[] => {
       return;
     }
 
+    // 한 줄이 heading(예: "# 제목", "## 소제목") 패턴인지 검사
     const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
+
     if (headingMatch) {
+      // 이전에 진행 중이던 리스트(<ul>/<ol>)가 있다면 먼저 elements에 플러시해주는 역할
+      // (기존 코드에 이미 있는 함수일 거라 그대로 사용)
       flushList();
-      const level = Math.min(headingMatch[1].length, 4);
+
+      // "#", "##", "###" 의 # 개수에 따라 heading 레벨 계산
+      // 레벨은 최대 4단계까지만 사용하도록 제한 (h1 ~ h4)
+      const level = Math.min(headingMatch[1].length, 4) as 1 | 2 | 3 | 4;
+
+      // 실제 텍스트 내용 (예: "# 제목" 에서 "제목" 부분)
       const content = headingMatch[2];
-      const Tag = (`h${level}` as unknown) as keyof JSX.IntrinsicElements;
+
+      // level 숫자를 태그 문자열로 변환 ("h1" | "h2" | "h3" | "h4")
+      const Tag = `h${level}` as "h1" | "h2" | "h3" | "h4";
+
+      // JSX에서 <Tag>...</Tag> 식으로 쓰면 타입 문제가 생기므로
+      // React.createElement 로 직접 Element를 생성
       elements.push(
-        <Tag key={`heading-${key++}`} className={headingClassName(level)}>
-          {renderInline(content)}
-        </Tag>
+        React.createElement(
+          Tag,
+          {
+            // key는 고유하게 만들어 주기 위해 증가하는 숫자를 사용
+            key: `heading-${key++}`,
+            // 레벨별로 다른 스타일을 적용하는 함수 (기존 코드 재사용)
+            className: headingClassName(level),
+          },
+          // 텍스트 안에 강조/링크 등 인라인 처리가 필요할 경우 기존 함수 호출
+          renderInline(content)
+        )
       );
+
+      // 이 줄은 heading으로 처리 끝났으니, 나머지 조건(if 문들)로 내려가지 않고 다음 줄로 넘어가게 함
       return;
     }
 
     if (line === "---") {
       flushList();
-      elements.push(
-        <hr key={`hr-${key++}`} className="border-neutral-200" />
-      );
+      elements.push(<hr key={`hr-${key++}`} className="border-neutral-200" />);
       return;
     }
 
@@ -341,7 +366,9 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
               type="button"
               onClick={() => setTab("edit")}
               className={`px-2 py-1 text-xs ${
-                tab === "edit" ? "bg-neutral-900 text-white" : "hover:text-neutral-900"
+                tab === "edit"
+                  ? "bg-neutral-900 text-white"
+                  : "hover:text-neutral-900"
               }`}
             >
               작성
@@ -350,7 +377,9 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
               type="button"
               onClick={() => setTab("preview")}
               className={`px-2 py-1 text-xs ${
-                tab === "preview" ? "bg-neutral-900 text-white" : "hover:text-neutral-900"
+                tab === "preview"
+                  ? "bg-neutral-900 text-white"
+                  : "hover:text-neutral-900"
               }`}
             >
               미리보기
