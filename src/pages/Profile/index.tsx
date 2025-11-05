@@ -313,7 +313,7 @@ export const ProfilePage: React.FC = () => {
 
         <div className="flex items-center gap-2 rounded-full border border-neutral-200 p-1 text-sm text-neutral-600">
           <NavLink
-            to="supporter"
+            to="/profile/supporter"
             end
             className={({ isActive }) =>
               `flex items-center justify-center flex-1 rounded-full px-4 py-2 transition ${isActive ? "bg-neutral-900 text-white" : "hover:text-neutral-900"}`
@@ -322,7 +322,7 @@ export const ProfilePage: React.FC = () => {
             서포터 보기
           </NavLink>
           <NavLink
-            to="maker"
+            to="/profile/maker"
             className={({ isActive }) =>
               `flex items-center justify-center flex-1 rounded-full px-4 py-2 transition ${isActive ? "bg-neutral-900 text-white" : "hover:text-neutral-900"}`
             }
