@@ -1,0 +1,361 @@
+// 한글 설명: 메이커 전용 프로젝트 API 함수 모음. REST 엔드포인트와 DTO 매핑을 담당한다.
+import api from "../../../services/api";
+import type {
+  CreateProjectRequestDTO,
+  CreateProjectRequestResponseDTO,
+  ProjectDetailResponseDTO,
+  ProjectId,
+  ProjectLifecycleStatus,
+  ProjectReviewStatus,
+  ProjectStatus,
+  RewardResponseDTO,
+  RewardOptionConfigDTO,
+  TempProjectRequestDTO,
+  TempProjectResponseDTO,
+  ProjectSummaryResponseDTO,
+  MyProjectStatusResponseDTO,
+  ProjectBookmarkResponseDTO,
+} from "../types";
+import {
+  toCategoryLabel,
+  type CategoryEnum,
+} from "../../../shared/utils/categoryMapper";
+
+// 한글 설명: API 응답의 리워드 타입 (실제 API 응답 구조)
+type RewardApiResponse = {
+  id: number | string;
+  name?: string; // API 응답에는 name이 올 수 있음
+  title?: string; // 또는 title이 올 수도 있음
+  description?: string | null;
+  price: number;
+  estimatedDeliveryDate?: string | null; // API 응답에는 estimatedDeliveryDate가 올 수 있음
+  estShippingMonth?: string | null; // 또는 estShippingMonth가 올 수도 있음
+  stockQuantity?: number | null; // API 응답에는 stockQuantity가 올 수 있음
+  limitQty?: number | null; // 또는 limitQty가 올 수도 있음
+  remainingQty?: number | null;
+  active?: boolean; // API 응답에는 active가 올 수 있음
+  available?: boolean; // 또는 available이 올 수도 있음
+  optionGroups?: Array<any>; // API 응답에는 optionGroups가 올 수 있음
+  optionConfig?: RewardOptionConfigDTO | null; // 또는 optionConfig가 올 수도 있음
+  displayOrder?: number;
+  projectId?: ProjectId;
+  rewardSets?: Array<any>;
+  [key: string]: any; // 한글 설명: 기타 필드 허용
+};
+
+type ProjectDetailApiResponse = Omit<
+  ProjectDetailResponseDTO,
+  "category" | "status" | "rewards"
+> & {
+  category: CategoryEnum;
+  bookmarked?: boolean;
+  bookmarkCount?: number;
+  // 한글 설명: API 응답에는 lifecycleStatus 또는 projectLifecycleStatus가 올 수 있음
+  lifecycleStatus?: ProjectLifecycleStatus | string;
+  projectLifecycleStatus?: ProjectLifecycleStatus | string;
+  status?: ProjectStatus | string;
+  // 한글 설명: API 응답의 rewards 배열
+  rewards?: RewardApiResponse[];
+};
+
+type TempProjectApiResponse = Omit<TempProjectResponseDTO, "category"> & {
+  category: CategoryEnum;
+};
+
+const mapTempProjectResponse = (
+  raw: TempProjectApiResponse
+): TempProjectResponseDTO => ({
+  ...raw,
+  category: toCategoryLabel(raw.category),
+});
+
+// 한글 설명: API 응답의 리워드를 프론트엔드 DTO로 변환
+const mapRewardResponse = (raw: RewardApiResponse): RewardResponseDTO => {
+  // 한글 설명: name 또는 title 중 하나를 사용 (API 응답에는 name이 올 수 있음)
+  const title = raw.title ?? raw.name ?? "";
+  
+  // 한글 설명: estimatedDeliveryDate를 estShippingMonth로 변환
+  // estimatedDeliveryDate는 "yyyy-mm-dd" 형식이므로 "yyyy-mm"으로 변환
+  let estShippingMonth: string | null = raw.estShippingMonth ?? null;
+  if (!estShippingMonth && raw.estimatedDeliveryDate) {
+    const dateStr = raw.estimatedDeliveryDate;
+    // 한글 설명: "yyyy-mm-dd" 형식을 "yyyy-mm"으로 변환
+    if (dateStr && dateStr.length >= 7) {
+      estShippingMonth = dateStr.substring(0, 7); // "yyyy-mm"
+    }
+  }
+  
+  // 한글 설명: stockQuantity를 limitQty로 변환
+  const limitQty = raw.limitQty ?? raw.stockQuantity ?? null;
+  
+  // 한글 설명: active를 available로 변환
+  const available = raw.available ?? raw.active ?? true;
+  
+  // 한글 설명: optionGroups를 optionConfig로 변환 (간단한 매핑)
+  let optionConfig: RewardOptionConfigDTO | null = raw.optionConfig ?? null;
+  if (!optionConfig && raw.optionGroups && Array.isArray(raw.optionGroups) && raw.optionGroups.length > 0) {
+    // 한글 설명: optionGroups가 있으면 optionConfig로 변환 (필요시 더 세밀한 매핑 추가)
+    optionConfig = {
+      hasOptions: true,
+      options: raw.optionGroups.map((group: any) => ({
+        name: group.name || group.label || "옵션",
+        type: group.type || "select",
+        required: group.required ?? false,
+        choices: group.choices || group.options || [],
+      })),
+    };
+  }
+
+  return {
+    id: String(raw.id),
+    projectId: raw.projectId ?? "",
+    title,
+    description: raw.description ?? null,
+    price: raw.price ?? 0,
+    limitQty,
+    remainingQty: raw.remainingQty ?? limitQty, // 한글 설명: remainingQty가 없으면 limitQty 사용
+    estShippingMonth,
+    available,
+    optionConfig,
+    displayOrder: raw.displayOrder ?? 0,
+  };
+};
+
+const mapProjectDetailResponse = (
+  raw: ProjectDetailApiResponse
+): ProjectDetailResponseDTO => {
+  // 한글 설명: lifecycleStatus 또는 projectLifecycleStatus를 status로 변환
+  // API 응답에는 lifecycleStatus가 오지만, DTO에는 status가 필요함
+  const lifecycleStatus =
+    raw.projectLifecycleStatus ?? raw.lifecycleStatus ?? raw.status ?? "DRAFT";
+  
+  // 한글 설명: ProjectLifecycleStatus를 ProjectStatus로 매핑
+  // LIVE -> LIVE, SCHEDULED -> SCHEDULED, ENDED -> ENDED, DRAFT -> DRAFT 등
+  const mappedStatus = lifecycleStatus as ProjectStatus;
+
+  // 한글 설명: API 응답의 rewards 배열을 프론트엔드 DTO로 변환
+  const rewards = (raw.rewards ?? []).map(mapRewardResponse);
+
+  return {
+    ...raw,
+    category: toCategoryLabel(raw.category),
+    // 한글 설명: API 응답에 raised나 backerCount가 없을 수 있으므로 기본값 설정
+    raised: raw.raised ?? 0,
+    backerCount: raw.backerCount ?? 0,
+    goalAmount: raw.goalAmount ?? 0,
+    // 한글 설명: 북마크 관련 필드 기본값 설정
+    bookmarked: raw.bookmarked ?? false,
+    bookmarkCount: raw.bookmarkCount ?? 0,
+    // 한글 설명: lifecycleStatus를 status로 매핑
+    status: mappedStatus,
+    // 한글 설명: rewards 배열 매핑
+    rewards,
+  };
+};
+
+// 한글 설명: 상태 필터 파라미터 인터페이스 (라이프사이클 + 심사 기준)
+export interface StatusFilterParams {
+  lifecycle?: ProjectLifecycleStatus;
+  review?: ProjectReviewStatus;
+}
+
+// 한글 설명: 내 프로젝트 상태 요약 조회
+export const fetchProjectSummary = async (): Promise<ProjectSummaryResponseDTO> => {
+  console.log("[myProjectsService] GET /project/summary 요청");
+  const { data } = await api.get<ProjectSummaryResponseDTO>("/project/summary");
+  console.log("[myProjectsService] GET /project/summary 응답", data);
+  return data;
+};
+
+// 한글 설명: 백엔드 API 응답 타입 (실제 응답 구조에 맞춤)
+type MyProjectStatusItemApiResponse = {
+  projectId: ProjectId;
+  maker: string;
+  title: string;
+  summary?: string;
+  storyMarkdown?: string;
+  coverImageUrl?: string | null;
+  lifecycleStatus?: ProjectLifecycleStatus | string;
+  reviewStatus?: ProjectReviewStatus | string;
+  projectLifecycleStatus?: ProjectLifecycleStatus | string;
+  projectReviewStatus?: ProjectReviewStatus | string;
+  [key: string]: any; // 한글 설명: 기타 필드 허용
+};
+
+// 한글 설명: API 응답을 프론트엔드 DTO로 변환
+const mapMyProjectStatusItem = (
+  raw: MyProjectStatusItemApiResponse
+): MyProjectStatusItemDTO => {
+  const rawId = raw.projectId ?? "";
+  const canonicalId = String(rawId) as ProjectId;
+  
+  // 한글 설명: lifecycleStatus와 projectLifecycleStatus 중 하나를 사용
+  const lifecycleStatus =
+    raw.projectLifecycleStatus ?? raw.lifecycleStatus ?? "DRAFT";
+  // 한글 설명: reviewStatus와 projectReviewStatus 중 하나를 사용
+  const reviewStatus =
+    raw.projectReviewStatus ?? raw.reviewStatus ?? "NONE";
+
+  return {
+    id: canonicalId,
+    projectId: raw.projectId,
+    title: raw.title,
+    summary: raw.summary,
+    imgUrl: raw.coverImageUrl ?? null, // 한글 설명: coverImageUrl을 imgUrl로 매핑
+    projectLifecycleStatus: lifecycleStatus as ProjectLifecycleStatus,
+    projectReviewStatus: reviewStatus as ProjectReviewStatus,
+  };
+};
+
+// 한글 설명: 상태 기준 내 프로젝트 조회 (라이프사이클/심사 상태 필터)
+export const fetchMyProjectsByStatus = async (
+  params: StatusFilterParams
+): Promise<MyProjectStatusResponseDTO> => {
+  const { lifecycle, review } = params;
+  console.log("[myProjectsService] GET /project/me/status 요청 파라미터", {
+    lifecycle,
+    review,
+  });
+  const { data } = await api.get<MyProjectStatusItemApiResponse[]>(
+    "/project/me/status",
+    {
+      params: {
+        lifecycle,
+        review,
+      },
+    }
+  );
+  console.log("[myProjectsService] GET /project/me/status 응답", data);
+  // 한글 설명: API 응답을 프론트엔드 DTO로 변환
+  return data.map(mapMyProjectStatusItem);
+};
+
+// 한글 설명: 프로젝트 생성 심사 요청 제출 (projectId가 존재하면 쿼리 파라미터로 전달)
+export const requestProjectCreation = async (
+  payload: CreateProjectRequestDTO,
+  projectId?: ProjectId
+): Promise<CreateProjectRequestResponseDTO> => {
+  const url = projectId
+    ? `/project/request?projectId=${projectId}`
+    : "/project/request";
+  console.log("[myProjectsService] POST /project/request 요청 본문", {
+    projectId,
+    payload,
+  });
+  const { data } = await api.post<CreateProjectRequestResponseDTO>(url, payload);
+  console.log("[myProjectsService] POST /project/request 응답", data);
+  return data;
+};
+
+// 한글 설명: 초안 프로젝트 최초 임시 저장
+export const saveProjectTemp = async (
+  payload: TempProjectRequestDTO
+): Promise<TempProjectResponseDTO> => {
+  console.log("[myProjectsService] POST /project/temp 요청 본문", payload);
+  const { data } = await api.post<TempProjectApiResponse>(
+    "/project/temp",
+    payload
+  );
+  console.log("[myProjectsService] POST /project/temp 응답", data);
+  return mapTempProjectResponse(data);
+};
+
+// 한글 설명: 임시 저장 프로젝트 정보 업데이트 (부분 수정)
+export const updateProjectTemp = async (
+  projectId: ProjectId,
+  payload: TempProjectRequestDTO
+): Promise<TempProjectResponseDTO> => {
+  console.log("[myProjectsService] PATCH /project/temp/{projectId} 요청", {
+    projectId,
+    payload,
+  });
+  const { data } = await api.patch<TempProjectApiResponse>(
+    `/project/temp/${projectId}`,
+    payload
+  );
+  console.log("[myProjectsService] PATCH /project/temp/{projectId} 응답", data);
+  return mapTempProjectResponse(data);
+};
+
+// 한글 설명: 프로젝트 상세 조회 (공개 범위 무관)
+export const fetchProjectDetail = async (
+  projectId: ProjectId
+): Promise<ProjectDetailResponseDTO> => {
+  console.log("[myProjectsService] GET /project/id/{projectId} 요청", {
+    projectId,
+  });
+  const { data } = await api.get<ProjectDetailApiResponse>(
+    `/project/id/${projectId}`
+  );
+  console.log("[myProjectsService] GET /project/id/{projectId} 응답", data);
+  return mapProjectDetailResponse(data);
+};
+
+// 한글 설명: 특정 프로젝트를 찜하는 API
+export const bookmarkProjectApi = async (
+  projectId: number
+): Promise<ProjectBookmarkResponseDTO> => {
+  console.log("[myProjectsService] POST /api/supporter-follows/project/{projectId}/bookmark 요청", {
+    projectId,
+  });
+  const { data } = await api.post<ProjectBookmarkResponseDTO>(
+    `/api/supporter-follows/project/${projectId}/bookmark`
+  );
+  console.log("[myProjectsService] POST /api/supporter-follows/project/{projectId}/bookmark 응답", data);
+  return data;
+};
+
+// 한글 설명: 특정 프로젝트의 찜을 해제하는 API
+export const unbookmarkProjectApi = async (
+  projectId: number
+): Promise<ProjectBookmarkResponseDTO> => {
+  console.log("[myProjectsService] DELETE /api/supporter-follows/project/{projectId}/bookmark 요청", {
+    projectId,
+  });
+  const { data } = await api.delete<ProjectBookmarkResponseDTO>(
+    `/api/supporter-follows/project/${projectId}/bookmark`
+  );
+  console.log(
+    "[myProjectsService] DELETE /api/supporter-follows/project/{projectId}/bookmark 응답",
+    data
+  );
+  return data;
+};
+
+// 한글 설명: 작성중 프로젝트 삭제 API (DRAFT 상태에서만 가능)
+export const deleteProjectApi = async (projectId: ProjectId): Promise<void> => {
+  console.log("[myProjectsService] DELETE /project/{projectId} 요청", {
+    projectId,
+  });
+  await api.delete(`/project/${projectId}`);
+  console.log("[myProjectsService] DELETE /project/{projectId} 응답 완료");
+};
+
+// 한글 설명: 심사 요청 취소 API (REVIEW 상태에서만 가능)
+export const cancelReviewRequestApi = async (
+  projectId: ProjectId
+): Promise<void> => {
+  console.log(
+    "[myProjectsService] POST /project/{projectId}/cancel-review 요청",
+    { projectId }
+  );
+  await api.post(`/project/${projectId}/cancel-review`);
+  console.log(
+    "[myProjectsService] POST /project/{projectId}/cancel-review 응답 완료"
+  );
+};
+
+// 한글 설명: 공개 예정 취소 API (SCHEDULED 상태에서만 가능)
+export const cancelScheduledProjectApi = async (
+  projectId: ProjectId
+): Promise<void> => {
+  console.log(
+    "[myProjectsService] POST /project/{projectId}/cancel-scheduled 요청",
+    { projectId }
+  );
+  await api.post(`/project/${projectId}/cancel-scheduled`);
+  console.log(
+    "[myProjectsService] POST /project/{projectId}/cancel-scheduled 응답 완료"
+  );
+};
+

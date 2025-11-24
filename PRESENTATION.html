@@ -1,0 +1,429 @@
+<!DOCTYPE html><html><head>
+      <title>PRESENTATION</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:///c:\Users\jinhyun\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.8.20\crossnote\dependencies\katex\katex.min.css">
+      
+      
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <!-- The content below will be included at the end of the <head> element. --><script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script></head><body for="html-export">
+    
+    
+      <div class="crossnote markdown-preview  ">
+      <div>
+<h1 id="moa-크라우드펀딩-플랫폼---발표-자료">MOA 크라우드펀딩 플랫폼 - 발표 자료 </h1>
+<h2 id="-프로젝트-개요">📋 프로젝트 개요 </h2>
+<p><strong>MOA</strong>는 크리에이터와 서포터를 연결하는 크라우드펀딩 플랫폼입니다. 프로젝트 후원, 리워드 제공, 실시간 진행 상황 추적 등 크라우드펀딩의 전 과정을 지원합니다.</p>
+<hr>
+<h2 id="-기술-스택">🛠 기술 스택 </h2>
+<h3 id="frontend">Frontend </h3>
+<ul>
+<li><strong>React 19.1.1</strong> - 함수형 컴포넌트 기반 UI 라이브러리</li>
+<li><strong>TypeScript 5.9.3</strong> - 타입 안정성 보장</li>
+<li><strong>Vite 7.1.7</strong> - 빠른 개발 서버 및 빌드 도구</li>
+<li><strong>React Router 7.9.5</strong> - 클라이언트 사이드 라우팅</li>
+<li><strong>Tailwind CSS 4.1.16</strong> - 유틸리티 기반 CSS 프레임워크</li>
+<li><strong>Zustand 5.0.8</strong> - 경량 상태 관리 라이브러리</li>
+<li><strong>Axios 1.13.1</strong> - HTTP 클라이언트</li>
+</ul>
+<h3 id="payment-integration">Payment Integration </h3>
+<ul>
+<li><strong>@tosspayments/tosspayments-sdk 2.4.1</strong> - 토스페이먼츠 결제 SDK</li>
+</ul>
+<h3 id="development-tools">Development Tools </h3>
+<ul>
+<li><strong>ESLint</strong> - 코드 품질 관리</li>
+<li><strong>Prettier</strong> - 코드 포맷팅</li>
+<li><strong>TypeScript ESLint</strong> - TypeScript 린팅</li>
+</ul>
+<hr>
+<h2 id="-아키텍처">🏗 아키텍처 </h2>
+<h3 id="디렉토리-구조">디렉토리 구조 </h3>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>src/
+├── features/          # 도메인별 기능 모듈
+│   ├── admin/         # 관리자 기능
+│   ├── auth/          # 인증/인가
+│   ├── creator/       # 크리에이터 기능
+│   ├── maker/         # 메이커 기능
+│   ├── projects/      # 프로젝트 관리
+│   ├── supporter/     # 서포터 기능
+│   └── uploads/       # 이미지 업로드
+├── pages/             # 페이지 컴포넌트
+│   ├── Auth/          # 로그인/회원가입
+│   ├── Payment/       # 결제 페이지
+│   ├── Projects/      # 프로젝트 목록/상세
+│   ├── Profile/       # 프로필 페이지
+│   └── Admin/         # 관리자 페이지
+├── router/            # 라우팅 설정
+├── services/          # API 서비스
+│   ├── api.ts         # 실제 API 호출
+│   └── apiMock.ts     # Mock API (개발용)
+├── shared/            # 공통 컴포넌트/유틸
+│   ├── components/    # 재사용 컴포넌트
+│   ├── utils/         # 유틸리티 함수
+│   └── hooks/         # 커스텀 훅
+└── styles/            # 전역 스타일
+</code></pre><h3 id="아키텍처-패턴">아키텍처 패턴 </h3>
+<ol>
+<li><strong>Feature-based 구조</strong>: 도메인별로 기능을 모듈화</li>
+<li><strong>관심사 분리</strong>: API, 컴포넌트, 상태 관리 분리</li>
+<li><strong>재사용성</strong>: 공통 컴포넌트와 유틸리티 중앙 관리</li>
+<li><strong>타입 안정성</strong>: TypeScript로 타입 체크</li>
+</ol>
+<hr>
+<h2 id="-주요-기능">✨ 주요 기능 </h2>
+<h3 id="1-인증인가-시스템">1. 인증/인가 시스템 </h3>
+<h4 id="구현-기능">구현 기능 </h4>
+<ul>
+<li><strong>이메일 회원가입/로그인</strong></li>
+<li><strong>소셜 로그인</strong> (Google, Kakao)</li>
+<li><strong>JWT 기반 인증</strong></li>
+<li><strong>이메일 인증</strong></li>
+<li><strong>역할 기반 접근 제어</strong> (USER, ADMIN)</li>
+</ul>
+<h4 id="주요-컴포넌트">주요 컴포넌트 </h4>
+<ul>
+<li><code>LoginPage</code> - 로그인 페이지</li>
+<li><code>SignupPage</code> - 회원가입 페이지</li>
+<li><code>OAuthCallbackPage</code> - 소셜 로그인 콜백 처리</li>
+<li><code>RequireAuth</code> - 인증 필요 라우트 가드</li>
+<li><code>RequireAdmin</code> - 관리자 권한 라우트 가드</li>
+</ul>
+<h3 id="2-프로젝트-관리">2. 프로젝트 관리 </h3>
+<h4 id="크리에이터-기능">크리에이터 기능 </h4>
+<ul>
+<li><strong>프로젝트 생성</strong> (위저드 방식)
+<ul>
+<li>기본 정보 입력</li>
+<li>목표 금액 설정</li>
+<li>스토리 작성</li>
+<li>리워드 설정</li>
+</ul>
+</li>
+<li><strong>프로젝트 대시보드</strong></li>
+<li><strong>리워드 관리</strong></li>
+<li><strong>프로젝트 상태 관리</strong> (PENDING, APPROVED, REJECTED, FUNDING, COMPLETED, FAILED)</li>
+</ul>
+<h4 id="서포터-기능">서포터 기능 </h4>
+<ul>
+<li><strong>프로젝트 탐색</strong> (카테고리, 검색)</li>
+<li><strong>프로젝트 상세 보기</strong></li>
+<li><strong>후원하기</strong> (리워드 선택, 배송 정보 입력)</li>
+<li><strong>후원 내역 조회</strong></li>
+</ul>
+<h4 id="관리자-기능">관리자 기능 </h4>
+<ul>
+<li><strong>프로젝트 승인/거부</strong></li>
+<li><strong>프로젝트 목록 관리</strong></li>
+</ul>
+<h3 id="3-결제-시스템">3. 결제 시스템 </h3>
+<h4 id="토스페이먼츠-연동">토스페이먼츠 연동 </h4>
+<ul>
+<li><strong>결제창 SDK 방식</strong> (위젯 키 불필요)</li>
+<li><strong>다양한 결제 수단 지원</strong> (카드, 카카오페이, 네이버페이 등)</li>
+<li><strong>결제 승인 프로세스</strong></li>
+<li><strong>결제 실패 처리</strong></li>
+</ul>
+<h4 id="결제-플로우">결제 플로우 </h4>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>1. 주문 생성 (POST /api/orders)
+2. 토스 결제창 로드
+3. 사용자 결제 수단 선택 및 결제
+4. 토스 successUrl로 리다이렉트
+5. 결제 승인 API 호출 (POST /api/payments/confirm)
+6. 백엔드: 토스 승인 API 호출 + Wallet 업데이트
+</code></pre><h4 id="주요-페이지">주요 페이지 </h4>
+<ul>
+<li><code>PaymentPage</code> - 결제 페이지</li>
+<li><code>PaymentSuccessPage</code> - 결제 성공 페이지</li>
+<li><code>PaymentFailPage</code> - 결제 실패 페이지</li>
+</ul>
+<h3 id="4-프로필-관리">4. 프로필 관리 </h3>
+<h4 id="서포터-프로필">서포터 프로필 </h4>
+<ul>
+<li><strong>후원 내역 조회</strong></li>
+<li><strong>프로필 설정</strong></li>
+<li><strong>공개 프로필 페이지</strong></li>
+</ul>
+<h4 id="메이커-프로필">메이커 프로필 </h4>
+<ul>
+<li><strong>프로젝트 목록</strong> (상태별 필터링)</li>
+<li><strong>프로필 설정</strong></li>
+<li><strong>공개 프로필 페이지</strong> (프로젝트, 뉴스, 정보)</li>
+</ul>
+<h3 id="5-알림-시스템">5. 알림 시스템 </h3>
+<ul>
+<li><strong>알림 센터</strong></li>
+<li><strong>실시간 알림 수신</strong></li>
+</ul>
+<hr>
+<h2 id="-결제-시스템-상세">💳 결제 시스템 상세 </h2>
+<h3 id="기술-구현">기술 구현 </h3>
+<h4 id="결제창-sdk-통합">결제창 SDK 통합 </h4>
+<pre data-role="codeBlock" data-info="typescript" class="language-typescript typescript"><code><span class="token comment">// src/shared/utils/payment.ts</span>
+<span class="token keyword keyword-export">export</span> <span class="token keyword keyword-async">async</span> <span class="token keyword keyword-function">function</span> <span class="token function">requestTossPayment</span><span class="token punctuation">(</span>opts<span class="token operator">:</span> <span class="token punctuation">{</span>
+  orderCode<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+  amount<span class="token operator">:</span> <span class="token builtin">number</span><span class="token punctuation">;</span>
+  orderName<span class="token operator">:</span> <span class="token builtin">string</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword keyword-const">const</span> clientKey <span class="token operator">=</span> <span class="token keyword keyword-import">import</span><span class="token punctuation">.</span>meta<span class="token punctuation">.</span>env<span class="token punctuation">.</span><span class="token constant">VITE_TOSS_CLIENT_KEY</span><span class="token punctuation">;</span>
+  <span class="token keyword keyword-const">const</span> customerKey <span class="token operator">=</span> <span class="token string">"user-"</span> <span class="token operator">+</span> localStorage<span class="token punctuation">.</span><span class="token function">getItem</span><span class="token punctuation">(</span><span class="token string">"userId"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  
+  <span class="token keyword keyword-const">const</span> tossPayments <span class="token operator">=</span> <span class="token keyword keyword-await">await</span> <span class="token function">loadTossPayments</span><span class="token punctuation">(</span>clientKey<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword keyword-const">const</span> payment <span class="token operator">=</span> tossPayments<span class="token punctuation">.</span><span class="token function">payment</span><span class="token punctuation">(</span><span class="token punctuation">{</span> customerKey <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  
+  <span class="token keyword keyword-await">await</span> payment<span class="token punctuation">.</span><span class="token function">requestPayment</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    method<span class="token operator">:</span> <span class="token string">"CARD"</span><span class="token punctuation">,</span>
+    amount<span class="token operator">:</span> <span class="token punctuation">{</span> currency<span class="token operator">:</span> <span class="token string">"KRW"</span><span class="token punctuation">,</span> value<span class="token operator">:</span> opts<span class="token punctuation">.</span>amount <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    orderId<span class="token operator">:</span> opts<span class="token punctuation">.</span>orderCode<span class="token punctuation">,</span>
+    orderName<span class="token operator">:</span> opts<span class="token punctuation">.</span>orderName<span class="token punctuation">,</span>
+    successUrl<span class="token operator">:</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>window<span class="token punctuation">.</span>location<span class="token punctuation">.</span>origin<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">/payment/success</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
+    failUrl<span class="token operator">:</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>window<span class="token punctuation">.</span>location<span class="token punctuation">.</span>origin<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">/payment/fail</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre><h4 id="api-연동">API 연동 </h4>
+<ul>
+<li><strong>주문 생성</strong>: <code>POST /api/orders</code></li>
+<li><strong>결제 승인</strong>: <code>POST /api/payments/confirm</code>
+<ul>
+<li>Request: <code>{ paymentKey, orderId, amount }</code></li>
+<li>Response: <code>{ paymentId, orderId, paymentKey, method, amount, status, approvedAt, receiptUrl }</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="보안">보안 </h3>
+<ul>
+<li><strong>JWT 토큰 기반 인증</strong></li>
+<li><strong>결제 금액 검증</strong> (프론트엔드와 백엔드 이중 검증)</li>
+<li><strong>중복 승인 방지</strong></li>
+</ul>
+<hr>
+<h2 id="-주요-페이지">📱 주요 페이지 </h2>
+<h3 id="공개-페이지">공개 페이지 </h3>
+<ul>
+<li><code>/</code> - 홈 페이지</li>
+<li><code>/projects</code> - 프로젝트 목록</li>
+<li><code>/projects/:id</code> - 프로젝트 상세</li>
+<li><code>/projects/:id/pledge</code> - 후원하기</li>
+<li><code>/supporters/:userId</code> - 서포터 공개 프로필</li>
+<li><code>/makers/:makerId</code> - 메이커 공개 프로필</li>
+</ul>
+<h3 id="인증-필요-페이지">인증 필요 페이지 </h3>
+<ul>
+<li><code>/profile</code> - 내 프로필</li>
+<li><code>/settings/account</code> - 계정 설정</li>
+<li><code>/settings/supporter</code> - 서포터 설정</li>
+<li><code>/settings/maker</code> - 메이커 설정</li>
+<li><code>/creator/dashboard</code> - 크리에이터 대시보드</li>
+<li><code>/creator/projects/new</code> - 프로젝트 생성</li>
+<li><code>/creator/rewards</code> - 리워드 관리</li>
+<li><code>/notifications</code> - 알림 센터</li>
+</ul>
+<h3 id="관리자-페이지">관리자 페이지 </h3>
+<ul>
+<li><code>/admin</code> - 관리자 대시보드</li>
+<li><code>/admin/projects</code> - 프로젝트 관리</li>
+<li><code>/admin/projects/:projectId</code> - 프로젝트 상세 검토</li>
+</ul>
+<hr>
+<h2 id="-인증-및-권한-관리">🔐 인증 및 권한 관리 </h2>
+<h3 id="인증-방식">인증 방식 </h3>
+<ul>
+<li><strong>JWT 토큰</strong> (Access Token)</li>
+<li><strong>Axios 인터셉터</strong>를 통한 자동 토큰 추가</li>
+<li><strong>토큰 만료 시 자동 로그아웃</strong></li>
+</ul>
+<h3 id="권한-레벨">권한 레벨 </h3>
+<ol>
+<li><strong>비인증 사용자</strong>: 프로젝트 조회만 가능</li>
+<li><strong>USER</strong>: 후원, 프로필 관리 가능</li>
+<li><strong>ADMIN</strong>: 프로젝트 승인/거부, 전체 관리 가능</li>
+</ol>
+<hr>
+<h2 id="-상태-관리">📊 상태 관리 </h2>
+<h3 id="zustand-store-구조">Zustand Store 구조 </h3>
+<ul>
+<li><code>authStore</code> - 인증 상태 관리</li>
+<li><code>projectStore</code> - 프로젝트 상태 관리</li>
+<li><code>makerStore</code> - 메이커 정보 관리</li>
+<li><code>supporterStore</code> - 서포터 정보 관리</li>
+<li><code>myProjectsStore</code> - 내 프로젝트 목록 관리</li>
+</ul>
+<h3 id="api-상태-관리">API 상태 관리 </h3>
+<ul>
+<li><strong>Axios 인스턴스</strong> 중앙 관리</li>
+<li><strong>요청/응답 인터셉터</strong>로 공통 처리</li>
+<li><strong>에러 핸들링</strong> 통합 관리</li>
+</ul>
+<hr>
+<h2 id="-uiux-특징">🎨 UI/UX 특징 </h2>
+<h3 id="디자인-시스템">디자인 시스템 </h3>
+<ul>
+<li><strong>Tailwind CSS</strong> 기반 유틸리티 클래스</li>
+<li><strong>반응형 디자인</strong> (모바일/데스크톱 지원)</li>
+<li><strong>일관된 컴포넌트 스타일</strong></li>
+</ul>
+<h3 id="주요-컴포넌트-1">주요 컴포넌트 </h3>
+<ul>
+<li><code>Container</code> - 공통 레이아웃 컨테이너</li>
+<li><code>Header</code> - 네비게이션 헤더</li>
+<li><code>Footer</code> - 푸터</li>
+<li><code>ProjectCard</code> - 프로젝트 카드</li>
+<li><code>RewardCard</code> - 리워드 카드</li>
+<li><code>ProgressBar</code> - 진행률 표시 바</li>
+</ul>
+<hr>
+<h2 id="-데이터-흐름">🔄 데이터 흐름 </h2>
+<h3 id="프로젝트-생성-플로우">프로젝트 생성 플로우 </h3>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>1. CreatorWizardPage
+   ↓
+2. useCreatorWizard Hook (상태 관리)
+   ↓
+3. API 호출 (createProject)
+   ↓
+4. 백엔드 저장
+   ↓
+5. 관리자 승인 대기
+</code></pre><h3 id="후원-플로우">후원 플로우 </h3>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>1. ProjectDetailPage → PledgePage
+   ↓
+2. 리워드 선택 + 배송 정보 입력
+   ↓
+3. 주문 생성 (POST /api/orders)
+   ↓
+4. PaymentPage → 토스 결제창
+   ↓
+5. 결제 완료 → PaymentSuccessPage
+   ↓
+6. 결제 승인 (POST /api/payments/confirm)
+   ↓
+7. Wallet 업데이트 (백엔드)
+</code></pre><hr>
+<h2 id="-배포-및-환경-설정">🚀 배포 및 환경 설정 </h2>
+<h3 id="환경-변수">환경 변수 </h3>
+<pre data-role="codeBlock" data-info="env" class="language-env env"><code># 백엔드 API 주소
+VITE_API_BASE_URL=http://3.35.24.48:8080
+
+# 토스페이먼츠 클라이언트 키
+VITE_TOSS_CLIENT_KEY=test_ck_xxxxx
+
+# Mock API 사용 여부
+VITE_USE_MOCK_API=false
+</code></pre><h3 id="빌드-및-배포">빌드 및 배포 </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># 개발 서버 실행</span>
+<span class="token function">npm</span> run dev
+
+<span class="token comment"># 프로덕션 빌드</span>
+<span class="token function">npm</span> run build
+
+<span class="token comment"># 빌드 미리보기</span>
+<span class="token function">npm</span> run preview
+</code></pre><hr>
+<h2 id="-성능-최적화">📈 성능 최적화 </h2>
+<h3 id="구현된-최적화">구현된 최적화 </h3>
+<ul>
+<li><strong>코드 스플리팅</strong>: React Router 기반 라우트별 분리</li>
+<li><strong>이미지 최적화</strong>: 이미지 업로드 및 표시 최적화</li>
+<li><strong>API 캐싱</strong>: 검색 결과 캐싱</li>
+<li><strong>지연 로딩</strong>: 필요 시점에 컴포넌트 로드</li>
+</ul>
+<hr>
+<h2 id="-보안-고려사항">🔒 보안 고려사항 </h2>
+<h3 id="구현된-보안-기능">구현된 보안 기능 </h3>
+<ul>
+<li><strong>JWT 토큰 관리</strong>: localStorage 저장 및 자동 갱신</li>
+<li><strong>HTTPS 통신</strong>: 프로덕션 환경 HTTPS 사용</li>
+<li><strong>XSS 방지</strong>: React의 기본 XSS 방지 기능 활용</li>
+<li><strong>CSRF 방지</strong>: SameSite 쿠키 설정 (백엔드)</li>
+</ul>
+<hr>
+<h2 id="-코드-품질">📝 코드 품질 </h2>
+<h3 id="코드-스타일">코드 스타일 </h3>
+<ul>
+<li><strong>TypeScript Strict 모드</strong>: 타입 안정성 최대화</li>
+<li><strong>ESLint</strong>: 코드 품질 관리</li>
+<li><strong>Prettier</strong>: 일관된 코드 포맷팅</li>
+<li><strong>한글 주석</strong>: 주요 기능에 대한 한글 설명</li>
+</ul>
+<h3 id="코딩-컨벤션">코딩 컨벤션 </h3>
+<ul>
+<li><strong>함수형 컴포넌트</strong>: 클래스 컴포넌트 사용 안 함</li>
+<li><strong>커스텀 훅</strong>: 로직 재사용</li>
+<li><strong>타입 정의</strong>: 모든 API 응답/요청 타입 정의</li>
+<li><strong>에러 처리</strong>: 통합 에러 핸들링</li>
+</ul>
+<hr>
+<h2 id="-주요-성과">🎯 주요 성과 </h2>
+<h3 id="구현-완료-기능">구현 완료 기능 </h3>
+<p>✅ 사용자 인증/인가 시스템<br>
+✅ 프로젝트 CRUD 기능<br>
+✅ 결제 시스템 통합 (토스페이먼츠)<br>
+✅ 프로필 관리<br>
+✅ 관리자 기능<br>
+✅ 알림 시스템<br>
+✅ 반응형 UI/UX</p>
+<h3 id="기술적-성과">기술적 성과 </h3>
+<ul>
+<li><strong>타입 안정성</strong>: TypeScript로 런타임 에러 최소화</li>
+<li><strong>모듈화</strong>: Feature-based 구조로 유지보수성 향상</li>
+<li><strong>재사용성</strong>: 공통 컴포넌트 및 유틸리티 중앙 관리</li>
+<li><strong>확장성</strong>: 도메인별 모듈 분리로 기능 추가 용이</li>
+</ul>
+<hr>
+<h2 id="-향후-개선-사항">🔮 향후 개선 사항 </h2>
+<h3 id="단기-개선">단기 개선 </h3>
+<ul>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> 이미지 최적화 (WebP 변환)</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> 무한 스크롤 구현</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> 검색 필터 고도화</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> 에러 바운더리 추가</li>
+</ul>
+<h3 id="장기-개선">장기 개선 </h3>
+<ul>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> PWA 지원</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> 오프라인 모드</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> 실시간 알림 (WebSocket)</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox"> 다국어 지원 (i18n)</li>
+</ul>
+<hr>
+<h2 id="-연락처-및-리소스">📞 연락처 및 리소스 </h2>
+<h3 id="관련-문서">관련 문서 </h3>
+<ul>
+<li><code>README_PAYMENT.md</code> - 결제 시스템 가이드</li>
+<li><code>docs/PAYMENT_FLOW.md</code> - 결제 플로우 상세 설명</li>
+<li><code>docs/TOSS_WIDGET_TROUBLESHOOTING.md</code> - 토스 위젯 문제 해결</li>
+</ul>
+<h3 id="기술-문서">기술 문서 </h3>
+<ul>
+<li>React 공식 문서: <a href="https://react.dev">https://react.dev</a></li>
+<li>TypeScript 공식 문서: <a href="https://www.typescriptlang.org">https://www.typescriptlang.org</a></li>
+<li>Tailwind CSS 문서: <a href="https://tailwindcss.com">https://tailwindcss.com</a></li>
+<li>토스페이먼츠 개발자센터: <a href="https://developers.tosspayments.com">https://developers.tosspayments.com</a></li>
+</ul>
+<hr>
+<p><strong>작성일</strong>: 2025년 1월<br>
+<strong>버전</strong>: 1.0.0</p>
+</div>
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+  
+    </body></html>

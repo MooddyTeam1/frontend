@@ -2,7 +2,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Container } from "../../../shared/components/Container";
-import { useAuth } from "../../../features/auth/contexts/AuthContext";
+import api from "../../../services/api";
 
 const schema = z
   .object({
@@ -18,7 +18,6 @@ const schema = z
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
   const [form, setForm] = React.useState({
     name: "",
     email: "",
@@ -49,8 +48,24 @@ export const SignupPage: React.FC = () => {
     setErrors({});
     setLoading(true);
     try {
-      await signup(result.data);
-      navigate("/", { replace: true });
+      // 한글 설명: 회원가입 API만 호출 (토큰은 저장하지 않음)
+      const { authService } = await import(
+        "../../../features/auth/api/authService"
+      );
+      // 한글 설명: 회원가입 API 호출 (백엔드에서 토큰을 반환하지만 저장하지 않음)
+      const payload = {
+        name: result.data.name,
+        email: result.data.email,
+        password: result.data.password,
+      };
+      const response = await api.post("/auth/signup", payload);
+      console.log("[SignupPage] 회원가입 성공", response.data);
+      
+      // 한글 설명: 회원가입 성공 시 저장된 토큰이 있다면 제거 (자동 로그인 방지)
+      authService.clearTokens();
+      
+      // 한글 설명: 회원가입 성공 시 로그인 페이지로 이동 (자동 로그인 없음)
+      navigate("/login", { replace: true });
     } catch (error) {
       setGeneralError(
         error instanceof Error ? error.message : "회원가입에 실패했습니다"

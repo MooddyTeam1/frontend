@@ -1,13 +1,15 @@
 import React from "react";
 import {
   useParams,
+  useNavigate,
   Link,
   NavLink,
   Outlet,
   useLocation,
 } from "react-router-dom";
 import { Container } from "../../shared/components/Container";
-import { useAuth } from "../../features/auth/contexts/AuthContext";
+import { useAuthStore } from "../../features/auth/stores/authStore";
+import { makerService } from "../../features/maker/api/makerService";
 import type { MakerKeywordDTO } from "../../features/maker/types";
 
 type PublicMaker = {
@@ -26,42 +28,85 @@ type PublicMaker = {
 
 export const MakerPublicPage: React.FC = () => {
   // 한글 설명: 공개 메이커 페이지. 타 유저가 볼 수 있는 메이커 프로필 뷰를 제공한다.
-  const { makerId = "" } = useParams();
-  const { user } = useAuth();
+  const { makerId: makerIdParam } = useParams<{ makerId: string }>();
+  const navigate = useNavigate();
+
+  // 한글 설명: 디버깅을 위한 로그
+  React.useEffect(() => {
+    console.log("[MakerPublicPage] makerIdParam:", makerIdParam);
+  }, [makerIdParam]);
+
+  // 한글 설명: makerId가 없으면 404 페이지로 리다이렉트
+  React.useEffect(() => {
+    if (!makerIdParam) {
+      console.warn(
+        "[MakerPublicPage] makerId가 없습니다. 404로 리다이렉트합니다."
+      );
+      navigate("/404", { replace: true });
+      return;
+    }
+  }, [makerIdParam, navigate]);
+
+  // 한글 설명: makerId가 없으면 빈 화면 반환 (리다이렉트 중)
+  if (!makerIdParam) {
+    return null;
+  }
+
+  // 한글 설명: URL에서 받은 makerId는 숫자만 (예: "1003")
+  const makerId = makerIdParam;
+  // 한글 설명: 백엔드 API 호출 시에도 동일하게 숫자만 사용
+  const makerIdForApi = makerId;
+  const { user } = useAuthStore();
   const location = useLocation();
 
   // 한글 설명: 팔로우 여부 상태. true이면 이미 팔로우 중, false이면 아직 팔로우 안 한 상태.
   const [isFollowing, setIsFollowing] = React.useState<boolean>(false);
 
   // 한글 설명: 팔로우/언팔로우 토글 핸들러. 실제로는 여기서 API 호출 후 성공 시 상태를 업데이트한다.
-  const handleToggleFollow = () => {
+  const [followLoading, setFollowLoading] = React.useState(false);
+  const handleToggleFollow = async () => {
     if (!user) {
       // 한글 설명: 비로그인 상태에서는 팔로우 불가. 향후 로그인 페이지로 이동하는 로직으로 교체할 수 있다.
       alert("팔로우 기능은 로그인 후 이용할 수 있습니다.");
       return;
     }
 
-    // TODO: 팔로우/언팔로우 API 호출 추가 (성공 시에만 상태 변경 권장)
-    setIsFollowing((prev) => !prev);
+    if (followLoading) return; // 한글 설명: 이미 요청 중이면 중복 요청 방지
+
+    try {
+      setFollowLoading(true);
+      if (isFollowing) {
+        // 한글 설명: 언팔로우
+        await makerService.unfollowMaker(makerIdForApi);
+        setIsFollowing(false);
+      } else {
+        // 한글 설명: 팔로우
+        await makerService.followMaker(makerIdForApi);
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      console.error("팔로우/언팔로우 실패", err);
+      alert(
+        err instanceof Error ? err.message : "팔로우/언팔로우에 실패했습니다."
+      );
+    } finally {
+      setFollowLoading(false);
+    }
   };
 
   // 현재 탭 상태 확인 (URL 기반)
-  const currentTab = location.pathname.split("/").pop() || "projects";
+  // 한글 설명: /makers/1003 -> "projects" (기본), /makers/1003/news -> "news", /makers/1003/info -> "info"
+  const pathParts = location.pathname.split("/");
+  const lastPart = pathParts[pathParts.length - 1];
+  const currentTab =
+    lastPart === makerId || !lastPart || lastPart === ""
+      ? "projects"
+      : lastPart;
 
-  // TODO: 실제 API로 교체. makerId 기반 데이터 조회
-  const [maker] = React.useState<PublicMaker>({
-    makerId,
-    ownerUserId: "user123",
-    name: "메이커 브랜드",
-    imageUrl: "https://placehold.co/1200x600",
-    productIntro: "혁신적인 제품과 서비스로 세상을 변화시키는 메이커입니다.",
-    coreCompetencies: "디자인, 개발, 마케팅",
-    keywords: [1, 2, 3],
-    totalRaised: 12500000,
-    totalSupporters: 245,
-    satisfactionRate: 4.8,
-  });
-
+  // 한글 설명: 메이커 프로필 데이터 상태
+  const [maker, setMaker] = React.useState<PublicMaker | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [allKeywords] = React.useState<MakerKeywordDTO[]>([
     { id: 1, name: "친환경" },
     { id: 2, name: "소셜임팩트" },
@@ -69,10 +114,86 @@ export const MakerPublicPage: React.FC = () => {
     { id: 4, name: "테크" },
   ]);
 
-  const isOwner = !!user && user.id === maker.ownerUserId;
-  const selectedKeywords = allKeywords.filter((kw) =>
-    maker.keywords.includes(kw.id)
-  );
+  // 한글 설명: 메이커 프로필 조회
+  React.useEffect(() => {
+    const loadMakerProfile = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await makerService.getPublicProfile(makerIdForApi);
+
+        // 한글 설명: API 응답을 PublicMaker 타입으로 변환
+        setMaker({
+          makerId: data.makerId || makerId,
+          ownerUserId: data.ownerUserId || "",
+          name: data.name || "메이커",
+          imageUrl: data.imageUrl || null,
+          productIntro: data.productIntro || null,
+          coreCompetencies: data.coreCompetencies || null,
+          keywords: data.keywordIds || data.keywords || [],
+          totalRaised: data.totalRaised || 0,
+          totalSupporters: data.totalSupporters || 0,
+          satisfactionRate: data.satisfactionRate || undefined,
+        });
+
+        // 한글 설명: 팔로우 상태 업데이트
+        if (data.isFollowing !== undefined) {
+          setIsFollowing(data.isFollowing);
+        }
+      } catch (err) {
+        console.error("메이커 프로필 조회 실패", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "메이커 프로필을 불러오지 못했습니다."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (makerIdForApi) {
+      loadMakerProfile();
+    }
+  }, [makerIdForApi]);
+
+  // 한글 설명: 로딩 중이거나 에러 발생 시 처리
+  if (loading) {
+    return (
+      <Container>
+        <div className="mx-auto flex min-h-[70vh] max-w-4xl items-center justify-center py-16">
+          <p className="text-sm text-neutral-500">
+            메이커 프로필을 불러오는 중입니다...
+          </p>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error || !maker) {
+    return (
+      <Container>
+        <div className="mx-auto flex min-h-[70vh] max-w-4xl items-center justify-center py-16">
+          <div className="text-center">
+            <p className="text-sm text-neutral-500">
+              {error || "메이커 프로필을 찾을 수 없습니다."}
+            </p>
+            <Link
+              to="/projects"
+              className="mt-4 inline-block rounded-full border border-neutral-200 px-4 py-2 text-sm text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+            >
+              프로젝트 둘러보기
+            </Link>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  const isOwner = !!user && maker && user.id === maker.ownerUserId;
+  const selectedKeywords = maker
+    ? allKeywords.filter((kw) => maker.keywords.includes(kw.id))
+    : [];
 
   return (
     <Container>
@@ -153,8 +274,14 @@ export const MakerPublicPage: React.FC = () => {
             {isOwner ? (
               <>
                 <Link
-                  to={`/makers/${makerId}/news/create`}
+                  to="/maker/projects"
                   className="block w-full rounded-full border border-neutral-900 bg-neutral-900 px-4 py-2 text-sm font-medium text-white text-center hover:bg-neutral-800"
+                >
+                  내 프로젝트 관리
+                </Link>
+                <Link
+                  to={`/makers/${makerId}/news/create`}
+                  className="block w-full rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-900 text-center hover:bg-neutral-50"
                 >
                   소식 작성하기
                 </Link>
@@ -169,14 +296,19 @@ export const MakerPublicPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleToggleFollow}
+                disabled={followLoading}
                 // 한글 설명: 팔로우 상태에 따라 스타일과 라벨을 다르게 보여준다.
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                className={`rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
                   isFollowing
                     ? "border border-neutral-300 bg-neutral-200 text-neutral-700 hover:bg-neutral-300"
                     : "border border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
                 }`}
               >
-                {isFollowing ? "언팔로우" : "팔로우"}
+                {followLoading
+                  ? "처리 중..."
+                  : isFollowing
+                    ? "언팔로우"
+                    : "팔로우"}
               </button>
             )}
           </div>
@@ -185,7 +317,7 @@ export const MakerPublicPage: React.FC = () => {
         {/* 탭 네비게이션 */}
         <div className="flex items-center gap-1 overflow-x-auto border-b border-neutral-200">
           <NavLink
-            to={`/makers/${makerId}/projects`}
+            to={`/makers/${makerId}`}
             end
             className={({ isActive }) =>
               `whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition ${
@@ -294,6 +426,9 @@ export const MakerInfoRoute: React.FC = () => {
         <div className="mt-2 space-y-2 text-sm text-neutral-600">
           <p>설립일: 2020년 1월</p>
           <p>업종: 소프트웨어</p>
+          <p>업태: 제조업</p>
+          <p>사업자번호: 123-45-67890</p>
+          <p>통신판매업 신고번호: 제 2020-서울강남-0001호</p>
           <p>대표자: 홍길동</p>
           <p>소재지: 서울특별시 강남구</p>
         </div>

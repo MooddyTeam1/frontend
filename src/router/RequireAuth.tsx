@@ -1,9 +1,11 @@
 ﻿import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../features/auth/contexts/AuthContext";
+import { useAuthStore } from "../features/auth/stores/authStore";
 
-export const RequireAuth: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+export const RequireAuth: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
+  const { isAuthenticated, loading } = useAuthStore();
   const location = useLocation();
 
   if (loading) {

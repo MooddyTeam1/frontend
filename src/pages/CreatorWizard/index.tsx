@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import { Container } from "../../shared/components/Container";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { currencyKRW } from "../../shared/utils/format";
 import {
   useCreatorWizard,
@@ -16,7 +16,22 @@ import { StoryStep } from "../../features/creator/components/wizard/StoryStep";
 import { GoalStep } from "../../features/creator/components/wizard/GoalStep";
 import { RewardStep } from "../../features/creator/components/wizard/RewardStep";
 
+type CreatorWizardLocationState =
+  | {
+      draftId?: string;
+      remoteProjectId?: string;
+    }
+  | undefined;
+
 export const CreatorWizardPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { projectId } = useParams<{ projectId?: string }>();
+  const locationState =
+    (location.state as CreatorWizardLocationState) ?? undefined;
+  const initialDraftId = locationState?.draftId ?? projectId;
+  const initialRemoteProjectId = locationState?.remoteProjectId ?? projectId;
+
   const {
     step,
     steps,
@@ -45,15 +60,83 @@ export const CreatorWizardPage: React.FC = () => {
     goNext,
     goPrev,
     selectStep,
+    isSavingDraft,
+    resolveCoverImageUrl,
+    isRequestingReview,
     saveDraft,
     requestReview,
-  } = useCreatorWizard();
+    remoteProjectId,
+    deleteProject,
+    generateAIDescription,
+    isGeneratingAI,
+  } = useCreatorWizard({
+    initialDraftId,
+    initialRemoteProjectId,
+  });
+
+  React.useEffect(() => {
+    if (!remoteProjectId) return;
+    if (projectId === remoteProjectId) return;
+    navigate(`/creator/projects/new/${remoteProjectId}`, {
+      replace: true,
+      state: {
+        draftId: initialDraftId ?? remoteProjectId,
+        remoteProjectId,
+      },
+    });
+  }, [remoteProjectId, projectId, navigate, initialDraftId]);
 
   const isLastStep = step === steps.length;
 
   return (
     <div className="bg-neutral-50 pb-16 pt-10">
-      <Container>
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        {/* 한글 설명: 스토리 구성 가이드 (Container 왼쪽 경계 바로 옆에 배치) */}
+        {step === 2 && (
+          <aside className="absolute -left-[196px] top-80 hidden xl:block">
+            <div className="sticky top-6 w-[180px] rounded-2xl border border-neutral-200 bg-white p-4">
+              <p className="mb-3 text-xs font-semibold text-neutral-900">
+                스토리 구성 가이드
+              </p>
+              <ul className="space-y-2.5 text-[11px] text-neutral-600">
+                <li>
+                  <span className="font-medium text-neutral-900">
+                    1. 왜 이 프로젝트인가요?
+                  </span>
+                  <p className="mt-1 leading-relaxed">
+                    문제의식과 아이디어가 탄생한 배경을 설명해주세요.
+                  </p>
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-900">
+                    2. 무엇을 제공하나요?
+                  </span>
+                  <p className="mt-1 leading-relaxed">
+                    리워드 구성과 핵심 스펙, 차별점을 구체적으로 적어주세요.
+                  </p>
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-900">
+                    3. 어떻게 만들고 전달하나요?
+                  </span>
+                  <p className="mt-1 leading-relaxed">
+                    제작 일정, 검수 절차, 배송 계획을 단계별로 안내하면 신뢰도가
+                    높아집니다.
+                  </p>
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-900">
+                    4. 위험 요소와 대응
+                  </span>
+                  <p className="mt-1 leading-relaxed">
+                    예상 가능한 리스크와 대응 방안을 함께 안내하세요.
+                  </p>
+                </li>
+              </ul>
+            </div>
+          </aside>
+        )}
+
         <div className="space-y-8">
           {/* 헤더 */}
           <header className="space-y-3">
@@ -90,7 +173,13 @@ export const CreatorWizardPage: React.FC = () => {
           )}
 
           {/* 본문 */}
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div
+            className={`grid gap-6 ${
+              step === 2
+                ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]"
+                : "lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+            }`}
+          >
             <div className="space-y-6">
               {step === 1 && (
                 <BasicInfoStep
@@ -108,6 +197,9 @@ export const CreatorWizardPage: React.FC = () => {
                   onCoverUpload={uploadCover}
                   onSelectCover={selectCoverImage}
                   onRemoveCoverImage={removeCoverImage}
+                  resolveCoverImageSrc={resolveCoverImageUrl}
+                  onGenerateAI={generateAIDescription}
+                  isGeneratingAI={isGeneratingAI}
                 />
               )}
 
@@ -229,21 +321,33 @@ export const CreatorWizardPage: React.FC = () => {
               <button
                 type="button"
                 onClick={saveDraft}
-                className="rounded-full border border-neutral-200 px-4 py-2 text-xs font-medium text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                disabled={isSavingDraft}
+                className="rounded-full border border-neutral-200 px-4 py-2 text-xs font-medium text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                임시 저장
+                {isSavingDraft ? "임시 저장 중..." : "임시 저장"}
               </button>
+              {/* 한글 설명: 원격 프로젝트가 있을 때만 삭제 버튼 표시 */}
+              {remoteProjectId && (
+                <button
+                  type="button"
+                  onClick={deleteProject}
+                  className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 hover:border-red-300 hover:bg-red-100"
+                >
+                  프로젝트 삭제
+                </button>
+              )}
               <button
                 type="button"
                 onClick={requestReview}
-                className="rounded-full border border-emerald-700 bg-emerald-700 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-600"
+                disabled={isRequestingReview}
+                className="rounded-full border border-emerald-700 bg-emerald-700 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                검토 요청 보내기
+                {isRequestingReview ? "검토 요청 중..." : "검토 요청 보내기"}
               </button>
             </div>
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 };
