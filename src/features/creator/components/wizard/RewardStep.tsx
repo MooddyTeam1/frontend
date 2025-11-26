@@ -1,6 +1,7 @@
 import React from "react";
 import type { DraftReward } from "../../hooks/useCreatorWizard";
 import { RewardOptionEditor } from "../RewardOptionEditor";
+import { RewardDisclosureEditor } from "./RewardDisclosureEditor";
 import { currencyKRW } from "../../../../shared/utils/format";
 
 type RewardStepProps = {
@@ -199,6 +200,18 @@ const RewardItemEditor: React.FC<RewardItemEditorProps> = ({
       <RewardOptionEditor
         value={reward.optionConfig}
         onChange={(optionConfig) => onChange({ ...reward, optionConfig })}
+      />
+
+      {/* 한글 설명: 리워드 정보 고시 편집 */}
+      <RewardDisclosureEditor
+        value={
+          reward.disclosure ?? {
+            category: "OTHER",
+            common: {},
+            categorySpecific: {},
+          }
+        }
+        onChange={(disclosure) => onChange({ ...reward, disclosure })}
       />
     </div>
   );

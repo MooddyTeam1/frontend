@@ -1,9 +1,9 @@
 import React from "react";
-import type { Reward } from "../data/mockProjects";
+import type { RewardResponseDTO } from "../types";
 import { currencyKRW } from "../../../shared/utils/format";
 
 type RewardCardProps = {
-  reward: Reward;
+  reward: RewardResponseDTO;
   onSelect?: (rewardId: string) => void;
 };
 
@@ -27,7 +27,7 @@ export const RewardCard: React.FC<RewardCardProps> = ({ reward, onSelect }) => (
       <span>예상 배송 {reward.estShippingMonth ?? "-"}</span>
       {reward.limitQty ? (
         <span>
-          {reward.soldQty}/{reward.limitQty}
+          남은 수량 {reward.remainingQty ?? reward.limitQty}
         </span>
       ) : null}
     </div>

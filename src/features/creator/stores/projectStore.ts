@@ -3,6 +3,7 @@ import {
   createDefaultRewardOptionConfig,
   type RewardOptionConfig,
 } from "../utils/rewardOptions";
+import type { CategoryLabel } from "../../../shared/utils/categoryMapper";
 
 export type ProjectStatus =
   | "DRAFT"
@@ -26,9 +27,10 @@ export type RewardSummary = {
 
 export type ProjectDraft = {
   id: string;
+  remoteId?: string;
   title: string;
   summary: string;
-  category: string;
+  category: CategoryLabel;
   story: string;
   goalAmount: number;
   startDate?: string;
@@ -59,6 +61,7 @@ const loadDrafts = (): ProjectDraft[] => {
     if (!Array.isArray(parsed)) return [];
     return (parsed as ProjectDraft[]).map((draft) => ({
       ...draft,
+      remoteId: draft.remoteId,
       coverGallery: Array.isArray(draft.coverGallery) ? draft.coverGallery : [],
       rewards: (draft.rewards ?? []).map((reward) => ({
         ...reward,

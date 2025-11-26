@@ -1,5 +1,19 @@
 ﻿@import "tailwindcss";
 
+/* 한글 설명: 테마 CSS 변수 기본값 설정 */
+:root {
+  --theme-primary: #171717;
+  --theme-secondary: #525252;
+  --theme-accent: #171717;
+  --theme-background: #fafafa;
+  --theme-surface: #ffffff;
+  --theme-text: #171717;
+  --theme-textSecondary: #525252;
+  --theme-border: #e5e5e5;
+  --theme-hover: #171717;
+  --theme-focus: #171717;
+}
+
 html,
 body,
 #root {
@@ -7,11 +21,20 @@ body,
 }
 
 body {
-  @apply bg-neutral-50 text-neutral-900 antialiased;
+  /* 한글 설명: CSS 변수를 사용한 배경색 및 텍스트 색상 */
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  @apply antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
   @apply transition-colors duration-150;
+  color: var(--theme-text);
+}
+
+a:hover {
+  color: var(--theme-hover);
 }
 
 button {
@@ -20,5 +43,13 @@ button {
 
 input,
 textarea {
-  @apply focus:outline-none focus:ring-2 focus:ring-neutral-800 focus:ring-offset-2 focus:ring-offset-neutral-50;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  /* 한글 설명: 테마에 맞는 포커스 색상 */
+  --tw-ring-color: var(--theme-focus);
+  --tw-ring-offset-color: var(--theme-background);
+}
+
+/* 한글 설명: 테마 전환 시 부드러운 애니메이션 */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

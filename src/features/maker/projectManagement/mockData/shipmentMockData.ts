@@ -1,0 +1,202 @@
+// 한글 설명: 배송 관리 Mock 데이터
+import type {
+  ShipmentDTO,
+  ShipmentSummaryDTO,
+  ShipmentStatisticsDTO,
+} from "../types/shipment";
+
+// 한글 설명: Mock 배송 목록 데이터
+export const mockShipments: ShipmentDTO[] = [
+  {
+    id: 1,
+    orderId: 1,
+    orderCode: "ORD-20251121-001",
+    supporterName: "김서포터",
+    supporterId: 1001,
+    supporterPhone: "010-1234-5678",
+    supporterEmail: "supporter1@example.com",
+    address: {
+      recipient: "김서포터",
+      phone: "010-1234-5678",
+      postalCode: "12345",
+      address1: "서울특별시 강남구 테헤란로 123",
+      address2: "456호",
+      fullAddress: "[12345] 서울특별시 강남구 테헤란로 123 456호",
+    },
+    reward: {
+      id: 1,
+      title: "얼리버드 패키지",
+      options: "색상: 블랙, 사이즈: M",
+      quantity: 1,
+    },
+    amount: 49000,
+    paymentStatus: "SUCCESS",
+    shipmentStatus: "READY",
+    courierName: null,
+    trackingNumber: null,
+    memo: null,
+    shippedAt: null,
+    deliveredAt: null,
+    issueReason: null,
+    orderedAt: "2025-11-21T10:30:00Z",
+    paidAt: "2025-11-21T10:31:00Z",
+    createdAt: "2025-11-21T10:30:00Z",
+    updatedAt: "2025-11-21T10:30:00Z",
+  },
+  {
+    id: 2,
+    orderId: 2,
+    orderCode: "ORD-20251121-002",
+    supporterName: "이후원자",
+    supporterId: 1002,
+    supporterPhone: "010-2345-6789",
+    supporterEmail: "supporter2@example.com",
+    address: {
+      recipient: "이후원자",
+      phone: "010-2345-6789",
+      postalCode: "54321",
+      address1: "서울특별시 서초구 서초대로 456",
+      address2: "789호",
+      fullAddress: "[54321] 서울특별시 서초구 서초대로 456 789호",
+    },
+    reward: {
+      id: 2,
+      title: "스탠다드 패키지",
+      options: "색상: 화이트",
+      quantity: 2,
+    },
+    amount: 118000,
+    paymentStatus: "SUCCESS",
+    shipmentStatus: "SHIPPED",
+    courierName: "CJ대한통운",
+    trackingNumber: "1234567890123",
+    memo: "택배사 연락 완료",
+    shippedAt: "2025-11-22T09:00:00Z",
+    deliveredAt: null,
+    issueReason: null,
+    orderedAt: "2025-11-20T14:20:00Z",
+    paidAt: "2025-11-20T14:21:00Z",
+    createdAt: "2025-11-20T14:20:00Z",
+    updatedAt: "2025-11-22T09:00:00Z",
+  },
+  {
+    id: 3,
+    orderId: 3,
+    orderCode: "ORD-20251121-003",
+    supporterName: "박참여자",
+    supporterId: 1003,
+    supporterPhone: "010-3456-7890",
+    supporterEmail: "supporter3@example.com",
+    address: {
+      recipient: "박참여자",
+      phone: "010-3456-7890",
+      postalCode: "67890",
+      address1: "경기도 성남시 분당구 정자로 789",
+      address2: "101동 202호",
+      fullAddress: "[67890] 경기도 성남시 분당구 정자로 789 101동 202호",
+    },
+    reward: {
+      id: 3,
+      title: "프리미엄 패키지",
+      options: null,
+      quantity: 1,
+    },
+    amount: 100000,
+    paymentStatus: "SUCCESS",
+    shipmentStatus: "DELIVERED",
+    courierName: "한진택배",
+    trackingNumber: "9876543210987",
+    memo: null,
+    shippedAt: "2025-11-19T10:00:00Z",
+    deliveredAt: "2025-11-21T14:30:00Z",
+    issueReason: null,
+    orderedAt: "2025-11-19T09:15:00Z",
+    paidAt: "2025-11-19T09:16:00Z",
+    createdAt: "2025-11-19T09:15:00Z",
+    updatedAt: "2025-11-21T14:30:00Z",
+  },
+  {
+    id: 4,
+    orderId: 4,
+    orderCode: "ORD-20251121-004",
+    supporterName: "최지원자",
+    supporterId: 1004,
+    supporterPhone: "010-4567-8901",
+    supporterEmail: "supporter4@example.com",
+    address: {
+      recipient: "최지원자",
+      phone: "010-4567-8901",
+      postalCode: "11223",
+      address1: "부산광역시 해운대구 해운대해변로 321",
+      address2: null,
+      fullAddress: "[11223] 부산광역시 해운대구 해운대해변로 321",
+    },
+    reward: {
+      id: 1,
+      title: "얼리버드 패키지",
+      options: "색상: 레드",
+      quantity: 1,
+    },
+    amount: 49000,
+    paymentStatus: "SUCCESS",
+    shipmentStatus: "ISSUE",
+    courierName: "로젠택배",
+    trackingNumber: "5555555555555",
+    memo: "주소 오류로 반송됨",
+    shippedAt: "2025-11-18T11:00:00Z",
+    deliveredAt: null,
+    issueReason: "주소 오류 - 수령인 연락 불가",
+    orderedAt: "2025-11-18T10:45:00Z",
+    paidAt: "2025-11-18T10:46:00Z",
+    createdAt: "2025-11-18T10:45:00Z",
+    updatedAt: "2025-11-20T15:00:00Z",
+  },
+];
+
+// 한글 설명: Mock 배송 요약 통계 데이터
+export const mockShipmentSummary: ShipmentSummaryDTO = {
+  totalOrders: 1000,
+  readyCount: 600,
+  shippedCount: 300,
+  deliveredCount: 90,
+  issueCount: 10,
+  scheduledStartDate: "2025-12-01",
+  targetEndDate: "2025-12-31",
+};
+
+// 한글 설명: Mock 배송 통계 데이터
+export const mockShipmentStatistics: ShipmentStatisticsDTO = {
+  // 한글 설명: 배송 현황 차트 데이터 (최근 30일)
+  statusChart: {
+    labels: Array.from({ length: 30 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (29 - i));
+      return date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
+    }),
+    ready: Array.from({ length: 30 }, () => Math.floor(Math.random() * 20) + 5),
+    shipped: Array.from({ length: 30 }, () => Math.floor(Math.random() * 15) + 3),
+    delivered: Array.from({ length: 30 }, () => Math.floor(Math.random() * 10) + 2),
+    issue: Array.from({ length: 30 }, () => Math.floor(Math.random() * 3)),
+  },
+  // 한글 설명: 배송 기간 분석
+  deliveryPeriodAnalysis: {
+    averageDays: 3.5,
+    minDays: 1,
+    maxDays: 7,
+    periodDistribution: [
+      { period: "1-2일", count: 120 },
+      { period: "3-5일", count: 250 },
+      { period: "6-7일", count: 80 },
+      { period: "8일 이상", count: 30 },
+    ],
+  },
+  // 한글 설명: 택배사별 통계
+  courierStatistics: [
+    { courierName: "CJ대한통운", count: 350, averageDays: 3.2 },
+    { courierName: "한진택배", count: 280, averageDays: 3.8 },
+    { courierName: "로젠택배", count: 200, averageDays: 3.5 },
+    { courierName: "롯데택배", count: 150, averageDays: 4.0 },
+    { courierName: "기타", count: 20, averageDays: 3.0 },
+  ],
+};
+

@@ -1,9 +1,10 @@
 ﻿import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { GoogleLoginButton } from "../../../features/auth/components/GoogleLoginButton";
+import { KakaoLoginButton } from "../../../features/auth/components/KakaoLoginButton";
 import { Container } from "../../../shared/components/Container";
-import { useAuth } from "../../../features/auth/contexts/AuthContext";
+import { useAuthStore } from "../../../features/auth/stores/authStore";
 
 const schema = z.object({
   email: z.string().email("이메일을 확인해 주세요"),
@@ -12,8 +13,7 @@ const schema = z.object({
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useAuth();
+  const { login } = useAuthStore();
   const [form, setForm] = React.useState({ email: "", password: "" });
   const [errors, setErrors] = React.useState<{
     email?: string;
@@ -21,10 +21,6 @@ export const LoginPage: React.FC = () => {
   }>({});
   const [generalError, setGeneralError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
-
-  const fromState =
-    (location.state as { from?: { pathname: string } } | null) ?? null;
-  const redirectPath = fromState?.from?.pathname ?? "/";
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,8 +39,13 @@ export const LoginPage: React.FC = () => {
     setErrors({});
     setLoading(true);
     try {
-      await login(result.data);
-      navigate(redirectPath, { replace: true });
+      const loggedInUser = await login(result.data);
+      // 한글 설명: admin 계정이면 /admin으로, 아니면 메인 홈페이지로 리다이렉트
+      if (loggedInUser.role === "ADMIN") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (error) {
       setGeneralError(
         error instanceof Error ? error.message : "로그인에 실패했습니다"
@@ -116,6 +117,14 @@ export const LoginPage: React.FC = () => {
               {errors.password && (
                 <p className="text-xs text-red-500">{errors.password}</p>
               )}
+              <div className="flex justify-end">
+                <Link
+                  to="/password/forgot"
+                  className="text-xs text-neutral-500 underline hover:text-neutral-700"
+                >
+                  비밀번호를 잊으셨나요?
+                </Link>
+              </div>
             </div>
 
             {generalError && (
@@ -135,9 +144,10 @@ export const LoginPage: React.FC = () => {
 
           <div className="space-y-3 rounded-3xl border border-neutral-200 p-6">
             <p className="text-xs text-neutral-500">
-              또는 구글 계정으로 계속하기
+              또는 소셜 계정으로 계속하기
             </p>
             <GoogleLoginButton />
+            <KakaoLoginButton />
           </div>
 
           <p className="text-center text-xs text-neutral-500">

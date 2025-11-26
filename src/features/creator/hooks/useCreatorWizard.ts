@@ -1,12 +1,42 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   createDefaultRewardOptionConfig,
   type RewardOptionConfig,
 } from "../utils/rewardOptions";
 import {
   useProjectStore,
+  type ProjectDraft,
   type ProjectStatus,
+  type RewardSummary,
 } from "../stores/projectStore";
+import { useMyProjectsStore } from "../../projects/stores/myProjectsStore";
+import { deleteProjectApi } from "../../projects/api/myProjectsService";
+import type {
+  CreateProjectRequestDTO,
+  RewardOptionConfigDTO,
+  TempProjectRequestDTO,
+  RewardResponseDTO,
+  ProjectDetailResponseDTO,
+} from "../../projects/types";
+import {
+  CATEGORY_OPTIONS as SHARED_CATEGORY_OPTIONS,
+  toCategoryEnum,
+  toCategoryLabel,
+  type CategoryLabel,
+  type CategoryEnum,
+} from "../../../shared/utils/categoryMapper";
+import { resolveImageUrl } from "../../../shared/utils/image";
+import {
+  uploadImage,
+  uploadImages,
+} from "../../uploads/api/imageUploadService";
+import {
+  generateAIListing,
+  type AIGeneratedListingResponseDTO,
+} from "../../../services/api";
+
+export const CATEGORY_OPTIONS = SHARED_CATEGORY_OPTIONS;
 
 export type WizardStep = 1 | 2 | 3 | 4;
 
@@ -19,7 +49,7 @@ export type WizardStepMeta = {
 export type BasicInfoState = {
   title: string;
   summary: string;
-  category: string;
+  category: CategoryLabel | "";
   coverImageUrl: string;
   coverGallery: string[];
   tags: string[];
@@ -31,6 +61,8 @@ export type GoalState = {
   endDate: string;
 };
 
+import type { RewardDisclosure } from "../types/rewardDisclosure";
+
 export type DraftReward = {
   id: string;
   title: string;
@@ -40,6 +72,7 @@ export type DraftReward = {
   estShippingMonth?: string;
   available: boolean;
   optionConfig: RewardOptionConfig;
+  disclosure?: RewardDisclosure; // 한글 설명: 리워드 정보 고시 항목
 };
 
 export type GuideSection = {
@@ -53,18 +86,6 @@ export const STEPS: WizardStepMeta[] = [
   { value: 3, title: "목표 & 일정", description: "모금 목표와 진행 기간" },
   { value: 4, title: "리워드 & 옵션", description: "리워드 구성과 옵션 설계" },
 ];
-
-export const CATEGORY_OPTIONS = [
-  "테크",
-  "디자인",
-  "푸드",
-  "패션",
-  "뷰티",
-  "홈·리빙",
-  "게임",
-  "예술",
-  "출판",
-] as const;
 
 export const TAG_SUGGESTIONS = [
   "친환경",
@@ -124,22 +145,12 @@ const createReward = (): DraftReward => ({
   estShippingMonth: "",
   available: true,
   optionConfig: createDefaultRewardOptionConfig(),
+  disclosure: {
+    category: "OTHER",
+    common: {},
+    categorySpecific: {},
+  },
 });
-
-const readFileAsDataUrl = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-      } else {
-        reject(new Error("이미지를 불러오지 못했어요."));
-      }
-    };
-    reader.onerror = () =>
-      reject(reader.error ?? new Error("파일을 읽는 중 문제가 발생했어요."));
-    reader.readAsDataURL(file);
-  });
 
 const collectRewardAverage = (rewards: DraftReward[]) => {
   if (!rewards.length) return 0;
@@ -150,14 +161,77 @@ const collectRewardAverage = (rewards: DraftReward[]) => {
   return sum > 0 ? Math.round(sum / rewards.length) : 0;
 };
 
-export const useCreatorWizard = () => {
-  const { drafts, addDraft, updateDraft, setDraftStatus } = useProjectStore();
+type CreatorWizardOptions = {
+  initialDraftId?: string;
+  initialRemoteProjectId?: string;
+};
+
+const mapRewardResponseToDraftReward = (
+  reward: RewardResponseDTO
+): DraftReward => ({
+  id: reward.id ?? generateId("reward"),
+  title: reward.title,
+  description: reward.description ?? "",
+  price: reward.price,
+  limitQty: reward.limitQty ?? undefined,
+  estShippingMonth: reward.estShippingMonth ?? undefined,
+  available: reward.available,
+  optionConfig: createDefaultRewardOptionConfig(),
+});
+
+const mapRewardResponseToSummary = (
+  reward: RewardResponseDTO
+): RewardSummary => ({
+  id: reward.id ?? generateId("reward"),
+  title: reward.title,
+  price: reward.price,
+  description: reward.description ?? undefined,
+  limitQty: reward.limitQty ?? undefined,
+  estShippingMonth: reward.estShippingMonth ?? undefined,
+  available: reward.available,
+  optionConfig: undefined,
+});
+
+export const useCreatorWizard = (options?: CreatorWizardOptions) => {
+  const navigate = useNavigate();
+  const { drafts, addDraft, updateDraft, setDraftStatus, removeDraft } =
+    useProjectStore();
+  const saveTempProjectApi = useMyProjectsStore((state) => state.saveTempProject);
+  const updateTempProjectApi = useMyProjectsStore(
+    (state) => state.updateTempProject
+  );
+  const requestProjectCreationApi = useMyProjectsStore(
+    (state) => state.createProjectRequest
+  );
+  const fetchProjectDetailApi = useMyProjectsStore((state) => state.fetchDetail);
 
   const [step, setStep] = useState<WizardStep>(1);
   const [errors, setErrors] = useState<string[]>([]);
-  const [draftId] = useState(() => generateId("draft"));
-
+  const [draftId] = useState(
+    () =>
+      options?.initialDraftId ??
+      generateId("draft")
+  );
   const existingDraft = drafts.find((draft) => draft.id === draftId);
+  const [remoteProjectId, setRemoteProjectId] = useState<string | undefined>(
+    options?.initialRemoteProjectId ?? existingDraft?.remoteId
+  );
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isRequestingReview, setIsRequestingReview] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [coverPreviewMap, setCoverPreviewMap] = useState<Record<string, string>>(
+    {}
+  );
+  const previewObjectUrlsRef = useRef<Set<string>>(new Set());
+
+  const previewCleanup = useCallback(() => {
+    previewObjectUrlsRef.current.forEach((previewUrl) =>
+      URL.revokeObjectURL(previewUrl)
+    );
+    previewObjectUrlsRef.current.clear();
+  }, []);
+
+  const lastHydratedProjectIdRef = useRef<string | undefined>(undefined);
 
   const initialGallery: string[] = existingDraft?.coverGallery?.length
     ? existingDraft.coverGallery
@@ -278,34 +352,46 @@ export const useCreatorWizard = () => {
         return;
       }
 
+      const remainingSlots = Math.max(
+        0,
+        MAX_COVER_IMAGES - basic.coverGallery.length
+      );
+
+      if (remainingSlots <= 0) {
+        alert(`이미지는 최대 ${MAX_COVER_IMAGES}장까지 보관할 수 있어요.`);
+        return;
+      }
+
+      const filesToUpload = validFiles.slice(0, remainingSlots);
+      const previewUrls = filesToUpload.map((file) => {
+        const previewUrl = URL.createObjectURL(file);
+        previewObjectUrlsRef.current.add(previewUrl);
+        return previewUrl;
+      });
+
       try {
-        const dataUrls = await Promise.all(validFiles.map(readFileAsDataUrl));
+        let responses: Awaited<ReturnType<typeof uploadImages>> = [];
+        if (filesToUpload.length === 1) {
+          const single = await uploadImage(filesToUpload[0]);
+          responses = [single];
+        } else {
+          responses = await uploadImages(filesToUpload);
+        }
 
-        let added = 0;
-        let limitReached = false;
-
+        let nextGallerySnapshot: string[] = [];
         setBasic((prev) => {
           const nextGallery = [...prev.coverGallery];
           const existing = new Set(nextGallery);
-          let slots = MAX_COVER_IMAGES - nextGallery.length;
 
-          dataUrls.forEach((url) => {
-            if (existing.has(url)) {
-              return;
-            }
-            if (slots <= 0) {
-              limitReached = true;
-              return;
-            }
-            nextGallery.push(url);
-            existing.add(url);
-            slots -= 1;
-            added += 1;
+          responses.forEach((item) => {
+            if (!item?.url) return;
+            if (existing.has(item.url)) return;
+            if (nextGallery.length >= MAX_COVER_IMAGES) return;
+            nextGallery.push(item.url);
+            existing.add(item.url);
           });
 
-          if (!added) {
-            return prev;
-          }
+          nextGallerySnapshot = nextGallery;
 
           const shouldReplaceCover =
             prev.coverImageUrl === DEFAULT_COVER ||
@@ -320,18 +406,50 @@ export const useCreatorWizard = () => {
           };
         });
 
+        setCoverPreviewMap((prevMap) => {
+          const nextMap = { ...prevMap };
+
+          Object.entries(nextMap).forEach(([remoteUrl, previewUrl]) => {
+            if (!nextGallerySnapshot.includes(remoteUrl)) {
+              if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+                previewObjectUrlsRef.current.delete(previewUrl);
+              }
+              delete nextMap[remoteUrl];
+            }
+          });
+
+          responses.forEach((item, index) => {
+            const remoteUrl = item?.url;
+            const previewUrl = previewUrls[index];
+            if (!remoteUrl || !previewUrl) return;
+            const previousPreview = nextMap[remoteUrl];
+            if (previousPreview && previousPreview !== previewUrl) {
+              URL.revokeObjectURL(previousPreview);
+              previewObjectUrlsRef.current.delete(previousPreview);
+            }
+            nextMap[remoteUrl] = previewUrl;
+          });
+
+          return nextMap;
+        });
+
         if (oversize.length) {
           alert("5MB를 초과한 이미지는 제외했어요.");
         }
-        if (limitReached) {
+        if (validFiles.length > filesToUpload.length) {
           alert(`이미지는 최대 ${MAX_COVER_IMAGES}장까지 보관할 수 있어요.`);
         }
       } catch (error) {
-        console.error("Failed to read files", error);
-        alert("이미지를 불러오는 중 문제가 발생했어요.");
+        previewUrls.forEach((previewUrl) => {
+          URL.revokeObjectURL(previewUrl);
+          previewObjectUrlsRef.current.delete(previewUrl);
+        });
+        console.error("이미지 업로드 실패", error);
+        alert("이미지 업로드 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
       }
     },
-    []
+    [basic.coverGallery.length]
   );
 
   const handleSelectCover = useCallback((image: string) => {
@@ -364,7 +482,34 @@ export const useCreatorWizard = () => {
         coverImageUrl: nextCover,
       };
     });
+    setCoverPreviewMap((prev) => {
+      if (!(image in prev)) return prev;
+      const next = { ...prev };
+      const previewUrl = next[image];
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewObjectUrlsRef.current.delete(previewUrl);
+      }
+      delete next[image];
+      return next;
+    });
   }, []);
+
+  const resolveCoverImageUrl = useCallback(
+    (url: string | null | undefined) => {
+      if (!url) return undefined;
+      const preview = coverPreviewMap[url];
+      if (preview) return preview;
+      return resolveImageUrl(url) ?? url;
+    },
+    [coverPreviewMap]
+  );
+
+  useEffect(() => {
+    return () => {
+      previewCleanup();
+    };
+  }, [previewCleanup]);
 
   const updateGoalField = useCallback(
     (field: keyof GoalState, value: string | number) => {
@@ -496,7 +641,7 @@ export const useCreatorWizard = () => {
     () => ({
       title: basic.title.trim(),
       summary: basic.summary.trim(),
-      category: basic.category,
+      category: basic.category as CategoryLabel,
       story,
       goalAmount: goal.goalAmount,
       startDate: goal.startDate,
@@ -519,35 +664,250 @@ export const useCreatorWizard = () => {
   );
 
   const persistDraft = useCallback(
-    (nextStatus: ProjectStatus) => {
+    (nextStatus: ProjectStatus, remoteId?: string) => {
       const payload = buildDraftPayload();
       const current = drafts.find((draft) => draft.id === draftId);
 
       if (current) {
-        updateDraft(draftId, payload);
+        updateDraft(draftId, { ...payload, remoteId });
         if (current.status !== nextStatus) {
           setDraftStatus(draftId, nextStatus);
         }
       } else {
-        addDraft({ id: draftId, status: nextStatus, ...payload });
+        addDraft({ id: draftId, remoteId, status: nextStatus, ...payload });
       }
     },
     [addDraft, buildDraftPayload, draftId, drafts, setDraftStatus, updateDraft]
   );
 
-  const saveDraft = useCallback(() => {
+  const toRewardOptionConfigDTO = useCallback(
+    (config: RewardOptionConfig): RewardOptionConfigDTO | undefined => {
+      if (!config || config.mode === "none") {
+        return { hasOptions: false };
+      }
+      const options = config.optionGroups.map((group) => ({
+        name: group.name,
+        type: group.inputType,
+        required: group.required,
+        choices:
+          group.inputType === "select"
+            ? group.values?.map((value) => value.label) ?? []
+            : undefined,
+      }));
+      return { hasOptions: options.length > 0, options };
+    },
+    []
+  );
+
+  const hydrateFromProjectDetail = useCallback(
+    (detail: ProjectDetailResponseDTO) => {
+      // 한글 설명: 서버에서 받은 이미지 URL을 절대 경로로 변환하여 저장
+      const rawGallery = Array.isArray(detail.coverGallery)
+        ? detail.coverGallery
+        : [];
+      // 한글 설명: coverGallery가 비어있고 coverImageUrl이 있으면 coverImageUrl을 갤러리에 포함
+      const galleryWithCover =
+        rawGallery.length === 0 && detail.coverImageUrl
+          ? [detail.coverImageUrl]
+          : rawGallery;
+      const resolvedGallery = galleryWithCover.map((url) => {
+        // 한글 설명: 상대 경로인 경우 resolveImageUrl로 변환, 이미 절대 경로면 그대로 사용
+        const resolved = resolveImageUrl(url);
+        return resolved ?? url;
+      });
+      const rawCover = detail.coverImageUrl ?? resolvedGallery[0] ?? DEFAULT_COVER;
+      const resolvedCover = resolveImageUrl(rawCover) ?? rawCover;
+
+      const nextDraftRewards = detail.rewards?.length
+        ? detail.rewards.map(mapRewardResponseToDraftReward)
+        : [createReward()];
+
+      setBasic({
+        title: detail.title ?? "",
+        summary: detail.summary ?? "",
+        category: detail.category ?? "",
+        coverImageUrl: resolvedCover,
+        coverGallery: resolvedGallery,
+        tags: detail.tags ?? [],
+      });
+      setStory(detail.storyMarkdown ?? "");
+      setGoal({
+        goalAmount: detail.goalAmount ?? 0,
+        startDate: detail.startDate ?? "",
+        endDate: detail.endDate ?? "",
+      });
+      setRewards(nextDraftRewards);
+      setRemoteProjectId(detail.id);
+      setCoverPreviewMap({});
+      previewCleanup();
+
+      const summaryRewards =
+        detail.rewards?.map(mapRewardResponseToSummary) ?? [];
+      const draftPayload: ProjectDraft = {
+        id: draftId,
+        remoteId: detail.id,
+        status: "DRAFT",
+        title: detail.title ?? "",
+        summary: detail.summary ?? "",
+        category: detail.category ?? "",
+        story: detail.storyMarkdown ?? "",
+        goalAmount: detail.goalAmount ?? 0,
+        startDate: detail.startDate ?? undefined,
+        endDate: detail.endDate ?? undefined,
+        tags: detail.tags ?? [],
+        coverImageUrl: resolvedCover !== DEFAULT_COVER ? resolvedCover : undefined,
+        coverGallery: resolvedGallery,
+        rewards: summaryRewards,
+      };
+
+      if (drafts.some((draft) => draft.id === draftId)) {
+        updateDraft(draftId, draftPayload);
+        setDraftStatus(draftId, "DRAFT");
+      } else {
+        addDraft(draftPayload);
+      }
+    },
+    [
+      addDraft,
+      draftId,
+      drafts,
+      previewCleanup,
+      setDraftStatus,
+      updateDraft,
+    ]
+  );
+
+  useEffect(() => {
+    if (!remoteProjectId) {
+      lastHydratedProjectIdRef.current = undefined;
+      return;
+    }
+    if (lastHydratedProjectIdRef.current === remoteProjectId) {
+      return;
+    }
+    fetchProjectDetailApi(remoteProjectId)
+      .then((detail) => {
+        hydrateFromProjectDetail(detail);
+        lastHydratedProjectIdRef.current = remoteProjectId;
+      })
+      .catch((error) => {
+        console.error("임시 저장된 프로젝트 불러오기 실패", error);
+        lastHydratedProjectIdRef.current = undefined;
+      });
+  }, [fetchProjectDetailApi, hydrateFromProjectDetail, remoteProjectId]);
+
+  const buildCreateRequestPayload = useCallback(
+    (): CreateProjectRequestDTO => {
+      // 한글 설명: 리워드 정보를 API DTO 형식으로 변환
+      const mappedRewards = rewards.map((reward) => {
+        const optionConfig = toRewardOptionConfigDTO(reward.optionConfig);
+        return {
+          title: reward.title.trim(),
+          description: reward.description.trim() || undefined,
+          price: reward.price,
+          limitQty: reward.limitQty,
+          estShippingMonth: reward.estShippingMonth,
+          available: reward.available,
+          optionConfig,
+        };
+      });
+
+      // 한글 설명: 디버깅을 위한 리워드 정보 로그
+      console.log("[CreatorWizard] 리워드 변환 결과:", {
+        원본_리워드_개수: rewards.length,
+        변환된_리워드_개수: mappedRewards.length,
+        리워드_상세: mappedRewards.map((r, idx) => ({
+          인덱스: idx,
+          제목: r.title,
+          가격: r.price,
+          옵션_있음: r.optionConfig?.hasOptions ?? false,
+        })),
+      });
+
+      return {
+        title: basic.title.trim(),
+        summary: basic.summary.trim(),
+        category: toCategoryEnum(basic.category as CategoryLabel),
+        storyMarkdown: story,
+        coverImageUrl: basic.coverImageUrl || DEFAULT_COVER,
+        coverGallery: basic.coverGallery,
+        goalAmount: goal.goalAmount,
+        startDate: goal.startDate || undefined,
+        endDate: goal.endDate,
+        tags: basic.tags,
+        rewards: mappedRewards,
+      };
+    },
+    [basic, story, goal, rewards, toRewardOptionConfigDTO]
+  );
+
+  const buildUpdateRequestPayload = useCallback(
+    (): TempProjectRequestDTO => buildCreateRequestPayload(),
+    [buildCreateRequestPayload]
+  );
+
+  const saveDraft = useCallback(async () => {
     const baseIssues = collectErrorsForStep(1);
     if (baseIssues.length) {
       setErrors(baseIssues);
       setStep(1);
       return;
     }
-    persistDraft("DRAFT");
-    setErrors([]);
-    alert("초안이 저장됐어요. 마이페이지 > 내 프로젝트에서 확인할 수 있어요.");
-  }, [collectErrorsForStep, persistDraft]);
 
-  const requestReview = useCallback(() => {
+    setErrors([]);
+    setIsSavingDraft(true);
+    try {
+      if (!remoteProjectId) {
+        const requestPayload = buildCreateRequestPayload();
+        console.log(
+          "[CreatorWizard] 임시 저장 신규 요청 페이로드",
+          requestPayload
+        );
+        console.log(
+          "[CreatorWizard] 리워드 정보 확인:",
+          JSON.stringify(requestPayload.rewards, null, 2)
+        );
+        const response = await saveTempProjectApi(requestPayload);
+        const projectId = response.projectId || response.id; // 한글 설명: projectId 또는 id 사용
+        setRemoteProjectId(projectId);
+        persistDraft("DRAFT", projectId);
+        alert(
+          "초안이 서버에 저장됐어요. 마이페이지 > 내 프로젝트에서 확인할 수 있어요."
+        );
+      } else {
+        const updatePayload = buildUpdateRequestPayload();
+        console.log(
+          "[CreatorWizard] 임시 저장 수정 요청 페이로드",
+          updatePayload
+        );
+        // 한글 설명: TempProjectRequestDTO에는 rewards가 없으므로 제거
+        // console.log(
+        //   "[CreatorWizard] 리워드 정보 확인:",
+        //   JSON.stringify(updatePayload.rewards, null, 2)
+        // );
+        await updateTempProjectApi(remoteProjectId, updatePayload);
+        persistDraft("DRAFT", remoteProjectId);
+        alert(
+          "초안이 최신 상태로 업데이트됐어요. 마이페이지 > 내 프로젝트에서 확인할 수 있어요."
+        );
+      }
+    } catch (error) {
+      console.error("임시 저장 실패", error);
+      alert("임시 저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setIsSavingDraft(false);
+    }
+  }, [
+    buildCreateRequestPayload,
+    buildUpdateRequestPayload,
+    collectErrorsForStep,
+    persistDraft,
+    remoteProjectId,
+    saveTempProjectApi,
+    updateTempProjectApi,
+  ]);
+
+  const requestReview = useCallback(async () => {
     for (const meta of STEPS) {
       const issues = collectErrorsForStep(meta.value);
       if (issues.length) {
@@ -556,10 +916,156 @@ export const useCreatorWizard = () => {
         return;
       }
     }
-    persistDraft("REVIEW");
+
     setErrors([]);
-    alert("검토 요청이 접수됐어요. 심사 중에는 주요 정보를 수정할 수 없어요.");
-  }, [collectErrorsForStep, persistDraft]);
+    setIsRequestingReview(true);
+    try {
+      if (remoteProjectId) {
+        const updatePayload = buildUpdateRequestPayload();
+        console.log(
+          "[CreatorWizard] 검토 요청 전 최신 초안 동기화",
+          updatePayload
+        );
+        await updateTempProjectApi(remoteProjectId, updatePayload);
+        persistDraft("DRAFT", remoteProjectId);
+      }
+
+      const requestPayload = buildCreateRequestPayload();
+      console.log(
+        "[CreatorWizard] 검토 요청 API 페이로드",
+        requestPayload
+      );
+      const response = await requestProjectCreationApi(
+        requestPayload,
+        remoteProjectId
+      );
+      setRemoteProjectId(response.projectId);
+      persistDraft("REVIEW", response.projectId);
+      alert(
+        "검토 요청이 접수됐어요. 심사 중에는 주요 정보를 수정할 수 없어요."
+      );
+    } catch (error) {
+      console.error("검토 요청 실패", error);
+      alert(
+        "검토 요청 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
+      );
+    } finally {
+      setIsRequestingReview(false);
+    }
+  }, [
+    STEPS,
+    collectErrorsForStep,
+    buildUpdateRequestPayload,
+    updateTempProjectApi,
+    remoteProjectId,
+    persistDraft,
+    buildCreateRequestPayload,
+    requestProjectCreationApi,
+  ]);
+
+  // 한글 설명: AI 설명 생성 핸들러
+  const generateAIDescription = useCallback(
+    async (imageFile: File, hint?: string, tone?: string) => {
+      setIsGeneratingAI(true);
+      try {
+        const response: AIGeneratedListingResponseDTO =
+          await generateAIListing(imageFile, hint, tone);
+
+        // 한글 설명: AI 응답을 폼에 자동으로 채우기
+        if (response.title) {
+          updateBasicField("title", response.title);
+        }
+        // 한글 설명: shortDescription 필드명 사용 (백엔드 스펙에 맞춤)
+        if (response.shortDescription) {
+          updateBasicField("summary", response.shortDescription);
+        }
+        // 한글 설명: categoryName(한글 이름)을 우선 사용, 없으면 category enum을 한글 라벨로 변환
+        if (response.categoryName) {
+          // 한글 설명: categoryName이 유효한 옵션인지 확인
+          const isValidCategory = CATEGORY_OPTIONS.includes(
+            response.categoryName as CategoryLabel
+          );
+          if (isValidCategory) {
+            updateBasicField("category", response.categoryName);
+          }
+        } else if (response.category) {
+          // 한글 설명: category enum을 한글 라벨로 변환
+          try {
+            const categoryLabel = toCategoryLabel(
+              response.category as CategoryEnum
+            );
+            if (CATEGORY_OPTIONS.includes(categoryLabel)) {
+              updateBasicField("category", categoryLabel);
+            }
+          } catch (error) {
+            console.warn("카테고리 enum 변환 실패:", response.category);
+          }
+        }
+        if (response.tags && response.tags.length > 0) {
+          // 한글 설명: 태그 추가 (중복 제거 및 최대 개수 제한)
+          const newTags = response.tags
+            .filter((tag) => tag.trim().length > 0)
+            .filter((tag) => !basic.tags.includes(tag.trim()))
+            .slice(0, MAX_TAGS - basic.tags.length);
+          newTags.forEach((tag) => {
+            const trimmedTag = tag.trim();
+            if (
+              trimmedTag.length <= MAX_TAG_LENGTH &&
+              basic.tags.length < MAX_TAGS
+            ) {
+              setBasic((prev) => ({
+                ...prev,
+                tags: [...prev.tags, trimmedTag],
+              }));
+            }
+          });
+        }
+        if (response.story) {
+          setStory(response.story);
+        }
+
+        alert("AI가 프로젝트 설명을 생성했습니다. 필요에 따라 수정해 주세요.");
+      } catch (error) {
+        console.error("AI 설명 생성 실패", error);
+        alert(
+          "AI 설명 생성 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
+        );
+      } finally {
+        setIsGeneratingAI(false);
+      }
+    },
+    [basic.tags, updateBasicField]
+  );
+
+  // 한글 설명: 프로젝트 삭제 핸들러
+  const handleDeleteProject = useCallback(async () => {
+    if (!remoteProjectId) {
+      alert("삭제할 프로젝트가 없습니다.");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        "이 프로젝트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await deleteProjectApi(remoteProjectId);
+      // 한글 설명: 로컬 draft도 삭제
+      if (draftId) {
+        removeDraft(draftId);
+      }
+      alert("프로젝트가 삭제되었습니다.");
+      // 한글 설명: 삭제 후 프로필 페이지로 이동
+      navigate("/profile/maker");
+    } catch (error) {
+      console.error("프로젝트 삭제 실패", error);
+      alert("프로젝트 삭제 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+  }, [remoteProjectId, draftId, removeDraft, navigate]);
 
   const progress = (step / STEPS.length) * 100;
 
@@ -591,7 +1097,15 @@ export const useCreatorWizard = () => {
     goNext,
     goPrev,
     selectStep,
+    isSavingDraft,
+    isRequestingReview,
+    resolveCoverImageUrl,
     saveDraft,
     requestReview,
+    remoteProjectId,
+    updateTempProjectApi,
+    deleteProject: handleDeleteProject,
+    generateAIDescription,
+    isGeneratingAI,
   };
 };

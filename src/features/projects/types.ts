@@ -17,6 +17,54 @@ export type ProjectStatus =
   | "ENDED" // 종료
   | "REJECTED"; // 반려됨
 
+// 한글 설명: 백오피스/메이커 전용 프로젝트 상태 구분값 (라이프사이클 기준)
+export type ProjectLifecycleStatus =
+  | "NONE" // 아직 공개 일정이 정해지지 않은 상태
+  | "DRAFT" // 초안 상태 (임시 저장)
+  | "SCHEDULED" // 공개 일정이 확정된 상태
+  | "LIVE" // 실제로 공개되어 후원 진행 중
+  | "ENDED" // 모금이 종료된 상태
+  | "CANCELED"; // 취소됨
+
+// 한글 설명: 심사 파이프라인 기준 프로젝트 상태
+export type ProjectReviewStatus =
+  | "DRAFT" // 작성 중
+  | "NONE" // 심사 요청 준비 완료 (제출 대기)
+  | "REVIEW" // 심사 진행 중
+  | "REJECTED" // 반려됨
+  | "APPROVED"; // 심사 완료 (승인)
+
+// 한글 설명: 백엔드 Category enum과 1:1로 대응하는 프론트 카테고리 타입
+export type ProjectCategory =
+  | "TECH"
+  | "DESIGN"
+  | "FOOD"
+  | "FASHION"
+  | "BEAUTY"
+  | "HOME_LIVING"
+  | "GAME"
+  | "ART"
+  | "PUBLISH";
+
+// 한글 설명: UI에서 사용할 한글 라벨 매핑
+export const PROJECT_CATEGORY_LABELS: Record<ProjectCategory, string> = {
+  TECH: "테크·가전",
+  DESIGN: "디자인",
+  FOOD: "푸드",
+  FASHION: "패션",
+  BEAUTY: "뷰티",
+  HOME_LIVING: "홈·리빙",
+  GAME: "게임",
+  ART: "아트",
+  PUBLISH: "출판",
+};
+
+// 한글 설명: 레거시 호환성을 위한 타입 별칭 (기존 코드와의 호환성 유지)
+export type CategoryEnum = ProjectCategory;
+
+// 한글 설명: 결과 상태 (성공/실패)
+export type ResultStatus = "NONE" | "SUCCESS" | "FAILED" | null;
+
 export interface ProjectEntity {
   id: ProjectId;
   makerId: MakerId; // makers.id 참조
@@ -74,24 +122,7 @@ export interface CreateProjectRequestDTO {
   startDate?: string; // yyyy-mm-dd
   endDate: string; // yyyy-mm-dd
   tags?: string[];
-  rewards: CreateRewardRequestDTO[];
-}
-
-/**
- * 프로젝트 수정 요청
- */
-export interface UpdateProjectRequestDTO {
-  title?: string;
-  summary?: string;
-  category?: string;
-  storyMarkdown?: string;
-  coverImageUrl?: string;
-  coverGallery?: string[];
-  goalAmount?: number;
-  startDate?: string;
-  endDate?: string;
-  tags?: string[];
-  rewards?: CreateRewardRequestDTO[]; // 전체 교체 시
+  rewards: CreateRewardRequestDTO[]; // 리워드 목록
 }
 
 /**
@@ -106,7 +137,18 @@ export interface CreateRewardRequestDTO {
   available?: boolean;
   optionConfig?: RewardOptionConfigDTO;
   displayOrder?: number;
+  // 한글 설명: 리워드 정보고시 (전자상거래법에 따른 필수 정보)
+  disclosure?: RewardDisclosureDTO;
 }
+
+/**
+ * 리워드 정보고시 DTO (백엔드 연동용)
+ * 프론트엔드의 RewardDisclosure 타입과 매핑됩니다.
+ */
+// 한글 설명: rewardDisclosure 타입 import (Windows 대소문자 문제 해결)
+// @ts-ignore - Windows 파일 시스템 대소문자 구분 문제로 인한 임시 처리
+import type { RewardDisclosure } from "../../creator/types/rewardDisclosure";
+export type RewardDisclosureDTO = RewardDisclosure;
 
 /**
  * 리워드 옵션 구성 DTO
@@ -143,7 +185,7 @@ export interface ProjectDetailResponseDTO {
   slug: string;
   title: string;
   summary: string;
-  category: string;
+  category: CategoryLabel;
   storyMarkdown: string;
   coverImageUrl: string | null;
   coverGallery: string[];
@@ -166,17 +208,21 @@ export interface ProjectDetailResponseDTO {
   progressPercent: number; // 진행률 (0-100)
   daysRemaining: number | null; // 남은 일수 (LIVE일 때만)
   isOwner: boolean; // 현재 로그인 유저가 소유자인지
+  // 한글 설명: 현재 로그인한 서포터 기준 찜 여부
+  bookmarked: boolean;
+  // 한글 설명: 이 프로젝트를 찜한 전체 서포터 수
+  bookmarkCount: number;
 }
 
 /**
- * 프로젝트 목록 응답 (카드 형태)
+ * 프로젝트 목록 응답 (카드 형태) - 기존 타입
  */
 export interface ProjectCardResponseDTO {
   id: ProjectId;
   slug: string;
   title: string;
   summary: string;
-  category: string;
+  category: CategoryLabel;
   coverImageUrl: string | null;
   goalAmount: number;
   raised: number;
@@ -186,6 +232,96 @@ export interface ProjectCardResponseDTO {
   progressPercent: number;
   daysRemaining: number | null;
   makerName: string;
+}
+
+/**
+ * 지금 뜨는 프로젝트 응답 DTO (백엔드 TrendingProjectResponse 대응)
+ * 기존 /trending API 사용 시
+ */
+export interface TrendingProjectResponseDTO {
+  id: number;
+  title: string;
+  summary: string | null;
+  coverImageUrl: string | null;
+  category: CategoryEnum;
+  lifecycleStatus: ProjectLifecycleStatus;
+  bookmarkCount: number;
+  startDate: string | null; // YYYY-MM-DD 형식
+  endDate: string | null; // YYYY-MM-DD 형식
+  daysLeft: number | null; // endDate 기준 오늘부터 남은 일수, 지났으면 0
+  scheduled: boolean; // lifecycleStatus === "SCHEDULED"
+  live: boolean; // lifecycleStatus === "LIVE"
+}
+
+/**
+ * 지금 뜨는 프로젝트 응답 DTO (점수 기반, 백엔드 TrendingProjectScoreResponse 대응)
+ * /trending-scored API 사용 시
+ */
+export interface TrendingProjectScoreResponseDTO {
+  id?: number; // 한글 설명: 프로젝트 ID (하위 호환성)
+  projectId?: number; // 한글 설명: 프로젝트 ID (백엔드 응답 필드명)
+  title: string;
+  summary: string | null;
+  coverImageUrl: string | null;
+  category: CategoryEnum;
+  lifecycleStatus: ProjectLifecycleStatus;
+  score: number; // 한글 설명: 트렌딩 점수
+  startDate: string | null; // YYYY-MM-DD 형식
+  endDate: string | null; // YYYY-MM-DD 형식
+  daysLeft: number | null; // endDate 기준 오늘부터 남은 일수, 지났으면 0
+  liveStartAt?: string | null; // 한글 설명: LIVE 시작 일시 (ISO 8601 형식)
+  liveEndAt?: string | null; // 한글 설명: LIVE 종료 일시 (ISO 8601 형식)
+  scheduled: boolean; // lifecycleStatus === "SCHEDULED"
+  live: boolean; // lifecycleStatus === "LIVE"
+}
+
+/**
+ * 지금 많이 보고 있는 프로젝트 응답 DTO (백엔드 MostViewedProjectResponse 대응)
+ * /most-viewed API 사용 시
+ */
+export interface MostViewedProjectResponseDTO {
+  id: number;
+  title: string;
+  summary: string | null;
+  coverImageUrl: string | null;
+  category: CategoryEnum;
+  lifecycleStatus: ProjectLifecycleStatus;
+  viewCount: number; // 한글 설명: 조회수
+  windowLabel: string; // 한글 설명: 시간 윈도우 라벨 (예: "최근 1시간", "최근 60분")
+  startDate: string | null; // YYYY-MM-DD 형식
+  endDate: string | null; // YYYY-MM-DD 형식
+  daysLeft: number | null; // endDate 기준 오늘부터 남은 일수, 지났으면 0
+  scheduled: boolean; // lifecycleStatus === "SCHEDULED"
+  live: boolean; // lifecycleStatus === "LIVE"
+}
+
+/**
+ * 프로젝트 목록 응답 DTO (백엔드 ProjectListResponse 대응)
+ * 홈 화면의 마감 임박, 신규 업로드, 성공 메이커, 첫 도전 메이커 섹션에서 사용
+ */
+export interface ProjectListResponseDTO {
+  id: number;
+  maker: string; // 메이커 이름
+  title: string;
+  summary: string | null;
+  goalAmount: number | null;
+  raised: number | null; // 한글 설명: 누적 모금액 (null 가능)
+  backerCount: number | null; // 한글 설명: 후원자 수 (null 가능)
+  startDate: string | null; // YYYY-MM-DD 형식
+  endDate: string | null; // YYYY-MM-DD 형식
+  category: CategoryEnum;
+  coverImageUrl: string | null;
+  coverGallery: string[] | null;
+  resultStatus: ResultStatus;
+  liveStartAt: string | null; // 한글 설명: 필요 시 상세에서 사용
+  liveEndAt: string | null; // 한글 설명: 필요 시 상세에서 사용
+  // 한글 설명: 뱃지 플래그들
+  badgeNew: boolean; // "신규" 뱃지 여부
+  badgeClosingSoon: boolean; // "마감 임박" 뱃지 여부
+  badgeSuccessMaker: boolean; // "성공 메이커" 뱃지 여부
+  badgeFirstChallengeMaker: boolean; // "첫 도전 메이커" 뱃지 여부
+  // 한글 설명: 목표 달성에 가까운 프로젝트 섹션용 달성률 (0~100 정수 퍼센트, null 가능)
+  achievementRate?: number | null;
 }
 
 /**
@@ -203,51 +339,95 @@ export interface RewardResponseDTO {
   available: boolean;
   optionConfig: RewardOptionConfigDTO | null;
   displayOrder: number;
+  // 한글 설명: 리워드 정보고시 (전자상거래법에 따른 필수 정보)
+  disclosure?: RewardDisclosureDTO | null;
 }
 
 /**
- * 프로젝트 목록 조회 응답 (페이지네이션)
+ * 페이지네이션된 프로젝트 목록 응답
  */
-export interface ProjectListResponseDTO {
+export interface ProjectListResponse {
   items: ProjectCardResponseDTO[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasNext: boolean;
+  total: number; // 전체 항목 수
+  page: number; // 현재 페이지
+  pageSize: number; // 페이지 크기
+  hasNext: boolean; // 다음 페이지 존재 여부
 }
 
-/**
- * 프로젝트 초안 목록 응답 (메이커 대시보드용)
- */
-export interface ProjectDraftListResponseDTO {
-  items: Array<{
-    id: ProjectId;
-    title: string;
-    summary: string;
-    category: string;
-    coverImageUrl: string | null;
-    goalAmount: number;
-    status: ProjectStatus;
-    createdAt: string;
-    updatedAt: string;
-  }>;
-  total: number;
-}
+// 한글 설명: CategoryLabel은 shared/utils/categoryMapper에서 import
+import type { CategoryLabel } from "../../shared/utils/categoryMapper";
 
 // ─────────────────────────
-// 유틸리티 타입
+// 임시 저장 및 프로젝트 관리 관련 DTO
 // ─────────────────────────
 
 /**
- * 프로젝트 검색/필터링 쿼리 파라미터
+ * 임시 저장 프로젝트 요청 DTO
  */
-export interface ProjectQueryParams {
+export interface TempProjectRequestDTO {
+  title?: string;
+  summary?: string;
   category?: string;
-  status?: ProjectStatus;
-  search?: string; // 제목/요약 검색
-  makerId?: MakerId;
-  sortBy?: "newest" | "popular" | "endingSoon" | "goalAmount";
-  page?: number;
-  pageSize?: number;
+  storyMarkdown?: string;
+  coverImageUrl?: string;
+  coverGallery?: string[];
+  goalAmount?: number;
+  startDate?: string;
+  endDate?: string;
+  tags?: string[];
+}
+
+/**
+ * 임시 저장 프로젝트 응답 DTO
+ */
+export interface TempProjectResponseDTO {
+  id: ProjectId;
+  projectId?: ProjectId; // 한글 설명: 백엔드 응답에 projectId가 있을 경우 (id와 동일)
+  title: string;
+  summary: string;
+  category: CategoryLabel;
+  storyMarkdown: string;
+  coverImageUrl: string | null;
+  coverGallery: string[];
+  goalAmount: number;
+  startDate: string | null;
+  endDate: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 프로젝트 생성 요청 응답 DTO
+ */
+export interface CreateProjectRequestResponseDTO {
+  projectId: ProjectId;
+  status: ProjectReviewStatus;
+  message?: string;
+}
+
+/**
+ * 프로젝트 상태 요약 응답 DTO
+ */
+export interface ProjectSummaryResponseDTO {
+  total: number;
+  byStatus?: Record<ProjectStatus, number>; // 한글 설명: 백엔드 응답 구조에 따라 선택적
+  // 한글 설명: 또는 개별 카운트 필드 (백엔드 응답 구조에 따라)
+  draftCount?: number;
+  reviewCount?: number;
+  approvedCount?: number;
+  scheduledCount?: number;
+  liveCount?: number;
+  endCount?: number;
+  rejectedCount?: number;
+}
+
+/**
+ * 프로젝트 북마크 응답 DTO
+ */
+export interface ProjectBookmarkResponseDTO {
+  projectId: ProjectId;
+  bookmarked: boolean;
+  bookmarkCount: number;
 }
 

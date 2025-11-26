@@ -1,13 +1,16 @@
 import React from "react";
 import {
   useParams,
+  useNavigate,
   Link,
   NavLink,
   Outlet,
   useLocation,
 } from "react-router-dom";
 import { Container } from "../../shared/components/Container";
-import { useAuth } from "../../features/auth/contexts/AuthContext";
+import { useAuthStore } from "../../features/auth/stores/authStore";
+import { makerService } from "../../features/maker/api/makerService";
+import { getMakerNewsList } from "../../features/maker/api/makerNewsService";
 import type { MakerKeywordDTO } from "../../features/maker/types";
 
 type PublicMaker = {
@@ -26,42 +29,21 @@ type PublicMaker = {
 
 export const MakerPublicPage: React.FC = () => {
   // 한글 설명: 공개 메이커 페이지. 타 유저가 볼 수 있는 메이커 프로필 뷰를 제공한다.
-  const { makerId = "" } = useParams();
-  const { user } = useAuth();
+  const { makerId: makerIdParam } = useParams<{ makerId: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
   const location = useLocation();
 
   // 한글 설명: 팔로우 여부 상태. true이면 이미 팔로우 중, false이면 아직 팔로우 안 한 상태.
   const [isFollowing, setIsFollowing] = React.useState<boolean>(false);
 
   // 한글 설명: 팔로우/언팔로우 토글 핸들러. 실제로는 여기서 API 호출 후 성공 시 상태를 업데이트한다.
-  const handleToggleFollow = () => {
-    if (!user) {
-      // 한글 설명: 비로그인 상태에서는 팔로우 불가. 향후 로그인 페이지로 이동하는 로직으로 교체할 수 있다.
-      alert("팔로우 기능은 로그인 후 이용할 수 있습니다.");
-      return;
-    }
+  const [followLoading, setFollowLoading] = React.useState(false);
 
-    // TODO: 팔로우/언팔로우 API 호출 추가 (성공 시에만 상태 변경 권장)
-    setIsFollowing((prev) => !prev);
-  };
-
-  // 현재 탭 상태 확인 (URL 기반)
-  const currentTab = location.pathname.split("/").pop() || "projects";
-
-  // TODO: 실제 API로 교체. makerId 기반 데이터 조회
-  const [maker] = React.useState<PublicMaker>({
-    makerId,
-    ownerUserId: "user123",
-    name: "메이커 브랜드",
-    imageUrl: "https://placehold.co/1200x600",
-    productIntro: "혁신적인 제품과 서비스로 세상을 변화시키는 메이커입니다.",
-    coreCompetencies: "디자인, 개발, 마케팅",
-    keywords: [1, 2, 3],
-    totalRaised: 12500000,
-    totalSupporters: 245,
-    satisfactionRate: 4.8,
-  });
-
+  // 한글 설명: 메이커 프로필 데이터 상태
+  const [maker, setMaker] = React.useState<PublicMaker | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [allKeywords] = React.useState<MakerKeywordDTO[]>([
     { id: 1, name: "친환경" },
     { id: 2, name: "소셜임팩트" },
@@ -69,10 +51,146 @@ export const MakerPublicPage: React.FC = () => {
     { id: 4, name: "테크" },
   ]);
 
-  const isOwner = !!user && user.id === maker.ownerUserId;
-  const selectedKeywords = allKeywords.filter((kw) =>
-    maker.keywords.includes(kw.id)
-  );
+  // 한글 설명: 디버깅을 위한 로그
+  React.useEffect(() => {
+    console.log("[MakerPublicPage] makerIdParam:", makerIdParam);
+  }, [makerIdParam]);
+
+  // 한글 설명: makerId가 없으면 404 페이지로 리다이렉트
+  React.useEffect(() => {
+    if (!makerIdParam) {
+      console.warn(
+        "[MakerPublicPage] makerId가 없습니다. 404로 리다이렉트합니다."
+      );
+      navigate("/404", { replace: true });
+      return;
+    }
+  }, [makerIdParam, navigate]);
+
+  // 한글 설명: URL에서 받은 makerId는 숫자만 (예: "1003")
+  const makerId = makerIdParam || "";
+  // 한글 설명: 백엔드 API 호출 시에도 동일하게 숫자만 사용
+  const makerIdForApi = makerId;
+
+  const handleToggleFollow = async () => {
+    if (!user) {
+      // 한글 설명: 비로그인 상태에서는 팔로우 불가. 향후 로그인 페이지로 이동하는 로직으로 교체할 수 있다.
+      alert("팔로우 기능은 로그인 후 이용할 수 있습니다.");
+      return;
+    }
+
+    if (followLoading) return; // 한글 설명: 이미 요청 중이면 중복 요청 방지
+
+    try {
+      setFollowLoading(true);
+      if (isFollowing) {
+        // 한글 설명: 언팔로우
+        await makerService.unfollowMaker(makerIdForApi);
+        setIsFollowing(false);
+      } else {
+        // 한글 설명: 팔로우
+        await makerService.followMaker(makerIdForApi);
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      console.error("팔로우/언팔로우 실패", err);
+      alert(
+        err instanceof Error ? err.message : "팔로우/언팔로우에 실패했습니다."
+      );
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  // 현재 탭 상태 확인 (URL 기반)
+  // 한글 설명: /makers/1003 -> "projects" (기본), /makers/1003/news -> "news", /makers/1003/info -> "info"
+  const pathParts = location.pathname.split("/");
+  const lastPart = pathParts[pathParts.length - 1];
+  const currentTab =
+    lastPart === makerId || !lastPart || lastPart === ""
+      ? "projects"
+      : lastPart;
+
+  // 한글 설명: 메이커 프로필 조회
+  React.useEffect(() => {
+    const loadMakerProfile = async () => {
+      if (!makerIdForApi) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await makerService.getPublicProfile(makerIdForApi);
+
+        // 한글 설명: API 응답을 PublicMaker 타입으로 변환
+        setMaker({
+          makerId: data.makerId || makerId,
+          ownerUserId: data.ownerUserId || "",
+          name: data.name || "메이커",
+          imageUrl: data.imageUrl || null,
+          productIntro: data.productIntro || null,
+          coreCompetencies: data.coreCompetencies || null,
+          keywords: data.keywordIds || data.keywords || [],
+          totalRaised: data.totalRaised || 0,
+          totalSupporters: data.totalSupporters || 0,
+          satisfactionRate: data.satisfactionRate || undefined,
+        });
+
+        // 한글 설명: 팔로우 상태 업데이트
+        if (data.isFollowing !== undefined) {
+          setIsFollowing(data.isFollowing);
+        }
+      } catch (err) {
+        console.error("메이커 프로필 조회 실패", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "메이커 프로필을 불러오지 못했습니다."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMakerProfile();
+  }, [makerIdForApi, makerId]);
+
+  // 한글 설명: 로딩 중이거나 에러 발생 시 처리
+  if (loading) {
+    return (
+      <Container>
+        <div className="mx-auto flex min-h-[70vh] max-w-4xl items-center justify-center py-16">
+          <p className="text-sm text-neutral-500">
+            메이커 프로필을 불러오는 중입니다...
+          </p>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error || !maker) {
+    return (
+      <Container>
+        <div className="mx-auto flex min-h-[70vh] max-w-4xl items-center justify-center py-16">
+          <div className="text-center">
+            <p className="text-sm text-neutral-500">
+              {error || "메이커 프로필을 찾을 수 없습니다."}
+            </p>
+            <Link
+              to="/projects"
+              className="mt-4 inline-block rounded-full border border-neutral-200 px-4 py-2 text-sm text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+            >
+              프로젝트 둘러보기
+            </Link>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  const isOwner = !!user && maker && user.id === maker.ownerUserId;
+  const selectedKeywords = maker
+    ? allKeywords.filter((kw) => maker.keywords.includes(kw.id))
+    : [];
 
   return (
     <Container>
@@ -153,8 +271,14 @@ export const MakerPublicPage: React.FC = () => {
             {isOwner ? (
               <>
                 <Link
+                  to="/maker/projects"
+                  className="block w-full rounded-full border border-neutral-900 bg-neutral-900 px-4 py-2 text-center text-sm font-medium !text-white transition hover:bg-neutral-800"
+                >
+                  내 프로젝트 관리
+                </Link>
+                <Link
                   to={`/makers/${makerId}/news/create`}
-                  className="block w-full rounded-full border border-neutral-900 bg-neutral-900 px-4 py-2 text-sm font-medium text-white text-center hover:bg-neutral-800"
+                  className="block w-full rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-900 text-center hover:bg-neutral-50"
                 >
                   소식 작성하기
                 </Link>
@@ -169,23 +293,28 @@ export const MakerPublicPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleToggleFollow}
+                disabled={followLoading}
                 // 한글 설명: 팔로우 상태에 따라 스타일과 라벨을 다르게 보여준다.
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                className={`rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
                   isFollowing
                     ? "border border-neutral-300 bg-neutral-200 text-neutral-700 hover:bg-neutral-300"
                     : "border border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
                 }`}
               >
-                {isFollowing ? "언팔로우" : "팔로우"}
+                {followLoading
+                  ? "처리 중..."
+                  : isFollowing
+                    ? "언팔로우"
+                    : "팔로우"}
               </button>
             )}
           </div>
         </div>
 
         {/* 탭 네비게이션 */}
-        <div className="flex items-center gap-1 overflow-x-auto border-b border-neutral-200">
+        <div className="flex items-center justify-center gap-1 overflow-x-auto border-b border-neutral-200">
           <NavLink
-            to={`/makers/${makerId}/projects`}
+            to={`/makers/${makerId}`}
             end
             className={({ isActive }) =>
               `whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition ${
@@ -234,45 +363,393 @@ export const MakerPublicPage: React.FC = () => {
 
 // 한글 설명: 메이커 프로젝트 탭 콘텐츠
 export const MakerProjectsRoute: React.FC = () => {
+  // 한글 설명: URL에서 makerId 가져오기
+  const { makerId } = useParams<{ makerId: string }>();
+  const [projects, setProjects] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  // 한글 설명: 메이커 프로젝트 목록 불러오기
+  React.useEffect(() => {
+    const loadProjects = async () => {
+      if (!makerId) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await makerService.getPublicProjects(makerId, {
+          page: 1,
+          size: 12,
+          sort: "createdAt",
+          order: "desc",
+        });
+        // 한글 설명: 페이지네이션 응답에서 content 배열 추출
+        setProjects(data.content || []);
+      } catch (err) {
+        console.error("메이커 프로젝트 목록 조회 실패:", err);
+        setError("프로젝트 목록을 불러오는 도중 문제가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, [makerId]);
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center text-sm text-neutral-500">
+        프로젝트 목록을 불러오는 중입니다...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-12 text-center text-sm text-red-600">{error}</div>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <div className="py-12 text-center text-sm text-neutral-500">
+        아직 등록된 프로젝트가 없습니다.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 py-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-2xl border border-neutral-200 p-4">
-            <div className="aspect-video w-full rounded-xl bg-neutral-100" />
+        {projects.map((project) => (
+          <Link
+            key={project.id}
+            to={`/projects/${project.id}`}
+            className="rounded-2xl border border-neutral-200 p-4 transition hover:border-neutral-400 hover:shadow-md"
+          >
+            {project.coverImageUrl ? (
+              <img
+                src={project.coverImageUrl}
+                alt={project.title}
+                className="aspect-video w-full rounded-xl object-cover"
+              />
+            ) : (
+              <div className="aspect-video w-full rounded-xl bg-neutral-100" />
+            )}
             <p className="mt-3 line-clamp-2 text-sm font-medium text-neutral-900">
-              프로젝트 타이틀 {i + 1}
+              {project.title}
             </p>
             <p className="mt-1 text-xs text-neutral-500">
-              12,345원 모금 · 진행률 45%
+              {project.raisedAmount?.toLocaleString() || 0}원 모금 · 진행률{" "}
+              {project.progressPercentage?.toFixed(0) || 0}%
             </p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
   );
 };
 
-// 한글 설명: 메이커 소식 탭 콘텐츠
-export const MakerNewsRoute: React.FC = () => {
+// 한글 설명: 마크다운에서 이미지 URL 추출 유틸 함수 (현재 미사용)
+// const extractImageFromMarkdown = (markdown: string): string | null => {
+//   // 한글 설명: ![alt](url) 형식의 이미지 마크다운에서 첫 번째 URL 추출
+//   const imageRegex = /!\[.*?\]\((.*?)\)/;
+//   const match = markdown.match(imageRegex);
+//   return match ? match[1] : null;
+// };
+
+// 한글 설명: 마크다운에서 모든 이미지 URL 추출
+const extractAllImagesFromMarkdown = (markdown: string): string[] => {
+  // 한글 설명: ![alt](url) 형식의 모든 이미지 마크다운에서 URL 추출
+  const imageRegex = /!\[.*?\]\((.*?)\)/g;
+  const matches = Array.from(markdown.matchAll(imageRegex));
+  return matches.map((match) => match[1]);
+};
+
+// 한글 설명: 마크다운에서 이미지 제거하고 텍스트만 추출
+const removeImagesFromMarkdown = (markdown: string): string => {
+  // 한글 설명: 이미지 마크다운 제거
+  return markdown.replace(/!\[.*?\]\(.*?\)/g, "").trim();
+};
+
+// 한글 설명: 날짜 포맷팅 함수
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// 한글 설명: 소식 유형 한글 라벨
+const getNewsTypeLabel = (type: string): string => {
+  switch (type) {
+    case "EVENT":
+      return "이벤트";
+    case "NOTICE":
+      return "공지";
+    case "NEW_PRODUCT":
+      return "신제품 출시";
+    default:
+      return "소식";
+  }
+};
+
+// 한글 설명: 소식 유형 색상
+const getNewsTypeColor = (type: string): string => {
+  switch (type) {
+    case "EVENT":
+      return "bg-blue-100 text-blue-700";
+    case "NOTICE":
+      return "bg-yellow-100 text-yellow-700";
+    case "NEW_PRODUCT":
+      return "bg-green-100 text-green-700";
+    default:
+      return "bg-neutral-100 text-neutral-700";
+  }
+};
+
+// 한글 설명: 메이커 소식 카드 컴포넌트
+type MakerNewsCardProps = {
+  news: any;
+  makerName: string;
+};
+
+const MakerNewsCard: React.FC<MakerNewsCardProps> = ({ news, makerName }) => {
+  const imageUrls = extractAllImagesFromMarkdown(news.contentMarkdown);
+  const textContent = removeImagesFromMarkdown(news.contentMarkdown);
+  // 한글 설명: 텍스트 내용이 40자 이상인지 확인
+  const isLongText = textContent.length > 40;
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  // 한글 설명: 이미지 슬라이드 현재 인덱스
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+  // 한글 설명: 40자로 제한 (미리보기용)
+  const previewText =
+    textContent.length > 40
+      ? textContent.substring(0, 40) + "..."
+      : textContent;
+  const fullText = textContent;
+
+  // 한글 설명: 이전 이미지로 이동
+  const goToPrevious = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? imageUrls.length - 1 : prev - 1
+    );
+  };
+
+  // 한글 설명: 다음 이미지로 이동
+  const goToNext = () => {
+    setCurrentImageIndex((prev) =>
+      prev === imageUrls.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  // 한글 설명: 특정 인덱스로 이동
+  const goToSlide = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
   return (
-    <div className="space-y-4 py-6">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="rounded-2xl border border-neutral-200 p-4">
-          <div className="flex items-start gap-4">
-            <div className="h-16 w-16 shrink-0 rounded-xl bg-neutral-100" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-neutral-900">
-                소식 제목 {i + 1}
-              </p>
-              <p className="mt-1 text-xs text-neutral-500">2025-01-15</p>
-              <p className="mt-2 line-clamp-2 text-sm text-neutral-600">
-                소식 내용이 여기에 표시됩니다. 최근 업데이트와 진행 상황을
-                공유합니다.
-              </p>
-            </div>
+    <article className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+      {/* 한글 설명: 카드 헤더 - 유형 뱃지(왼쪽), 메이커 정보, 날짜 */}
+      <div className="border-b border-neutral-100 px-3 py-2">
+        <div className="flex items-center gap-2">
+          <span
+            className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${getNewsTypeColor(
+              news.newsType || "NOTICE"
+            )}`}
+          >
+            {getNewsTypeLabel(news.newsType || "NOTICE")}
+          </span>
+          <div className="h-8 w-8 shrink-0 rounded-full bg-neutral-200" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-neutral-900">
+              {makerName}
+            </p>
+            <p className="text-xs text-neutral-500">
+              {formatDate(news.createdAt)}
+            </p>
           </div>
         </div>
+      </div>
+
+      {/* 한글 설명: 제목과 본문 (위로) */}
+      <div className="px-3 py-3">
+        <h3 className="mb-2 text-base font-semibold text-neutral-900">
+          {news.title}
+        </h3>
+        {fullText && (
+          <div>
+            <p className="text-sm leading-relaxed text-neutral-700">
+              {isExpanded ? fullText : previewText}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 한글 설명: 더보기/접기 버튼 (전체 너비) */}
+      {isLongText && (
+        <div className="border-t border-neutral-100 px-3 py-2">
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50 active:bg-neutral-100"
+          >
+            {isExpanded ? "접기" : "더보기"}
+          </button>
+        </div>
+      )}
+
+      {/* 한글 설명: 이미지 슬라이드 (밑으로) */}
+      {imageUrls.length > 0 && (
+        <div className="border-t border-neutral-100">
+          <div className="relative overflow-hidden bg-neutral-100">
+            <img
+              src={imageUrls[currentImageIndex]}
+              alt={`${news.title} - 이미지 ${currentImageIndex + 1}`}
+              className="h-auto w-full max-h-64 object-contain"
+            />
+            {imageUrls.length > 1 && (
+              <>
+                {/* 한글 설명: 이전 버튼 */}
+                <button
+                  type="button"
+                  onClick={goToPrevious}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white transition hover:bg-black/70"
+                  aria-label="이전 이미지"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+                {/* 한글 설명: 다음 버튼 */}
+                <button
+                  type="button"
+                  onClick={goToNext}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white transition hover:bg-black/70"
+                  aria-label="다음 이미지"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+          {/* 한글 설명: 이미지 인디케이터 (점) */}
+          {imageUrls.length > 1 && (
+            <div className="flex items-center justify-center gap-1.5 border-t border-neutral-100 bg-neutral-50 px-3 py-2">
+              {imageUrls.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => goToSlide(index)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    index === currentImageIndex
+                      ? "w-6 bg-neutral-900"
+                      : "w-1.5 bg-neutral-300 hover:bg-neutral-400"
+                  }`}
+                  aria-label={`이미지 ${index + 1}로 이동`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  );
+};
+
+// 한글 설명: 메이커 소식 탭 콘텐츠
+export const MakerNewsRoute: React.FC = () => {
+  // 한글 설명: URL에서 makerId 가져오기
+  const { makerId } = useParams<{ makerId: string }>();
+  const [newsList, setNewsList] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [makerName, setMakerName] = React.useState<string>("메이커");
+
+  // 한글 설명: 메이커 정보 불러오기
+  React.useEffect(() => {
+    const loadMakerInfo = async () => {
+      if (!makerId) return;
+      try {
+        const data = await makerService.getPublicProfile(makerId);
+        setMakerName(data.name || "메이커");
+      } catch (err) {
+        console.error("메이커 정보 조회 실패:", err);
+      }
+    };
+    loadMakerInfo();
+  }, [makerId]);
+
+  // 한글 설명: 메이커 소식 목록 불러오기
+  React.useEffect(() => {
+    const loadNews = async () => {
+      if (!makerId) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getMakerNewsList(makerId);
+        setNewsList(data);
+      } catch (err) {
+        console.error("메이커 소식 조회 실패:", err);
+        setError("소식을 불러오는 도중 문제가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadNews();
+  }, [makerId]);
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center text-sm text-neutral-500">
+        소식을 불러오는 중입니다...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-12 text-center text-sm text-red-600">{error}</div>
+    );
+  }
+
+  if (newsList.length === 0) {
+    return (
+      <div className="py-12 text-center text-sm text-neutral-500">
+        아직 등록된 소식이 없습니다.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 py-4">
+      {newsList.map((news) => (
+        <MakerNewsCard key={news.id} news={news} makerName={makerName} />
       ))}
     </div>
   );
@@ -280,30 +757,114 @@ export const MakerNewsRoute: React.FC = () => {
 
 // 한글 설명: 메이커 정보 탭 콘텐츠
 export const MakerInfoRoute: React.FC = () => {
+  // 한글 설명: URL에서 makerId 가져오기
+  const { makerId } = useParams<{ makerId: string }>();
+  const [makerInfo, setMakerInfo] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  // 한글 설명: 메이커 정보 불러오기
+  React.useEffect(() => {
+    const loadMakerInfo = async () => {
+      if (!makerId) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await makerService.getPublicProfile(makerId);
+        setMakerInfo(data);
+      } catch (err) {
+        console.error("메이커 정보 조회 실패:", err);
+        setError("메이커 정보를 불러오는 도중 문제가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMakerInfo();
+  }, [makerId]);
+
+  // 한글 설명: 날짜 포맷팅 함수
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      return `${year}년 ${month}월`;
+    } catch {
+      return dateString;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center text-sm text-neutral-500">
+        메이커 정보를 불러오는 중입니다...
+      </div>
+    );
+  }
+
+  if (error || !makerInfo) {
+    return (
+      <div className="py-12 text-center text-sm text-red-600">
+        {error || "메이커 정보를 불러올 수 없습니다."}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 py-6">
-      <section className="rounded-2xl border border-neutral-200 p-4 sm:p-6">
-        <h2 className="text-sm font-semibold text-neutral-900">핵심 역량</h2>
-        <p className="mt-2 text-sm text-neutral-600">
-          디자인, 개발, 마케팅 분야에서 전문성을 갖추고 있습니다.
-        </p>
-      </section>
+      {/* 한글 설명: 핵심 역량 */}
+      {makerInfo.coreCompetencies && (
+        <section className="rounded-2xl border border-neutral-200 p-4 sm:p-6">
+          <h2 className="text-sm font-semibold text-neutral-900">핵심 역량</h2>
+          <p className="mt-2 text-sm text-neutral-600 whitespace-pre-line">
+            {makerInfo.coreCompetencies}
+          </p>
+        </section>
+      )}
 
+      {/* 한글 설명: 설립 정보 */}
       <section className="rounded-2xl border border-neutral-200 p-4 sm:p-6">
         <h2 className="text-sm font-semibold text-neutral-900">설립 정보</h2>
         <div className="mt-2 space-y-2 text-sm text-neutral-600">
-          <p>설립일: 2020년 1월</p>
-          <p>업종: 소프트웨어</p>
-          <p>대표자: 홍길동</p>
-          <p>소재지: 서울특별시 강남구</p>
+          {makerInfo.establishedAt && (
+            <p>설립일: {formatDate(makerInfo.establishedAt)}</p>
+          )}
+          {makerInfo.industryType && <p>업종: {makerInfo.industryType}</p>}
+          {makerInfo.businessItem && <p>업태: {makerInfo.businessItem}</p>}
+          {makerInfo.businessNumber && (
+            <p>사업자번호: {makerInfo.businessNumber}</p>
+          )}
+          {makerInfo.onlineSalesRegistrationNo && (
+            <p>통신판매업 신고번호: {makerInfo.onlineSalesRegistrationNo}</p>
+          )}
+          {makerInfo.representative && (
+            <p>대표자: {makerInfo.representative}</p>
+          )}
+          {makerInfo.location && <p>소재지: {makerInfo.location}</p>}
+          {!makerInfo.establishedAt &&
+            !makerInfo.industryType &&
+            !makerInfo.businessItem &&
+            !makerInfo.businessNumber &&
+            !makerInfo.onlineSalesRegistrationNo &&
+            !makerInfo.representative &&
+            !makerInfo.location && (
+              <p className="text-neutral-400">등록된 설립 정보가 없습니다.</p>
+            )}
         </div>
       </section>
 
+      {/* 한글 설명: 연락처 */}
       <section className="rounded-2xl border border-neutral-200 p-4 sm:p-6">
         <h2 className="text-sm font-semibold text-neutral-900">연락처</h2>
         <div className="mt-2 space-y-2 text-sm text-neutral-600">
-          <p>이메일: contact@example.com</p>
-          <p>연락처: 010-0000-0000</p>
+          {makerInfo.contactEmail && <p>이메일: {makerInfo.contactEmail}</p>}
+          {makerInfo.contactPhone && <p>연락처: {makerInfo.contactPhone}</p>}
+          {!makerInfo.contactEmail && !makerInfo.contactPhone && (
+            <p className="text-neutral-400">등록된 연락처가 없습니다.</p>
+          )}
         </div>
       </section>
     </div>

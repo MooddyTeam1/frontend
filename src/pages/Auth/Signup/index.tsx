@@ -1,63 +1,44 @@
-﻿import React from "react";
+﻿// src/pages/Auth/Signup/index.tsx
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { z } from "zod";
 import { Container } from "../../../shared/components/Container";
-import { useAuth } from "../../../features/auth/contexts/AuthContext";
-
-const schema = z
-  .object({
-    name: z.string().min(2, "이름은 2자 이상 입력해 주세요"),
-    email: z.string().email("이메일을 확인해 주세요"),
-    password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "비밀번호가 일치하지 않습니다",
-    path: ["confirmPassword"],
-  });
+import { useSignUpForm } from "../../../hooks/useSignUpForm";
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
-  const [form, setForm] = React.useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [errors, setErrors] = React.useState<
-    Partial<Record<keyof typeof form, string>>
-  >({});
-  const [generalError, setGeneralError] = React.useState<string | null>(null);
-  const [loading, setLoading] = React.useState(false);
 
+  // 한글 설명: 회원가입 폼 로직을 관리하는 커스텀 훅 사용
+  const {
+    form,
+    fieldErrors,
+    generalError,
+    successMessage,
+    codeSent,
+    sendingCode,
+    cooldown,
+    signingUp,
+    updateField,
+    sendVerificationCode,
+    signUp,
+  } = useSignUpForm();
+
+  // 한글 설명: 회원가입 폼 제출 핸들러
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setGeneralError(null);
-    const result = schema.safeParse(form);
-    if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
-      setErrors({
-        name: fieldErrors.name?.[0],
-        email: fieldErrors.email?.[0],
-        password: fieldErrors.password?.[0],
-        confirmPassword: fieldErrors.confirmPassword?.[0],
-      });
-      return;
-    }
+    const response = await signUp();
 
-    setErrors({});
-    setLoading(true);
-    try {
-      await signup(result.data);
-      navigate("/", { replace: true });
-    } catch (error) {
-      setGeneralError(
-        error instanceof Error ? error.message : "회원가입에 실패했습니다"
-      );
-    } finally {
-      setLoading(false);
+    // 한글 설명: 회원가입 성공 시 로그인 페이지로 이동
+    if (response) {
+      setTimeout(() => {
+        navigate("/login", { replace: true });
+      }, 2000);
     }
+  };
+
+  // 한글 설명: 인증번호 발송 버튼 클릭 핸들러
+  const handleSendCode = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    sendVerificationCode();
   };
 
   return (
@@ -66,11 +47,10 @@ export const SignupPage: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-semibold text-neutral-900">
-              FUNDIT에 합류하세요
+              MOA에 합류하세요
             </h1>
             <p className="text-sm text-neutral-500">
-              이름과 이메일만으로 간단히 계정을 만들 수 있어요. 가입 후 언제든
-              프로젝트를 후원하거나 개설할 수 있습니다.
+              이메일 인증을 통해 안전하게 계정을 만들 수 있어요
             </p>
           </div>
 
@@ -78,100 +58,134 @@ export const SignupPage: React.FC = () => {
             onSubmit={handleSubmit}
             className="space-y-4 rounded-3xl border border-neutral-200 p-6"
           >
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label
-                  className="text-xs font-medium text-neutral-500"
-                  htmlFor="name"
-                >
-                  이름
-                </label>
-                <input
-                  id="name"
-                  value={form.name}
-                  onChange={(event) =>
-                    setForm({ ...form, name: event.target.value })
-                  }
-                  className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700"
-                  autoComplete="name"
-                  placeholder="홍길동"
-                />
-                {errors.name && (
-                  <p className="text-xs text-red-500">{errors.name}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <label
-                  className="text-xs font-medium text-neutral-500"
-                  htmlFor="email"
-                >
-                  이메일
-                </label>
+            {/* 한글 설명: 이름 입력 필드 */}
+            <div className="space-y-2">
+              <label
+                className="text-xs font-medium text-neutral-500"
+                htmlFor="name"
+              >
+                이름
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={form.name}
+                onChange={(event) => updateField("name", event.target.value)}
+                className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                autoComplete="name"
+                placeholder="홍길동"
+                disabled={signingUp}
+              />
+              {fieldErrors.name && (
+                <p className="text-xs text-red-500">{fieldErrors.name}</p>
+              )}
+            </div>
+
+            {/* 한글 설명: 이메일 입력 필드 및 인증번호 발송 버튼 */}
+            <div className="space-y-2">
+              <label
+                className="text-xs font-medium text-neutral-500"
+                htmlFor="email"
+              >
+                이메일
+              </label>
+              <div className="flex gap-2">
                 <input
                   id="email"
                   type="email"
                   value={form.email}
-                  onChange={(event) =>
-                    setForm({ ...form, email: event.target.value })
-                  }
-                  className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700"
+                  onChange={(event) => updateField("email", event.target.value)}
+                  className="flex-1 rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-900"
                   autoComplete="email"
                   placeholder="name@example.com"
+                  disabled={signingUp || sendingCode}
                 />
-                {errors.email && (
-                  <p className="text-xs text-red-500">{errors.email}</p>
-                )}
+                <button
+                  type="button"
+                  onClick={handleSendCode}
+                  disabled={
+                    sendingCode ||
+                    signingUp ||
+                    cooldown > 0 ||
+                    !form.email.trim()
+                  }
+                  className="whitespace-nowrap rounded-xl border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-900 transition hover:bg-neutral-900 hover:text-white disabled:opacity-50"
+                >
+                  {sendingCode
+                    ? "전송 중..."
+                    : cooldown > 0
+                    ? `${cooldown}초`
+                    : "인증번호 받기"}
+                </button>
               </div>
+              {fieldErrors.email && (
+                <p className="text-xs text-red-500">{fieldErrors.email}</p>
+              )}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label
-                  className="text-xs font-medium text-neutral-500"
-                  htmlFor="password"
-                >
-                  비밀번호
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={form.password}
-                  onChange={(event) =>
-                    setForm({ ...form, password: event.target.value })
-                  }
-                  className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700"
-                  autoComplete="new-password"
-                  placeholder="8자 이상 비밀번호"
-                />
-                {errors.password && (
-                  <p className="text-xs text-red-500">{errors.password}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <label
-                  className="text-xs font-medium text-neutral-500"
-                  htmlFor="confirmPassword"
-                >
-                  비밀번호 확인
-                </label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  value={form.confirmPassword}
-                  onChange={(event) =>
-                    setForm({ ...form, confirmPassword: event.target.value })
-                  }
-                  className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700"
-                  autoComplete="new-password"
-                  placeholder="비밀번호 재입력"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-xs text-red-500">
-                    {errors.confirmPassword}
-                  </p>
-                )}
-              </div>
+            {/* 한글 설명: 인증번호 입력 필드 */}
+            <div className="space-y-2">
+              <label
+                className="text-xs font-medium text-neutral-500"
+                htmlFor="verificationCode"
+              >
+                이메일 인증번호
+              </label>
+              <input
+                id="verificationCode"
+                type="text"
+                value={form.verificationCode}
+                onChange={(event) => {
+                  // 한글 설명: 숫자만 입력 가능, 최대 6자리
+                  const value = event.target.value.replace(/\D/g, "").slice(0, 6);
+                  updateField("verificationCode", value);
+                }}
+                className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                placeholder="6자리 인증번호"
+                disabled={signingUp || !codeSent}
+                maxLength={6}
+              />
+              {fieldErrors.verificationCode && (
+                <p className="text-xs text-red-500">
+                  {fieldErrors.verificationCode}
+                </p>
+              )}
+              {codeSent && !fieldErrors.verificationCode && (
+                <p className="text-xs text-green-600">
+                  인증번호가 전송되었습니다. 이메일을 확인해주세요.
+                </p>
+              )}
             </div>
+
+            {/* 한글 설명: 비밀번호 입력 필드 */}
+            <div className="space-y-2">
+              <label
+                className="text-xs font-medium text-neutral-500"
+                htmlFor="password"
+              >
+                비밀번호
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={form.password}
+                onChange={(event) => updateField("password", event.target.value)}
+                className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                autoComplete="new-password"
+                placeholder="8자 이상, 영문 대소문자와 숫자 포함"
+                disabled={signingUp}
+              />
+              {fieldErrors.password && (
+                <p className="text-xs text-red-500">{fieldErrors.password}</p>
+              )}
+            </div>
+
+            {/* 한글 설명: 성공/에러 메시지 표시 */}
+            {successMessage && (
+              <div className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-600">
+                {successMessage}
+              </div>
+            )}
 
             {generalError && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
@@ -179,12 +193,13 @@ export const SignupPage: React.FC = () => {
               </div>
             )}
 
+            {/* 한글 설명: 회원가입 버튼 */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={signingUp}
               className="w-full rounded-full border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-900 transition hover:bg-neutral-900 hover:text-white disabled:opacity-50"
             >
-              {loading ? "가입 중..." : "회원가입"}
+              {signingUp ? "가입 중..." : "회원가입"}
             </button>
           </form>
 

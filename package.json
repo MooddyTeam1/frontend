@@ -7,11 +7,18 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "echo 'Dependencies installed successfully'"
   },
   "dependencies": {
+    "@toast-ui/editor": "^3.2.2",
+    "@toast-ui/react-editor": "^3.2.3",
+    "@tosspayments/tosspayments-sdk": "^2.4.1",
     "axios": "^1.13.1",
+    "browser-image-compression": "^2.0.2",
+    "chart.js": "^4.5.1",
     "react": "^19.1.1",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5",
     "zod": "^4.1.12",
