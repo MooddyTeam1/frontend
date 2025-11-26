@@ -147,11 +147,11 @@ export const MonthlyReportPage: React.FC = () => {
     // 한글 설명: 실제로는 API 호출하여 PDF 생성 및 다운로드
   };
 
-  // 한글 설명: 그래프 최대값 계산
-  const maxFunding =
-    dailyFundingData.length > 0
-      ? Math.max(...dailyFundingData.map((d) => d.funding))
-      : 0;
+  // 한글 설명: 그래프 최대값 계산 (현재 미사용)
+  // const maxFunding =
+  //   dailyFundingData.length > 0
+  //     ? Math.max(...dailyFundingData.map((d) => d.funding))
+  //     : 0;
 
   return (
     <div className="w-full">
@@ -359,7 +359,7 @@ export const MonthlyReportPage: React.FC = () => {
                             const index = context.dataIndex;
                             const data = dailyFundingData[index];
                             return [
-                              `펀딩 금액: ${currencyKRW(context.parsed.y)}`,
+                              `펀딩 금액: ${currencyKRW(context.parsed.y ?? 0)}`,
                               `프로젝트: ${data.projectCount}개`,
                               `주문: ${data.orderCount}건`,
                             ];

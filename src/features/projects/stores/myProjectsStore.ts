@@ -19,8 +19,19 @@ import type {
   ProjectStatus,
   TempProjectRequestDTO,
   TempProjectResponseDTO,
-  MyProjectStatusItemDTO,
 } from "../types";
+
+// 한글 설명: MyProjectStatusItemDTO는 myProjectsService에서 정의되지만 export되지 않음
+// 임시로 타입을 직접 정의
+type MyProjectStatusItemDTO = {
+  id: string;
+  projectId: string;
+  title: string;
+  summary?: string | null;
+  imgUrl?: string | null;
+  projectLifecycleStatus?: string;
+  projectReviewStatus?: string;
+};
 import { resolveImageUrl } from "../../../shared/utils/image";
 
 // 한글 설명: 스토어 내부에서 사용하는 프로젝트 상태 맵 표현
@@ -68,26 +79,26 @@ const normalizeLifecycleStatus = (
   }
 };
 
-// 한글 설명: API 상태 조합을 크리에이터 UI에서 사용하는 ProjectStatus로 변환
-const resolveProjectStatus = (
-  lifecycle: ProjectLifecycleStatus,
-  review: ProjectReviewStatus
-): ProjectStatus => {
-  if (review === "REJECTED") return "REJECTED";
-  if (review === "DRAFT") return "DRAFT";
-  if (review === "REVIEW") return "REVIEW";
-  if (review === "APPROVED") {
-    if (lifecycle === "SCHEDULED") return "SCHEDULED";
-    if (lifecycle === "LIVE") return "LIVE";
-    if (lifecycle === "ENDED") return "ENDED";
-    return "APPROVED";
-  }
-  // review === "NONE"
-  if (lifecycle === "LIVE") return "LIVE";
-  if (lifecycle === "SCHEDULED") return "SCHEDULED";
-  if (lifecycle === "ENDED") return "ENDED";
-  return "APPROVED";
-};
+// 한글 설명: API 상태 조합을 크리에이터 UI에서 사용하는 ProjectStatus로 변환 (현재 미사용)
+// const resolveProjectStatus = (
+//   lifecycle: ProjectLifecycleStatus,
+//   review: ProjectReviewStatus
+// ): ProjectStatus => {
+//   if (review === "REJECTED") return "REJECTED";
+//   if (review === "DRAFT") return "DRAFT";
+//   if (review === "REVIEW") return "REVIEW";
+//   if (review === "APPROVED") {
+//     if (lifecycle === "SCHEDULED") return "SCHEDULED";
+//     if (lifecycle === "LIVE") return "LIVE";
+//     if (lifecycle === "ENDED") return "ENDED";
+//     return "APPROVED";
+//   }
+//   // review === "NONE"
+//   if (lifecycle === "LIVE") return "LIVE";
+//   if (lifecycle === "SCHEDULED") return "SCHEDULED";
+//   if (lifecycle === "ENDED") return "ENDED";
+//   return "APPROVED";
+// };
 
 // 한글 설명: 상태별 초기값 생성 유틸리티
 const createEmptyStatusMap = (): ProjectStatusMap => ({
@@ -163,13 +174,18 @@ export const useMyProjectsStore = create<MyProjectsStoreState>((set, get) => ({
     try {
       const summary = await fetchProjectSummary();
       const counts = createEmptyCountMap();
-      counts.DRAFT = summary.draftCount ?? 0;
-      counts.REVIEW = summary.reviewCount ?? 0;
-      counts.APPROVED = summary.approvedCount ?? 0;
-      counts.SCHEDULED = summary.scheduledCount ?? 0;
-      counts.LIVE = summary.liveCount ?? 0;
-      counts.ENDED = summary.endCount ?? 0;
-      counts.REJECTED = summary.rejectedCount ?? 0;
+      // 한글 설명: 백엔드 응답 구조에 따라 byStatus 또는 개별 필드 사용
+      if (summary.byStatus) {
+        Object.assign(counts, summary.byStatus);
+      } else {
+        counts.DRAFT = summary.draftCount ?? 0;
+        counts.REVIEW = summary.reviewCount ?? 0;
+        counts.APPROVED = summary.approvedCount ?? 0;
+        counts.SCHEDULED = summary.scheduledCount ?? 0;
+        counts.LIVE = summary.liveCount ?? 0;
+        counts.ENDED = summary.endCount ?? 0;
+        counts.REJECTED = summary.rejectedCount ?? 0;
+      }
 
       set({
         countsByStatus: counts,

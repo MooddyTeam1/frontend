@@ -13,7 +13,6 @@ import type {
   TempProjectRequestDTO,
   TempProjectResponseDTO,
   ProjectSummaryResponseDTO,
-  MyProjectStatusResponseDTO,
   ProjectBookmarkResponseDTO,
 } from "../types";
 import {

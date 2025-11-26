@@ -231,12 +231,12 @@ const toReadableError = (error: unknown): Error => {
   return new Error("메이커 프로필 조회 중 알 수 없는 오류가 발생했습니다.");
 };
 
-// 한글 설명: 메이커 팔로우 응답 타입
-type MakerFollowResponse = {
-  makerId: string;
-  isFollowing: boolean;
-  followerCount: number;
-};
+// 한글 설명: 메이커 팔로우 응답 타입 (현재 미사용)
+// type MakerFollowResponse = {
+//   makerId: string;
+//   isFollowing: boolean;
+//   followerCount: number;
+// };
 
 export const makerService = {
   // 한글 설명: 로그인한 사용자의 메이커 프로필을 조회한다.
@@ -381,14 +381,14 @@ export const makerService = {
   },
 
   // 한글 설명: 로그인한 사용자의 정산 계좌 정보를 조회한다.
-  // 한글 설명: GET /profile/me/maker/settlement 엔드포인트 호출
+  // 한글 설명: GET /api/profile/me/maker/settlement 엔드포인트 호출
   getSettlementProfile: async (): Promise<MakerSettlementProfileDTO | null> => {
     try {
-      console.log("[makerService] GET /profile/me/maker/settlement 요청");
+      console.log("[makerService] GET /api/profile/me/maker/settlement 요청");
       const { data } = await api.get<MakerSettlementProfileDTO>(
-        "/profile/me/maker/settlement"
+        "/api/profile/me/maker/settlement"
       );
-      console.log("[makerService] GET /profile/me/maker/settlement 응답", data);
+      console.log("[makerService] GET /api/profile/me/maker/settlement 응답", data);
       return data;
     } catch (error) {
       if (isAxiosError(error)) {
@@ -406,20 +406,20 @@ export const makerService = {
   },
 
   // 한글 설명: 로그인한 사용자의 정산 계좌 정보를 생성 또는 업데이트한다.
-  // 한글 설명: PUT /profile/me/maker/settlement 엔드포인트 호출
+  // 한글 설명: PUT /api/profile/me/maker/settlement 엔드포인트 호출
   updateSettlementProfile: async (
     updateRequest: MakerSettlementProfileUpdateRequest
   ): Promise<MakerSettlementProfileDTO> => {
     try {
       console.log(
-        "[makerService] PUT /profile/me/maker/settlement 요청",
+        "[makerService] PUT /api/profile/me/maker/settlement 요청",
         updateRequest
       );
       const { data } = await api.put<MakerSettlementProfileDTO>(
-        "/profile/me/maker/settlement",
+        "/api/profile/me/maker/settlement",
         updateRequest
       );
-      console.log("[makerService] PUT /profile/me/maker/settlement 응답", data);
+      console.log("[makerService] PUT /api/profile/me/maker/settlement 응답", data);
       return data;
     } catch (error) {
       if (isAxiosError(error)) {

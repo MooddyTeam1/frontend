@@ -1,5 +1,5 @@
 // 한글 설명: 배송 관리 콘솔 컴포넌트
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react"; // 한글 설명: useMemo는 현재 미사용
 import { currencyKRW } from "../../../../../shared/utils/format";
 import {
   fetchShipments,
@@ -7,7 +7,7 @@ import {
   updateShipmentStatus,
   bulkUpdateShipmentStatus,
   updateTrackingInfo,
-  bulkUploadTracking,
+  // bulkUploadTracking, // 한글 설명: 현재 미사용
   updateShipmentMemo,
   exportShipments,
   sendShipmentNotification,

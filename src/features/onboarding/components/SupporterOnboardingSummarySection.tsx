@@ -17,7 +17,7 @@ import {
   PROJECT_STYLE_OPTIONS,
   BUDGET_RANGE_OPTIONS,
   FUNDING_EXPERIENCE_OPTIONS,
-  ACQUISITION_CHANNEL_OPTIONS,
+  // ACQUISITION_CHANNEL_OPTIONS, // 한글 설명: 현재 미사용
 } from "../types/supporterOnboarding";
 
 // 한글 설명: 서포터 온보딩 요약 섹션 컴포넌트

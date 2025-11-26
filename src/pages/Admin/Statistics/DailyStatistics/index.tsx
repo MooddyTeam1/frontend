@@ -124,11 +124,11 @@ export const DailyStatisticsPage: React.FC = () => {
       }))
     : [];
 
-  // 한글 설명: 시간대별 그래프 최대값
-  const maxHourlyAmount =
-    hourlyPaymentData.length > 0
-      ? Math.max(...hourlyPaymentData.map((d) => d.amount))
-      : 0;
+  // 한글 설명: 시간대별 그래프 최대값 (현재 미사용)
+  // const maxHourlyAmount =
+  //   hourlyPaymentData.length > 0
+  //     ? Math.max(...hourlyPaymentData.map((d) => d.amount))
+  //     : 0;
 
   return (
     <div className="w-full">
@@ -491,7 +491,7 @@ export const DailyStatisticsPage: React.FC = () => {
                         callbacks: {
                           label: (context) => {
                             if (context.datasetIndex === 0) {
-                              return `결제 금액: ${currencyKRW(context.parsed.y)}`;
+                              return `결제 금액: ${currencyKRW(context.parsed.y ?? 0)}`;
                             } else if (context.datasetIndex === 1) {
                               return `결제 성공: ${context.parsed.y}건`;
                             } else {

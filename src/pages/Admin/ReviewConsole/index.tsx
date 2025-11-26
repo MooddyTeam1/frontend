@@ -60,7 +60,8 @@ export const ReviewConsolePage: React.FC = () => {
   const [selectedProject, setSelectedProject] =
     useState<AdminProjectReviewDTO | null>(null);
   const [detail, setDetail] = useState<AdminProjectDetailDTO | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  // 한글 설명: detailLoading은 현재 미사용
+  // const [detailLoading, setDetailLoading] = useState(false);
 
   // 한글 설명: 반려 사유/프리셋/체크리스트 저장 토글 상태
   const [reasonPreset, setReasonPreset] = useState<string>("");
@@ -105,15 +106,12 @@ export const ReviewConsolePage: React.FC = () => {
 
   // 한글 설명: 프로젝트 상세 조회
   const loadDetail = async (projectId: string) => {
-    setDetailLoading(true);
     try {
       const data = await fetchAdminProjectDetail(projectId);
       setDetail(data);
     } catch (fetchError) {
       console.error("프로젝트 상세 조회 실패:", fetchError);
       setError("프로젝트 상세 정보를 불러오지 못했습니다.");
-    } finally {
-      setDetailLoading(false);
     }
   };
 

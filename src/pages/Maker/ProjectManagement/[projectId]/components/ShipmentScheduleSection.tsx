@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import {
   updateShipmentSchedule,
-  fetchShipmentSummary,
+  // fetchShipmentSummary, // 한글 설명: 현재 미사용
 } from "../../../../../features/maker/projectManagement/api/shipmentService";
 import type { ShipmentSummaryDTO } from "../../../../../features/maker/projectManagement/types/shipment";
 

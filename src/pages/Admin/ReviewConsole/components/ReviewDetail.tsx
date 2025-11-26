@@ -10,7 +10,8 @@ import type {
   AdminMakerProfileDTO,
 } from "../../../../features/admin/types";
 import { fetchAdminMakerProfile } from "../../../../features/admin/api/adminProjectsService";
-import type { RewardDisclosure } from "../../../../features/creator/types/rewardDisclosure";
+// 한글 설명: RewardDisclosure는 현재 미사용
+// import type { RewardDisclosure } from "../../../../features/creator/types/rewardDisclosure";
 import { REWARD_CATEGORY_LABELS } from "../../../../features/creator/types/rewardDisclosure";
 
 interface ReviewDetailProps {
@@ -71,7 +72,7 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
   onPresetChange,
   reasonText,
   onReasonTextChange,
-  onScrollToAction,
+  // onScrollToAction, // 한글 설명: 현재 미사용
   onRejectClick,
   onApproveClick,
   isProcessing,
@@ -80,7 +81,8 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
   const actionRef = useRef<HTMLDivElement | null>(null);
   const [memoHighlight, setMemoHighlight] = useState(false);
   const [actionHighlight, setActionHighlight] = useState(false);
-  const [presetOpen, setPresetOpen] = useState(false);
+  // 한글 설명: presetOpen은 현재 미사용
+  // const [presetOpen, setPresetOpen] = useState(false);
   const [accordionOpen, setAccordionOpen] = useState<string[]>([]);
   const [makerProfile, setMakerProfile] = useState<AdminMakerProfileDTO | null>(
     null
@@ -92,7 +94,6 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
 
   const handleScrollToReject = () => {
     actionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    setPresetOpen(true);
     setMemoHighlight(true);
     setTimeout(() => setMemoHighlight(false), 2000);
   };
@@ -793,7 +794,7 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
                                 <div>
                                   <span className="font-medium text-neutral-700">카테고리:</span>{" "}
                                   <span className="text-neutral-600">
-                                    {REWARD_CATEGORY_LABELS[r.disclosure.category] || r.disclosure.category}
+                                    {REWARD_CATEGORY_LABELS[r.disclosure.category as keyof typeof REWARD_CATEGORY_LABELS] || r.disclosure.category}
                                   </span>
                                 </div>
                                 {/* 한글 설명: 공통 정보고시 */}
@@ -920,7 +921,6 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
             reasonText={reasonText}
             onReasonTextChange={onReasonTextChange}
             highlight={memoHighlight}
-            onPresetOpenChange={setPresetOpen}
           />
 
           {/* 액션 영역 */}

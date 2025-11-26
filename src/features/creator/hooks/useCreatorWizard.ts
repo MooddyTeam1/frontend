@@ -868,8 +868,9 @@ export const useCreatorWizard = (options?: CreatorWizardOptions) => {
           JSON.stringify(requestPayload.rewards, null, 2)
         );
         const response = await saveTempProjectApi(requestPayload);
-        setRemoteProjectId(response.projectId);
-        persistDraft("DRAFT", response.projectId);
+        const projectId = response.projectId || response.id; // 한글 설명: projectId 또는 id 사용
+        setRemoteProjectId(projectId);
+        persistDraft("DRAFT", projectId);
         alert(
           "초안이 서버에 저장됐어요. 마이페이지 > 내 프로젝트에서 확인할 수 있어요."
         );
@@ -879,10 +880,11 @@ export const useCreatorWizard = (options?: CreatorWizardOptions) => {
           "[CreatorWizard] 임시 저장 수정 요청 페이로드",
           updatePayload
         );
-        console.log(
-          "[CreatorWizard] 리워드 정보 확인:",
-          JSON.stringify(updatePayload.rewards, null, 2)
-        );
+        // 한글 설명: TempProjectRequestDTO에는 rewards가 없으므로 제거
+        // console.log(
+        //   "[CreatorWizard] 리워드 정보 확인:",
+        //   JSON.stringify(updatePayload.rewards, null, 2)
+        // );
         await updateTempProjectApi(remoteProjectId, updatePayload);
         persistDraft("DRAFT", remoteProjectId);
         alert(
@@ -937,8 +939,8 @@ export const useCreatorWizard = (options?: CreatorWizardOptions) => {
         requestPayload,
         remoteProjectId
       );
-      setRemoteProjectId(response.project);
-      persistDraft("REVIEW", response.project);
+      setRemoteProjectId(response.projectId);
+      persistDraft("REVIEW", response.projectId);
       alert(
         "검토 요청이 접수됐어요. 심사 중에는 주요 정보를 수정할 수 없어요."
       );

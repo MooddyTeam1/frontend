@@ -145,6 +145,8 @@ export interface CreateRewardRequestDTO {
  * 리워드 정보고시 DTO (백엔드 연동용)
  * 프론트엔드의 RewardDisclosure 타입과 매핑됩니다.
  */
+// 한글 설명: rewardDisclosure 타입 import (Windows 대소문자 문제 해결)
+// @ts-ignore - Windows 파일 시스템 대소문자 구분 문제로 인한 임시 처리
 import type { RewardDisclosure } from "../../creator/types/rewardDisclosure";
 export type RewardDisclosureDTO = RewardDisclosure;
 
@@ -354,4 +356,78 @@ export interface ProjectListResponse {
 
 // 한글 설명: CategoryLabel은 shared/utils/categoryMapper에서 import
 import type { CategoryLabel } from "../../shared/utils/categoryMapper";
+
+// ─────────────────────────
+// 임시 저장 및 프로젝트 관리 관련 DTO
+// ─────────────────────────
+
+/**
+ * 임시 저장 프로젝트 요청 DTO
+ */
+export interface TempProjectRequestDTO {
+  title?: string;
+  summary?: string;
+  category?: string;
+  storyMarkdown?: string;
+  coverImageUrl?: string;
+  coverGallery?: string[];
+  goalAmount?: number;
+  startDate?: string;
+  endDate?: string;
+  tags?: string[];
+}
+
+/**
+ * 임시 저장 프로젝트 응답 DTO
+ */
+export interface TempProjectResponseDTO {
+  id: ProjectId;
+  projectId?: ProjectId; // 한글 설명: 백엔드 응답에 projectId가 있을 경우 (id와 동일)
+  title: string;
+  summary: string;
+  category: CategoryLabel;
+  storyMarkdown: string;
+  coverImageUrl: string | null;
+  coverGallery: string[];
+  goalAmount: number;
+  startDate: string | null;
+  endDate: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 프로젝트 생성 요청 응답 DTO
+ */
+export interface CreateProjectRequestResponseDTO {
+  projectId: ProjectId;
+  status: ProjectReviewStatus;
+  message?: string;
+}
+
+/**
+ * 프로젝트 상태 요약 응답 DTO
+ */
+export interface ProjectSummaryResponseDTO {
+  total: number;
+  byStatus?: Record<ProjectStatus, number>; // 한글 설명: 백엔드 응답 구조에 따라 선택적
+  // 한글 설명: 또는 개별 카운트 필드 (백엔드 응답 구조에 따라)
+  draftCount?: number;
+  reviewCount?: number;
+  approvedCount?: number;
+  scheduledCount?: number;
+  liveCount?: number;
+  endCount?: number;
+  rejectedCount?: number;
+}
+
+/**
+ * 프로젝트 북마크 응답 DTO
+ */
+export interface ProjectBookmarkResponseDTO {
+  projectId: ProjectId;
+  bookmarked: boolean;
+  bookmarkCount: number;
+}
 

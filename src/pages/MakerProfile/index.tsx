@@ -450,13 +450,13 @@ export const MakerProjectsRoute: React.FC = () => {
   );
 };
 
-// 한글 설명: 마크다운에서 이미지 URL 추출 유틸 함수
-const extractImageFromMarkdown = (markdown: string): string | null => {
-  // 한글 설명: ![alt](url) 형식의 이미지 마크다운에서 첫 번째 URL 추출
-  const imageRegex = /!\[.*?\]\((.*?)\)/;
-  const match = markdown.match(imageRegex);
-  return match ? match[1] : null;
-};
+// 한글 설명: 마크다운에서 이미지 URL 추출 유틸 함수 (현재 미사용)
+// const extractImageFromMarkdown = (markdown: string): string | null => {
+//   // 한글 설명: ![alt](url) 형식의 이미지 마크다운에서 첫 번째 URL 추출
+//   const imageRegex = /!\[.*?\]\((.*?)\)/;
+//   const match = markdown.match(imageRegex);
+//   return match ? match[1] : null;
+// };
 
 // 한글 설명: 마크다운에서 모든 이미지 URL 추출
 const extractAllImagesFromMarkdown = (markdown: string): string[] => {

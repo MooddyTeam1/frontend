@@ -10,7 +10,7 @@ export const SupporterOnboardingModal: React.FC = () => {
     isModalOpen,
     currentStep,
     isSubmitting,
-    goToStep,
+    // goToStep, // 한글 설명: 현재 미사용
     submitStep1,
     submitStep2,
     skip,

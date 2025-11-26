@@ -76,8 +76,8 @@ export const UserBehaviorPage: React.FC = () => {
     },
   ];
 
-  // 한글 설명: 퍼널 최대값 (그래프 스케일링용)
-  const maxFunnelValue = funnelData.homeListViews;
+  // 한글 설명: 퍼널 최대값 (그래프 스케일링용) (현재 미사용)
+  // const maxFunnelValue = funnelData.homeListViews;
 
   return (
     <div className="w-full">
@@ -217,9 +217,9 @@ export const UserBehaviorPage: React.FC = () => {
                           ];
                           const conversion = conversions[context.dataIndex];
                           if (conversion !== null) {
-                            return `${labels[context.dataIndex]}: ${value.toLocaleString()}명 (전환율: ${conversion.toFixed(1)}%)`;
+                            return `${labels[context.dataIndex]}: ${(value ?? 0).toLocaleString()}명 (전환율: ${conversion.toFixed(1)}%)`;
                           }
-                          return `${labels[context.dataIndex]}: ${value.toLocaleString()}명`;
+                          return `${labels[context.dataIndex]}: ${(value ?? 0).toLocaleString()}명`;
                         },
                       },
                     },

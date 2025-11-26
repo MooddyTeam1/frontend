@@ -1,6 +1,7 @@
 // 한글 설명: 오늘의 테마 배너 컴포넌트
 import React from "react";
-import { Link } from "react-router-dom";
+// 한글 설명: Link는 현재 미사용
+// import { Link } from "react-router-dom";
 
 export const ThemeBanner: React.FC = () => {
   // 한글 설명: TODO - 실제 테마 데이터는 백엔드 API에서 가져올 예정

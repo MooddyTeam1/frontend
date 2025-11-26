@@ -26,6 +26,7 @@ export const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
+  const email = searchParams.get("email") || "";
 
   const [form, setForm] = React.useState({
     newPassword: "",
@@ -39,12 +40,12 @@ export const ResetPasswordPage: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
 
-  // 한글 설명: 토큰이 없으면 에러 표시
+  // 한글 설명: 토큰 또는 이메일이 없으면 에러 표시
   React.useEffect(() => {
-    if (!token) {
+    if (!token || !email) {
       setGeneralError("유효하지 않은 링크입니다.");
     }
-  }, [token]);
+  }, [token, email]);
 
   // 한글 설명: 비밀번호 재설정 요청
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -52,7 +53,7 @@ export const ResetPasswordPage: React.FC = () => {
     setGeneralError(null);
     setErrors({});
 
-    if (!token) {
+    if (!token || !email) {
       setGeneralError("유효하지 않은 링크입니다.");
       return;
     }
@@ -69,8 +70,9 @@ export const ResetPasswordPage: React.FC = () => {
 
     setLoading(true);
     try {
-      await authService.resetPassword({
-        token,
+      await authService.resetPasswordByCode({
+        email: email, // 한글 설명: 이메일 필수 파라미터
+        code: token,
         newPassword: result.data.newPassword,
       });
       setSuccess(true);
@@ -188,7 +190,7 @@ export const ResetPasswordPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={loading || !token}
+              disabled={loading || !token || !email}
               className="w-full rounded-full border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-900 transition hover:bg-neutral-900 hover:text-white disabled:opacity-50"
             >
               {loading ? "변경 중..." : "비밀번호 변경"}

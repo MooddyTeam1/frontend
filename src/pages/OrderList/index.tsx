@@ -7,7 +7,7 @@ import { Container } from "../../shared/components/Container";
 import { getOrders } from "../../services/api";
 import type {
   OrderSummaryResponseDTO,
-  OrderListResponseDTO,
+  // OrderListResponseDTO, // 한글 설명: 현재 미사용
 } from "../../services/api";
 import { currencyKRW } from "../../shared/utils/format";
 

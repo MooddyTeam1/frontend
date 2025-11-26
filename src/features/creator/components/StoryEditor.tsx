@@ -39,18 +39,18 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
     }
   };
 
-  // 한글 설명: 템플릿 삽입 헬퍼 함수
-  const insertTemplate = (template: string) => {
-    if (editorRef.current) {
-      const editor = editorRef.current.getInstance();
-      const currentMarkdown = editor.getMarkdown();
-      const newMarkdown = currentMarkdown
-        ? `${currentMarkdown}\n\n${template}`
-        : template;
-      editor.setMarkdown(newMarkdown);
-      onChange(newMarkdown);
-    }
-  };
+  // 한글 설명: 템플릿 삽입 헬퍼 함수 (현재 미사용)
+  // const insertTemplate = (template: string) => {
+  //   if (editorRef.current) {
+  //     const editor = editorRef.current.getInstance();
+  //     const currentMarkdown = editor.getMarkdown();
+  //     const newMarkdown = currentMarkdown
+  //       ? `${currentMarkdown}\n\n${template}`
+  //       : template;
+  //     editor.setMarkdown(newMarkdown);
+  //     onChange(newMarkdown);
+  //   }
+  // };
 
   // 한글 설명: 이미지 압축 유틸 함수
   const compressImage = async (file: File): Promise<File> => {

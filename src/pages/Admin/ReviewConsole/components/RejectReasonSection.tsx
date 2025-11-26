@@ -21,10 +21,10 @@ export const RejectReasonSection: React.FC<RejectReasonSectionProps> = ({
   onPresetOpenChange,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [presetOpen, setPresetOpen] = React.useState(false);
+  // 한글 설명: presetOpen은 현재 미사용
+  // const [presetOpen, setPresetOpen] = React.useState(false);
 
   const handlePresetChange = (value: string) => {
-    setPresetOpen(false);
     onPresetChange(value);
     onReasonTextChange(value);
     if (onPresetOpenChange) {

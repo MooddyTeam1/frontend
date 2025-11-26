@@ -286,18 +286,18 @@ export const SummaryDashboardPage: React.FC = () => {
       }))
     : [];
 
-  // 한글 설명: 그래프 최대값 계산 (y축 스케일링용)
-  const maxValue = trendData.length > 0
-    ? Math.max(
-        ...trendData.map((d) =>
-          chartOption === "funding"
-            ? d.funding
-            : chartOption === "projects"
-              ? d.projects
-              : d.backers
-        )
-      )
-    : 0;
+  // 한글 설명: 그래프 최대값 계산 (y축 스케일링용) (현재 미사용)
+  // const maxValue = trendData.length > 0
+  //   ? Math.max(
+  //       ...trendData.map((d) =>
+  //         chartOption === "funding"
+  //           ? d.funding
+  //           : chartOption === "projects"
+  //             ? d.projects
+  //             : d.backers
+  //       )
+  //     )
+  //   : 0;
 
   // 한글 설명: 로딩 상태
   if (loading) {
@@ -486,11 +486,11 @@ export const SummaryDashboardPage: React.FC = () => {
                           label: (context) => {
                             const value = context.parsed.y;
                             if (chartOption === "funding") {
-                              return `펀딩 금액: ${currencyKRW(value)}`;
+                              return `펀딩 금액: ${currencyKRW(value ?? 0)}`;
                             } else if (chartOption === "projects") {
-                              return `프로젝트 수: ${value}개`;
+                              return `프로젝트 수: ${value ?? 0}개`;
                             } else {
-                              return `후원 건수: ${value.toLocaleString()}건`;
+                              return `후원 건수: ${(value ?? 0).toLocaleString()}건`;
                             }
                           },
                         },

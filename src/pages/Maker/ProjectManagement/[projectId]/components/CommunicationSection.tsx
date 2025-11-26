@@ -2,9 +2,9 @@
 import React from "react";
 import {
   createProjectNotice,
-  updateProjectNotice,
+  // updateProjectNotice, // 한글 설명: 현재 미사용
   deleteProjectNotice,
-  answerProjectQnA,
+  // answerProjectQnA, // 한글 설명: 현재 미사용
 } from "../../../../../features/maker/projectManagement/api/projectManagementService";
 import type {
   ProjectNoticeDTO,
@@ -22,13 +22,16 @@ type CommunicationSectionProps = {
 export const CommunicationSection: React.FC<CommunicationSectionProps> = ({
   projectId,
   notices: initialNotices,
-  qnas: initialQnas,
+  qnas: initialQnas, // 한글 설명: 현재 미사용 (파라미터는 유지하되 사용하지 않음)
   onRefresh,
 }) => {
-  const [notices, setNotices] = React.useState(initialNotices);
-  const [qnas, setQnas] = React.useState(initialQnas);
+  // 한글 설명: initialQnas는 사용하지 않지만 props로 받아야 하므로 void로 처리
+  void initialQnas;
+  // 한글 설명: qnas는 현재 미사용
+  const [notices] = React.useState(initialNotices); // 한글 설명: setNotices는 현재 미사용
+  // const [qnas, setQnas] = React.useState(initialQnas);
   const [showNoticeForm, setShowNoticeForm] = React.useState(false);
-  const [editingNotice, setEditingNotice] = React.useState<ProjectNoticeDTO | null>(null);
+  const [, setEditingNotice] = React.useState<ProjectNoticeDTO | null>(null); // 한글 설명: editingNotice는 현재 미사용
   const [noticeForm, setNoticeForm] = React.useState({
     title: "",
     content: "",
@@ -66,16 +69,17 @@ export const CommunicationSection: React.FC<CommunicationSectionProps> = ({
     }
   };
 
-  const handleAnswerQnA = async (qnaId: number, answer: string) => {
-    try {
-      await answerProjectQnA(projectId, qnaId, answer);
-      alert("답변이 작성되었습니다.");
-      onRefresh();
-    } catch (error) {
-      console.error("답변 작성 실패:", error);
-      alert("답변 작성에 실패했습니다.");
-    }
-  };
+  // 한글 설명: handleAnswerQnA는 현재 미사용
+  // const handleAnswerQnA = async (qnaId: number, answer: string) => {
+  //   try {
+  //     await answerProjectQnA(projectId, qnaId, answer);
+  //     alert("답변이 작성되었습니다.");
+  //     onRefresh();
+  //   } catch (error) {
+  //     console.error("답변 작성 실패:", error);
+  //     alert("답변 작성에 실패했습니다.");
+  //   }
+  // };
 
   return (
     <div className="space-y-6">
@@ -170,7 +174,7 @@ export const CommunicationSection: React.FC<CommunicationSectionProps> = ({
         )}
 
         <div className="space-y-3">
-          {notices.map((notice) => (
+          {notices.map((notice: ProjectNoticeDTO) => (
             <div
               key={notice.id}
               className="rounded-xl border border-neutral-200 bg-white p-4"
