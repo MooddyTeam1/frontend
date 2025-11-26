@@ -21,20 +21,14 @@ type OrdersSectionProps = {
   projectId: number;
 };
 
-const PAYMENT_STATUS_LABELS: Record<
-  OrderItemDTO["paymentStatus"],
-  string
-> = {
+const PAYMENT_STATUS_LABELS: Record<OrderItemDTO["paymentStatus"], string> = {
   SUCCESS: "결제완료",
   CANCELLED: "취소됨",
   REFUNDED: "환불됨",
   PENDING: "대기중",
 };
 
-const DELIVERY_STATUS_LABELS: Record<
-  OrderItemDTO["deliveryStatus"],
-  string
-> = {
+const DELIVERY_STATUS_LABELS: Record<OrderItemDTO["deliveryStatus"], string> = {
   PREPARING: "준비중",
   SHIPPED: "발송완료",
   DELIVERED: "전달완료",
@@ -59,22 +53,22 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
         // if (USE_MOCK_DATA) {
         //   // 한글 설명: Mock 데이터 사용
         //   await new Promise((resolve) => setTimeout(resolve, 300)); // 로딩 시뮬레이션
-        //   
+        //
         //   // 한글 설명: 필터 적용
         //   let filteredOrders = [...mockOrders];
-        //   
+        //
         //   if (filter.paymentStatus) {
         //     filteredOrders = filteredOrders.filter(
         //       (o) => o.paymentStatus === filter.paymentStatus
         //     );
         //   }
-        //   
+        //
         //   if (filter.deliveryStatus) {
         //     filteredOrders = filteredOrders.filter(
         //       (o) => o.deliveryStatus === filter.deliveryStatus
         //     );
         //   }
-        //   
+        //
         //   setOrders(filteredOrders);
         // } else {
         // 한글 설명: 실제 API 호출
@@ -170,7 +164,7 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
         <div className="py-10 text-center text-sm text-neutral-500">
           로딩 중...
         </div>
-      ) : orders.length === 0 ? (
+      ) : orders?.length === 0 ? (
         <div className="py-10 text-center text-sm text-neutral-500">
           주문이 없습니다.
         </div>
@@ -182,9 +176,7 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
                 <th className="px-3 py-2 text-left text-neutral-500">
                   주문번호
                 </th>
-                <th className="px-3 py-2 text-left text-neutral-500">
-                  서포터
-                </th>
+                <th className="px-3 py-2 text-left text-neutral-500">서포터</th>
                 <th className="px-3 py-2 text-left text-neutral-500">리워드</th>
                 <th className="px-3 py-2 text-right text-neutral-500">금액</th>
                 <th className="px-3 py-2 text-center text-neutral-500">
@@ -197,7 +189,7 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {orders?.map((order) => (
                 <tr key={order.orderId} className="border-b border-neutral-100">
                   <td className="px-3 py-3 font-mono text-neutral-700">
                     {order.orderCode}
@@ -252,4 +244,3 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
     </div>
   );
 };
-
