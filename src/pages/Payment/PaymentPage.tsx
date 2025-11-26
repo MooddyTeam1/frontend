@@ -30,9 +30,13 @@ export const PaymentPage: React.FC = () => {
   // 한글 설명: 주문 로드 에러
   const [orderError, setOrderError] = useState<string | null>(null);
 
+  // ============================================
+  // Mock 결제 모드 사용 중단 - 주석처리됨
+  // ============================================
   // 한글 설명: 클라이언트 키가 없거나 기본값인 경우 Mock 결제 모드
   // 주의: 결제창 SDK 방식은 위젯 키 없이도 일반 클라이언트 키로 사용 가능
-  const isMockMode = !clientKey || clientKey === "test_ck_xxxxxxxxx";
+  // const isMockMode = !clientKey || clientKey === "test_ck_xxxxxxxxx";
+  const isMockMode = false; // Mock 모드 비활성화
 
   // 한글 설명: 주문 상세 조회 (location.state에 주문 정보가 없을 때 orderId로 조회)
   useEffect(() => {
@@ -144,18 +148,21 @@ export const PaymentPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, searchParams]); // 한글 설명: order가 있으면 조회하지 않으므로 의존성에서 제외
 
+  // ============================================
+  // Mock 결제 기능 사용 중단 - 주석처리됨
+  // ============================================
   // 한글 설명: Mock 결제 (토스 위젯 없이 테스트)
-  const handleMockPayment = async () => {
-    if (!order) return;
+  // const handleMockPayment = async () => {
+  //   if (!order) return;
 
-    // 한글 설명: Mock 결제 승인을 위해 결제 성공 페이지로 직접 이동
-    // 주의: 토스가 리다이렉트할 때 orderId 파라미터에는 orderCode가 들어감
-    const orderCode = order.summary?.orderCode || "";
-    const totalAmount = order.summary?.totalAmount || 0;
-    const mockPaymentKey = `mock_payment_${Date.now()}`;
-    const successUrl = `/payment/success?paymentKey=${mockPaymentKey}&orderId=${orderCode}&amount=${totalAmount}`;
-    navigate(successUrl);
-  };
+  //   // 한글 설명: Mock 결제 승인을 위해 결제 성공 페이지로 직접 이동
+  //   // 주의: 토스가 리다이렉트할 때 orderId 파라미터에는 orderCode가 들어감
+  //   const orderCode = order.summary?.orderCode || "";
+  //   const totalAmount = order.summary?.totalAmount || 0;
+  //   const mockPaymentKey = `mock_payment_${Date.now()}`;
+  //   const successUrl = `/payment/success?paymentKey=${mockPaymentKey}&orderId=${orderCode}&amount=${totalAmount}`;
+  //   navigate(successUrl);
+  // };
 
   // 한글 설명: 결제 요청 (토스페이먼츠) - 결제창 SDK 방식 사용
   const handlePayment = async () => {
@@ -229,32 +236,35 @@ export const PaymentPage: React.FC = () => {
     }
   };
 
+  // ============================================
+  // Mock 모드 디버깅 로그 사용 중단 - 주석처리됨
+  // ============================================
   // 한글 설명: 디버깅을 위한 Mock 모드 상태 로그
-  useEffect(() => {
-    if (!order) return;
+  // useEffect(() => {
+  //   if (!order) return;
 
-    console.log("🔍 결제 모드 상태 체크:");
-    console.log("  - clientKey 존재:", !!clientKey);
-    console.log("  - isMockMode:", isMockMode);
-    if (isMockMode) {
-      console.log(
-        "⚠️ Mock 모드로 실행 중입니다. 토스페이먼츠 클라이언트 키가 설정되지 않았습니다."
-      );
-      if (!clientKey) {
-        console.log("  원인: 클라이언트 키가 없습니다");
-      } else if (clientKey === "test_ck_xxxxxxxxx") {
-        console.log("  원인: 기본값 클라이언트 키입니다");
-      }
-      console.log(
-        "💡 해결 방법: .env 파일에 VITE_TOSS_CLIENT_KEY를 설정하세요"
-      );
-    } else {
-      console.log(
-        "✅ 정상 모드로 실행 중입니다. 결제하기 버튼을 클릭하면 결제창이 열립니다."
-      );
-      console.log("  - 결제창 SDK 방식 사용 (위젯 키 불필요)");
-    }
-  }, [order, isMockMode]);
+  //   console.log("🔍 결제 모드 상태 체크:");
+  //   console.log("  - clientKey 존재:", !!clientKey);
+  //   console.log("  - isMockMode:", isMockMode);
+  //   if (isMockMode) {
+  //     console.log(
+  //       "⚠️ Mock 모드로 실행 중입니다. 토스페이먼츠 클라이언트 키가 설정되지 않았습니다."
+  //     );
+  //     if (!clientKey) {
+  //       console.log("  원인: 클라이언트 키가 없습니다");
+  //     } else if (clientKey === "test_ck_xxxxxxxxx") {
+  //       console.log("  원인: 기본값 클라이언트 키입니다");
+  //     }
+  //     console.log(
+  //       "💡 해결 방법: .env 파일에 VITE_TOSS_CLIENT_KEY를 설정하세요"
+  //     );
+  //   } else {
+  //     console.log(
+  //       "✅ 정상 모드로 실행 중입니다. 결제하기 버튼을 클릭하면 결제창이 열립니다."
+  //     );
+  //     console.log("  - 결제창 SDK 방식 사용 (위젯 키 불필요)");
+  //   }
+  // }, [order, isMockMode]);
 
   // 한글 설명: 주문 정보 로딩 중
   if (loadingOrder) {
@@ -336,8 +346,11 @@ export const PaymentPage: React.FC = () => {
           </div>
         </section>
 
+        {/* ============================================ */}
+        {/* Mock 모드 안내 UI 사용 중단 - 주석처리됨 */}
+        {/* ============================================ */}
         {/* 한글 설명: Mock 모드 안내 */}
-        {isMockMode && (
+        {/* {isMockMode && (
           <div className="space-y-3 rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-xs text-yellow-800">
             <p className="font-semibold">🧪 Mock 결제 모드</p>
             <p className="text-yellow-700">
@@ -367,13 +380,16 @@ export const PaymentPage: React.FC = () => {
               </ol>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* 한글 설명: 결제창 SDK 방식은 위젯 렌더링이 필요 없음 */}
         {/* 결제하기 버튼을 클릭하면 바로 결제창 팝업이 열림 */}
 
         {/* 한글 설명: 결제 버튼 */}
-        {isMockMode ? (
+        {/* ============================================ */}
+        {/* Mock 결제 버튼 사용 중단 - 주석처리됨 */}
+        {/* ============================================ */}
+        {/* {isMockMode ? (
           <button
             onClick={handleMockPayment}
             className="w-full rounded-full border border-neutral-900 bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-neutral-800"
@@ -381,17 +397,17 @@ export const PaymentPage: React.FC = () => {
             🧪 Mock 결제하기 (
             {currencyKRW(order.summary?.totalAmount || 0)})
           </button>
-        ) : (
-          <button
-            onClick={handlePayment}
-            disabled={isProcessing}
-            className="w-full rounded-full border border-neutral-900 bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed"
-          >
-            {isProcessing
-              ? "결제 처리 중..."
-              : `${currencyKRW(order.summary?.totalAmount || 0)} 결제하기`}
-          </button>
-        )}
+        ) : ( */}
+        <button
+          onClick={handlePayment}
+          disabled={isProcessing}
+          className="w-full rounded-full border border-neutral-900 bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed"
+        >
+          {isProcessing
+            ? "결제 처리 중..."
+            : `${currencyKRW(order.summary?.totalAmount || 0)} 결제하기`}
+        </button>
+        {/* )} */}
       </div>
     </Container>
   );

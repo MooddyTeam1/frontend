@@ -12,15 +12,21 @@ import type {
   MakerProjectListItemDTO,
   ProjectSummaryStatsDTO,
 } from "../../../features/maker/projectManagement/types";
-import {
-  mockProjectList,
-  mockSummaryStats,
-} from "../../../features/maker/projectManagement/mockData";
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// import {
+//   mockProjectList,
+//   mockSummaryStats,
+// } from "../../../features/maker/projectManagement/mockData";
 import { currencyKRW } from "../../../shared/utils/format";
 
 // 한글 설명: Mock API 사용 여부 (개발 중 확인용)
 // 실제 백엔드 API 연결 시 false로 설정
-const USE_MOCK_DATA = false;
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// const USE_MOCK_DATA = false;
 
 // 한글 설명: 상태별 배지 색상 매핑
 const STATUS_BADGE_COLORS: Record<MakerProjectStatus, string> = {
@@ -62,65 +68,68 @@ export const MakerProjectManagementPage: React.FC = () => {
     async function fetchData() {
       setLoading(true);
       try {
-        if (USE_MOCK_DATA) {
-          // 한글 설명: Mock 데이터 사용
-          await new Promise((resolve) => setTimeout(resolve, 500)); // 로딩 시뮬레이션
+        // ============================================
+        // Mock 데이터 사용 중단 - 주석처리됨
+        // ============================================
+        // if (USE_MOCK_DATA) {
+        //   // 한글 설명: Mock 데이터 사용
+        //   await new Promise((resolve) => setTimeout(resolve, 500)); // 로딩 시뮬레이션
 
-          // 한글 설명: 필터링 및 정렬 적용
-          let filteredProjects = [...mockProjectList];
+        //   // 한글 설명: 필터링 및 정렬 적용
+        //   let filteredProjects = [...mockProjectList];
 
-          // 상태 필터
-          if (statusFilter !== "ALL") {
-            filteredProjects = filteredProjects.filter(
-              (p) => p.status === statusFilter
-            );
-          }
+        //   // 상태 필터
+        //   if (statusFilter !== "ALL") {
+        //     filteredProjects = filteredProjects.filter(
+        //       (p) => p.status === statusFilter
+        //     );
+        //   }
 
-          // 정렬
-          filteredProjects.sort((a, b) => {
-            switch (sortBy) {
-              case "recent":
-                return (
-                  new Date(b.lastModifiedAt).getTime() -
-                  new Date(a.lastModifiedAt).getTime()
-                );
-              case "startDate":
-                return (a.daysLeft ?? 999) - (b.daysLeft ?? 999);
-              case "raised":
-                return b.currentAmount - a.currentAmount;
-              case "deadline":
-                return (a.daysLeft ?? 999) - (b.daysLeft ?? 999);
-              default:
-                return 0;
-            }
-          });
+        //   // 정렬
+        //   filteredProjects.sort((a, b) => {
+        //     switch (sortBy) {
+        //       case "recent":
+        //         return (
+        //           new Date(b.lastModifiedAt).getTime() -
+        //           new Date(a.lastModifiedAt).getTime()
+        //         );
+        //       case "startDate":
+        //         return (a.daysLeft ?? 999) - (b.daysLeft ?? 999);
+        //       case "raised":
+        //         return b.currentAmount - a.currentAmount;
+        //       case "deadline":
+        //         return (a.daysLeft ?? 999) - (b.daysLeft ?? 999);
+        //       default:
+        //         return 0;
+        //     }
+        //   });
 
-          // 페이지네이션
-          const startIndex = (page - 1) * 12;
-          const endIndex = startIndex + 12;
-          const paginatedProjects = filteredProjects.slice(
-            startIndex,
-            endIndex
-          );
+        //   // 페이지네이션
+        //   const startIndex = (page - 1) * 12;
+        //   const endIndex = startIndex + 12;
+        //   const paginatedProjects = filteredProjects.slice(
+        //     startIndex,
+        //     endIndex
+        //   );
 
-          setProjects(paginatedProjects);
-          setTotalPages(Math.ceil(filteredProjects.length / 12));
-          setStats(mockSummaryStats);
-        } else {
-          // 한글 설명: 실제 API 호출
-          const [projectsData, statsData] = await Promise.all([
-            getMakerProjects({
-              status: statusFilter,
-              sortBy,
-              page,
-              pageSize: 12,
-            }),
-            getProjectSummaryStats(),
-          ]);
-          setProjects(projectsData.projects);
-          setTotalPages(projectsData.totalPages);
-          setStats(statsData);
-        }
+        //   setProjects(paginatedProjects);
+        //   setTotalPages(Math.ceil(filteredProjects.length / 12));
+        //   setStats(mockSummaryStats);
+        // } else {
+        // 한글 설명: 실제 API 호출
+        const [projectsData, statsData] = await Promise.all([
+          getMakerProjects({
+            status: statusFilter,
+            sortBy,
+            page,
+            pageSize: 12,
+          }),
+          getProjectSummaryStats(),
+        ]);
+        setProjects(projectsData.projects);
+        setTotalPages(projectsData.totalPages);
+        setStats(statsData);
+        // }
       } catch (error) {
         console.error("프로젝트 목록 조회 실패:", error);
         // 한글 설명: 에러 상세 정보 로깅

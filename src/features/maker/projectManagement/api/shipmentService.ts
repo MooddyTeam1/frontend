@@ -270,19 +270,22 @@ export const sendShipmentNotification = async (
 export const fetchShipmentStatistics = async (
   projectId: number
 ): Promise<ShipmentStatisticsDTO> => {
+  // ============================================
+  // Mock 데이터 사용 중단 - 주석처리됨
+  // ============================================
   // 한글 설명: Mock API 사용 여부 (개발 중 확인용)
-  const USE_MOCK_DATA = true;
+  // const USE_MOCK_DATA = true;
 
-  if (USE_MOCK_DATA) {
-    // 한글 설명: Mock 데이터 사용
-    await new Promise((resolve) => setTimeout(resolve, 300)); // 로딩 시뮬레이션
-    const { mockShipmentStatistics } = await import("../mockData/shipmentMockData");
-    console.log(
-      "[shipmentService] GET /api/maker/projects/:projectId/shipments/summary 응답 (Mock)",
-      mockShipmentStatistics
-    );
-    return mockShipmentStatistics;
-  }
+  // if (USE_MOCK_DATA) {
+  //   // 한글 설명: Mock 데이터 사용
+  //   await new Promise((resolve) => setTimeout(resolve, 300)); // 로딩 시뮬레이션
+  //   const { mockShipmentStatistics } = await import("../mockData/shipmentMockData");
+  //   console.log(
+  //     "[shipmentService] GET /api/maker/projects/:projectId/shipments/summary 응답 (Mock)",
+  //     mockShipmentStatistics
+  //   );
+  //   return mockShipmentStatistics;
+  // }
 
   console.log(
     "[shipmentService] GET /api/maker/projects/:projectId/shipments/summary 요청",

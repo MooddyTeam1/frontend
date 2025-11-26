@@ -5,11 +5,17 @@ import {
   exportProjectOrders,
 } from "../../../../../features/maker/projectManagement/api/projectManagementService";
 import type { OrderItemDTO } from "../../../../../features/maker/projectManagement/types";
-import { mockOrders } from "../../../../../features/maker/projectManagement/mockData";
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// import { mockOrders } from "../../../../../features/maker/projectManagement/mockData";
 import { currencyKRW } from "../../../../../shared/utils/format";
 
 // 한글 설명: Mock API 사용 여부 (개발 중 확인용)
-const USE_MOCK_DATA = true;
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// const USE_MOCK_DATA = true;
 
 type OrdersSectionProps = {
   projectId: number;
@@ -47,35 +53,38 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
     async function fetchOrders() {
       setLoading(true);
       try {
-        if (USE_MOCK_DATA) {
-          // 한글 설명: Mock 데이터 사용
-          await new Promise((resolve) => setTimeout(resolve, 300)); // 로딩 시뮬레이션
-          
-          // 한글 설명: 필터 적용
-          let filteredOrders = [...mockOrders];
-          
-          if (filter.paymentStatus) {
-            filteredOrders = filteredOrders.filter(
-              (o) => o.paymentStatus === filter.paymentStatus
-            );
-          }
-          
-          if (filter.deliveryStatus) {
-            filteredOrders = filteredOrders.filter(
-              (o) => o.deliveryStatus === filter.deliveryStatus
-            );
-          }
-          
-          setOrders(filteredOrders);
-        } else {
-          // 한글 설명: 실제 API 호출
-          const data = await getProjectOrders(projectId, {
-            ...filter,
-            page: 1,
-            pageSize: 50,
-          });
-          setOrders(data.orders);
-        }
+        // ============================================
+        // Mock 데이터 사용 중단 - 주석처리됨
+        // ============================================
+        // if (USE_MOCK_DATA) {
+        //   // 한글 설명: Mock 데이터 사용
+        //   await new Promise((resolve) => setTimeout(resolve, 300)); // 로딩 시뮬레이션
+        //   
+        //   // 한글 설명: 필터 적용
+        //   let filteredOrders = [...mockOrders];
+        //   
+        //   if (filter.paymentStatus) {
+        //     filteredOrders = filteredOrders.filter(
+        //       (o) => o.paymentStatus === filter.paymentStatus
+        //     );
+        //   }
+        //   
+        //   if (filter.deliveryStatus) {
+        //     filteredOrders = filteredOrders.filter(
+        //       (o) => o.deliveryStatus === filter.deliveryStatus
+        //     );
+        //   }
+        //   
+        //   setOrders(filteredOrders);
+        // } else {
+        // 한글 설명: 실제 API 호출
+        const data = await getProjectOrders(projectId, {
+          ...filter,
+          page: 1,
+          pageSize: 50,
+        });
+        setOrders(data.orders);
+        // }
       } catch (error) {
         console.error("주문 목록 조회 실패:", error);
         alert("주문 목록을 불러오는데 실패했습니다.");

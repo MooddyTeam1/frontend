@@ -54,7 +54,10 @@ if (import.meta.env.DEV) {
   console.log("🔧 API 설정:", {
     mode: import.meta.env.MODE,
     baseURL: api.defaults.baseURL,
-    useMockApi: import.meta.env.VITE_USE_MOCK_API === "true",
+    // ============================================
+    // Mock API 사용 중단 - 주석처리됨
+    // ============================================
+    // useMockApi: import.meta.env.VITE_USE_MOCK_API === "true",
   });
 }
 
@@ -308,7 +311,10 @@ export interface PaymentResponseDTO {
 }
 
 // 한글 설명: Mock API 사용 여부 (서버가 없을 때 테스트용)
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === "true";
+// ============================================
+// Mock API 사용 중단 - 주석처리됨
+// ============================================
+// const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === "true";
 
 // 한글 설명: 주문 생성 API
 // 백엔드: POST /api/orders
@@ -316,23 +322,30 @@ const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === "true";
 export const createOrder = async (
   orderData: CreateOrderRequestDTO
 ): Promise<OrderDetailResponseDTO> => {
-  if (USE_MOCK_API) {
-    // 한글 설명: Mock API 사용
-    const { createOrder: createOrderMock } = await import("./apiMock");
-    return createOrderMock(orderData);
-  }
+  // ============================================
+  // Mock API 사용 중단 - 주석처리됨
+  // ============================================
+  // if (USE_MOCK_API) {
+  //   // 한글 설명: Mock API 사용
+  //   const { createOrder: createOrderMock } = await import("./apiMock");
+  //   return createOrderMock(orderData);
+  // }
 
   // 한글 설명: 실제 API 호출
   try {
     const response = await api.post<OrderDetailResponseDTO>("/api/orders", orderData);
     return response.data;
   } catch (error: unknown) {
-    // 한글 설명: API 호출 실패 시 Mock API로 fallback
+    // ============================================
+    // Mock API fallback 중단 - 주석처리됨
+    // ============================================
+    // 한글 설명: API 호출 실패 시 에러를 그대로 throw
     const errorMessage =
       error instanceof Error ? error.message : "알 수 없는 오류";
-    console.warn("⚠️ API 호출 실패, Mock API로 자동 전환:", errorMessage);
-    const { createOrder: createOrderMock } = await import("./apiMock");
-    return createOrderMock(orderData);
+    console.error("❌ API 호출 실패:", errorMessage);
+    throw error;
+    // const { createOrder: createOrderMock } = await import("./apiMock");
+    // return createOrderMock(orderData);
   }
 };
 
@@ -365,12 +378,15 @@ export const getOrders = async (
   page: number = 0,
   size: number = 20
 ): Promise<OrderListResponseDTO> => {
-  if (USE_MOCK_API) {
-    // 한글 설명: Mock API 사용
-    console.log("[getOrders] Mock API 사용");
-    const { getOrders: getOrdersMock } = await import("./apiMock");
-    return getOrdersMock(page, size);
-  }
+  // ============================================
+  // Mock API 사용 중단 - 주석처리됨
+  // ============================================
+  // if (USE_MOCK_API) {
+  //   // 한글 설명: Mock API 사용
+  //   console.log("[getOrders] Mock API 사용");
+  //   const { getOrders: getOrdersMock } = await import("./apiMock");
+  //   return getOrdersMock(page, size);
+  // }
 
   // 한글 설명: 실제 API 호출
   console.log("[getOrders] 백엔드 API 호출:", `/api/orders?page=${page}&size=${size}`);
@@ -395,12 +411,15 @@ export const getOrders = async (
 // 권한: USER (본인만 조회 가능)
 // 응답: OrderDetailResponse (summary, shipping, payment, receiptUrl, timeline, items)
 export const getOrder = async (orderId: number): Promise<OrderDetailResponseDTO> => {
-  if (USE_MOCK_API) {
-    // 한글 설명: Mock API 사용
-    console.log("[getOrder] Mock API 사용");
-    const { getOrder: getOrderMock } = await import("./apiMock");
-    return getOrderMock(String(orderId));
-  }
+  // ============================================
+  // Mock API 사용 중단 - 주석처리됨
+  // ============================================
+  // if (USE_MOCK_API) {
+  //   // 한글 설명: Mock API 사용
+  //   console.log("[getOrder] Mock API 사용");
+  //   const { getOrder: getOrderMock } = await import("./apiMock");
+  //   return getOrderMock(String(orderId));
+  // }
 
   // 한글 설명: 실제 API 호출
   console.log("[getOrder] 백엔드 API 호출:", `/api/orders/${orderId}`);

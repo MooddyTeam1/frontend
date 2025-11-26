@@ -1,5 +1,9 @@
 // 한글 설명: Mock API 구현 (가이드 스펙에 맞춤)
 // 주의: 실제 백엔드 API가 준비되면 이 Mock API는 사용되지 않습니다
+// ============================================
+// Mock API 사용 중단 - 주석처리됨
+// ============================================
+/*
 import type {
   CreateOrderRequestDTO,
   OrderDetailResponseDTO,
@@ -138,7 +142,6 @@ export const getOrder = async (orderId: string): Promise<OrderDetailResponseDTO>
   throw new Error(`주문을 찾을 수 없습니다: ${orderId}`);
 };
 
-/*
 // 기존 mock 구현은 참고만 가능합니다.
 */
 
