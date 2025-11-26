@@ -70,7 +70,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       <Link
         to={`/projects/${project.id}`}
         onClick={handleClick}
-        className="group flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-900"
+        className="group flex flex-col gap-4 rounded-xl border-2 border-neutral-200 bg-white p-5 shadow-sm transition-all hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/20 hover:scale-[1.02]"
       >
     <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-100">
       {project.coverImageUrl ? (

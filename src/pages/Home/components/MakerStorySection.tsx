@@ -23,7 +23,7 @@ export const MakerStorySection: React.FC = () => {
   ];
 
   return (
-    <section className="border-t border-neutral-200 bg-white py-16">
+    <section className="border-t border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50 to-neutral-100/50 py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h2 className="mb-2 flex items-center gap-2 text-2xl font-semibold text-neutral-900">
@@ -40,7 +40,7 @@ export const MakerStorySection: React.FC = () => {
             <Link
               key={story.id}
               to={`/stories/${story.id}`}
-              className="group flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-900 hover:shadow-md"
+              className="group flex flex-col gap-4 rounded-2xl border border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50/50 to-white p-6 shadow-md transition-all hover:border-neutral-400 hover:shadow-xl hover:scale-[1.02]"
             >
               <div className="flex items-start gap-4">
                 {story.imageUrl ? (

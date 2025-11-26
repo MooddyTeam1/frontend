@@ -29,18 +29,21 @@ export const NewlyUploadedSection: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-12">
-      <div className="mb-4 space-y-2">
+    <section className="relative py-12">
+      {/* 한글 설명: 섹션 배경 그라데이션 */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-50/10 to-transparent pointer-events-none" />
+      <div className="relative">
+      <div className="mb-6 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-neutral-900">
             <span className="text-xl">🆕</span>
-            <span>방금 업로드된 신규 프로젝트</span>
+            <span className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-transparent">방금 업로드된 신규 프로젝트</span>
           </h2>
           <Link
             to="/projects?sort=new"
-            className="text-xs text-neutral-500 hover:text-neutral-900"
+            className="text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-900"
           >
-            최신순 전체 보기
+            최신순 전체 보기 →
           </Link>
         </div>
         <p className="text-sm text-neutral-600">
@@ -68,6 +71,7 @@ export const NewlyUploadedSection: React.FC = () => {
           신규 프로젝트가 없습니다.
         </div>
       )}
+      </div>
     </section>
   );
 };

@@ -218,6 +218,8 @@ export const MakerProjectManagementPage: React.FC = () => {
                   "ALL",
                   "DRAFT",
                   "REVIEW",
+                  "APPROVED",
+                  "SCHEDULED",
                   "LIVE",
                   "ENDED_SUCCESS",
                   "ENDED_FAILED",

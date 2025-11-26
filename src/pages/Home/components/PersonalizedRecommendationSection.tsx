@@ -12,12 +12,15 @@ export const PersonalizedRecommendationSection: React.FC<
   PersonalizedRecommendationSectionProps
 > = ({ projects, userName }) => {
   return (
-    <section className="py-12">
-      <div className="mb-4 space-y-2">
+    <section className="relative py-12">
+      {/* 한글 설명: 섹션 배경 그라데이션 */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-pink-50/10 to-transparent pointer-events-none" />
+      <div className="relative">
+      <div className="mb-6 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-neutral-900">
             <span className="text-xl">🧩</span>
-            <span>당신을 위한 추천</span>
+            <span className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-transparent">당신을 위한 추천</span>
           </h2>
         </div>
         {userName ? (
@@ -48,6 +51,7 @@ export const PersonalizedRecommendationSection: React.FC<
             : "로그인하면 관심사·후원 이력을 기반으로 개인화 추천이 제공될 예정이에요."}
         </div>
       )}
+      </div>
     </section>
   );
 };

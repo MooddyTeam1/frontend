@@ -3,7 +3,7 @@ import React from "react";
 
 export const HowItWorksSection: React.FC = () => {
   return (
-    <section className="border-t border-neutral-200 bg-neutral-50 py-16">
+    <section className="border-t border-neutral-200/50 bg-gradient-to-br from-neutral-100 via-white to-neutral-50 py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h2 className="text-2xl font-semibold text-neutral-900">
@@ -18,9 +18,9 @@ export const HowItWorksSection: React.FC = () => {
               👨‍💻 메이커 관점
             </h3>
             <div className="space-y-4">
-              <div className="rounded-xl border border-neutral-200 bg-white p-6">
+              <div className="rounded-xl border border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50/50 to-white p-6 shadow-md">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-sm font-semibold text-white">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 text-sm font-semibold text-white shadow-md">
                     1
                   </span>
                   <h4 className="font-semibold text-neutral-900">
@@ -31,7 +31,7 @@ export const HowItWorksSection: React.FC = () => {
                   아이디어, 목표 금액, 리워드 구성을 간단히 적어 제출해요.
                 </p>
               </div>
-              <div className="rounded-xl border border-neutral-200 bg-white p-6">
+              <div className="rounded-xl border border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50/50 to-white p-6 shadow-md">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-sm font-semibold text-white">
                     2
@@ -44,7 +44,7 @@ export const HowItWorksSection: React.FC = () => {
                   심사·리뷰를 거쳐, 더 매력적으로 보이도록 가이드를 드려요.
                 </p>
               </div>
-              <div className="rounded-xl border border-neutral-200 bg-white p-6">
+              <div className="rounded-xl border border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50/50 to-white p-6 shadow-md">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-sm font-semibold text-white">
                     3
@@ -67,9 +67,9 @@ export const HowItWorksSection: React.FC = () => {
               👥 서포터 관점
             </h3>
             <div className="space-y-4">
-              <div className="rounded-xl border border-neutral-200 bg-white p-6">
+              <div className="rounded-xl border border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50/50 to-white p-6 shadow-md">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-sm font-semibold text-white">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 text-sm font-semibold text-white shadow-md">
                     1
                   </span>
                   <h4 className="font-semibold text-neutral-900">
@@ -80,7 +80,7 @@ export const HowItWorksSection: React.FC = () => {
                   큐레이션된 프로젝트 목록에서 관심 있는 아이디어를 찾아요.
                 </p>
               </div>
-              <div className="rounded-xl border border-neutral-200 bg-white p-6">
+              <div className="rounded-xl border border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50/50 to-white p-6 shadow-md">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-sm font-semibold text-white">
                     2
@@ -93,7 +93,7 @@ export const HowItWorksSection: React.FC = () => {
                   원하는 리워드를 선택하고 안전하게 결제해요.
                 </p>
               </div>
-              <div className="rounded-xl border border-neutral-200 bg-white p-6">
+              <div className="rounded-xl border border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50/50 to-white p-6 shadow-md">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-sm font-semibold text-white">
                     3

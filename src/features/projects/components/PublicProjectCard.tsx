@@ -65,7 +65,7 @@ export const PublicProjectCard: React.FC<PublicProjectCardProps> = ({
   return (
     <Link
       to={`/projects/${project.id}`}
-      className="group flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-900"
+      className="group flex flex-col gap-4 rounded-xl border-2 border-neutral-200 bg-white p-5 shadow-sm transition-all hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/20 hover:scale-[1.02]"
     >
       <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-100">
         {project.coverImageUrl ? (
@@ -118,9 +118,9 @@ export const PublicProjectCard: React.FC<PublicProjectCardProps> = ({
                 {project.achievementRate}%
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-neutral-100">
+            <div className="h-2.5 overflow-hidden rounded-full bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100">
               <div
-                className="h-full bg-neutral-900 transition-all"
+                className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all shadow-sm"
                 style={{ width: `${Math.min(project.achievementRate, 100)}%` }}
               />
             </div>
