@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import tailwind from '@tailwindcss/vite'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -32,6 +33,17 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwind()],
     server: {
       ...proxyConfig,
+    },
+    // 한글 설명: 경로 alias 설정 - 긴 상대 경로를 짧게 사용할 수 있도록 함
+    resolve: {
+      alias: {
+        '@shared': path.resolve(__dirname, './src/shared'),
+        '@features': path.resolve(__dirname, './src/features'),
+        '@pages': path.resolve(__dirname, './src/pages'),
+        '@services': path.resolve(__dirname, './src/services'),
+        '@hooks': path.resolve(__dirname, './src/hooks'),
+        '@router': path.resolve(__dirname, './src/router'),
+      },
     },
   }
 })

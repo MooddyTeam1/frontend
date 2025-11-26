@@ -16,6 +16,17 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Path aliases - 한글 설명: 경로 별칭 설정으로 긴 상대 경로를 짧게 사용 */
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["src/shared/*"],
+      "@features/*": ["src/features/*"],
+      "@pages/*": ["src/pages/*"],
+      "@services/*": ["src/services/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@router/*": ["src/router/*"]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
