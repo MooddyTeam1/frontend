@@ -10,7 +10,7 @@ import {
   categoryLabelToEnum,
   PROJECT_STYLE_OPTIONS,
 } from "../types/supporterOnboarding";
-import type { CategoryLabel } from "../../../shared/utils/categoryMapper";
+import type { CategoryLabel } from "../../../shared/utils/categorymapper";
 
 type OnboardingStep1Props = {
   onNext: (payload: SupporterOnboardingStep1Request) => Promise<void>;

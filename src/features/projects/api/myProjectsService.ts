@@ -18,7 +18,7 @@ import type {
 import {
   toCategoryLabel,
   type CategoryEnum,
-} from "../../../shared/utils/categoryMapper";
+} from "../../../shared/utils/categorymapper";
 
 // 한글 설명: API 응답의 리워드 타입 (실제 API 응답 구조)
 type RewardApiResponse = {

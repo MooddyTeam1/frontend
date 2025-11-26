@@ -3,7 +3,7 @@ import {
   createDefaultRewardOptionConfig,
   type RewardOptionConfig,
 } from "../utils/rewardOptions";
-import type { CategoryLabel } from "../../../shared/utils/categoryMapper";
+import type { CategoryLabel } from "../../../shared/utils/categorymapper";
 
 export type ProjectStatus =
   | "DRAFT"

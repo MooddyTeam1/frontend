@@ -355,7 +355,7 @@ export interface ProjectListResponse {
 }
 
 // 한글 설명: CategoryLabel은 shared/utils/categoryMapper에서 import
-import type { CategoryLabel } from "../../shared/utils/categoryMapper";
+import type { CategoryLabel } from "../../shared/utils/categorymapper";
 
 // ─────────────────────────
 // 임시 저장 및 프로젝트 관리 관련 DTO

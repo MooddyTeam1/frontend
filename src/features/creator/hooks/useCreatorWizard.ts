@@ -25,7 +25,7 @@ import {
   toCategoryLabel,
   type CategoryLabel,
   type CategoryEnum,
-} from "../../../shared/utils/categoryMapper";
+} from "../../../shared/utils/categorymapper";
 import { resolveImageUrl } from "../../../shared/utils/image";
 import {
   uploadImage,

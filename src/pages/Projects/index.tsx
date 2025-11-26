@@ -18,7 +18,7 @@ import type { ProjectCategory } from "../../features/projects/types";
 import {
   toCategoryEnum,
   type CategoryLabel,
-} from "../../shared/utils/categoryMapper";
+} from "../../shared/utils/categorymapper";
 
 type SortKey =
   | "popular"
