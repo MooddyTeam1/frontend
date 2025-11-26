@@ -32,7 +32,6 @@ import {
   FUNDING_EXPERIENCE_OPTIONS,
   ACQUISITION_CHANNEL_OPTIONS,
   categoryLabelToEnum,
-  categoryEnumToLabel,
 } from "../../features/onboarding/types/supporterOnboarding";
 
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB

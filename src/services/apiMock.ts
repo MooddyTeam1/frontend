@@ -2,7 +2,6 @@
 // 주의: 실제 백엔드 API가 준비되면 이 Mock API는 사용되지 않습니다
 import type {
   CreateOrderRequestDTO,
-  OrderResponseDTO,
   OrderDetailResponseDTO,
   OrderSummaryResponseDTO,
   OrderListResponseDTO,
@@ -67,7 +66,7 @@ export const createOrder = async (
       confirmedAt: null,
     },
     items: orderData.items.map((item) => ({
-      rewardId: typeof item.rewardId === "string" ? parseInt(item.rewardId, 10) : item.rewardId,
+      rewardId: typeof item.rewardId === "string" ? parseInt(item.rewardId, 10) : (item.rewardId ?? 0),
       rewardName: `리워드 ${item.rewardId}`, // 한글 설명: 실제로는 백엔드에서 리워드 이름 조회
       rewardPrice: 0, // 한글 설명: 실제로는 백엔드에서 리워드 가격 조회
       quantity: item.quantity,
@@ -86,8 +85,6 @@ export const confirmPayment = async (
 ): Promise<PaymentResponseDTO> => {
   // 한글 설명: 실제 API 호출 시뮬레이션을 위한 지연
   await new Promise((resolve) => setTimeout(resolve, 500));
-
-  const paymentId = `payment_${Date.now()}`;
 
   const payment: PaymentResponseDTO = {
     paymentId: Date.now(), // 한글 설명: Mock에서는 타임스탬프를 ID로 사용 (백엔드에서는 Long 타입)

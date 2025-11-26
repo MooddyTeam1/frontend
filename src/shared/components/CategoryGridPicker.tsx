@@ -1,8 +1,7 @@
 import React from "react";
 import {
-  CATEGORY_OPTIONS as LABEL_CATEGORY_OPTIONS,
   type CategoryLabel,
-} from "../utils/categorymapper";
+} from "../utils/categoryMapper";
 
 // 한글 설명: 카테고리 선택을 위한 그리드 모달에서 사용하는 카테고리 정의
 export type CategoryKey = "all" | CategoryLabel;

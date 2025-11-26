@@ -6,6 +6,7 @@ import type {
   ProjectCardResponseDTO,
   MostViewedProjectResponseDTO,
 } from "../../../features/projects/types";
+import { toCategoryLabel } from "../../../shared/utils/categoryMapper";
 
 interface PopularProjectsSectionProps {
   projects: MostViewedProjectResponseDTO[];
@@ -21,7 +22,7 @@ const convertToProjectCard = (
     slug: `project-${project.id}`, // 한글 설명: slug가 없으므로 임시 생성
     title: project.title,
     summary: project.summary ?? "",
-    category: project.category,
+    category: toCategoryLabel(project.category), // 한글 설명: CategoryEnum을 CategoryLabel로 변환
     coverImageUrl: project.coverImageUrl,
     goalAmount: 0, // 한글 설명: MostViewedProjectResponseDTO에는 goalAmount가 없음
     raised: 0, // 한글 설명: MostViewedProjectResponseDTO에는 raised가 없음

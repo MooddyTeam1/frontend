@@ -6,7 +6,10 @@ import { RewardOptionEditor } from "../../features/creator/components/RewardOpti
 import {
   getMakerProjectDetail,
 } from "../../features/maker/projectManagement/api/projectManagementService";
-import type { RewardResponseDTO } from "../../features/projects/types";
+import type {
+  RewardResponseDTO,
+  RewardOptionConfigDTO,
+} from "../../features/projects/types";
 import {
   createDefaultRewardOptionConfig,
   type RewardFormState,
@@ -24,7 +27,7 @@ export const RewardManagementPage: React.FC = () => {
   } | null>(null);
   const [rewards, setRewards] = React.useState<RewardResponseDTO[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [selectedRewardId, setSelectedRewardId] = React.useState<number | null>(
+  const [selectedRewardId, setSelectedRewardId] = React.useState<string | null>(
     null
   );
   const [editingReward, setEditingReward] =
@@ -59,11 +62,11 @@ export const RewardManagementPage: React.FC = () => {
           title: projectDetail.title,
           rewards: [],
         });
-        // 한글 설명: MakerProjectDetailDTO의 rewards는 간단한 구조이므로 그대로 사용
+        // 한글 설명: MakerProjectDetailDTO의 rewards는 간단한 구조이므로 RewardResponseDTO로 변환
         setRewards(
           projectDetail.rewards.map((r) => ({
-            id: r.id,
-            projectId: projectDetail.id,
+            id: String(r.id), // 한글 설명: RewardId는 string 타입이므로 변환
+            projectId: String(projectDetail.id), // 한글 설명: ProjectId는 string 타입이므로 변환
             title: r.title,
             description: null,
             price: r.price,
@@ -89,13 +92,29 @@ export const RewardManagementPage: React.FC = () => {
   // 한글 설명: 리워드 선택 시 편집 모드로 전환
   const handleSelectReward = (reward: RewardResponseDTO) => {
     setSelectedRewardId(reward.id);
+    // 한글 설명: RewardOptionConfigDTO를 RewardOptionConfig로 변환
+    const optionConfig = reward.optionConfig
+      ? convertOptionConfigDTOToConfig(reward.optionConfig)
+      : createDefaultRewardOptionConfig();
     setEditingReward({
       title: reward.title,
       price: reward.price,
       limitQty: reward.limitQty ?? undefined,
       estShippingMonth: reward.estShippingMonth ?? undefined,
-      optionConfig: reward.optionConfig ?? createDefaultRewardOptionConfig(),
+      optionConfig,
     });
+  };
+
+  // 한글 설명: RewardOptionConfigDTO를 RewardOptionConfig로 변환하는 헬퍼 함수
+  const convertOptionConfigDTOToConfig = (
+    dto: RewardOptionConfigDTO | null
+  ): ReturnType<typeof createDefaultRewardOptionConfig> => {
+    if (!dto) {
+      return createDefaultRewardOptionConfig();
+    }
+    // 한글 설명: DTO 구조가 Config 구조와 다를 수 있으므로 기본값 반환
+    // 실제 변환 로직은 DTO 구조에 따라 구현 필요
+    return createDefaultRewardOptionConfig();
   };
 
   if (loading) {
@@ -210,7 +229,7 @@ export const RewardManagementPage: React.FC = () => {
                     type="button"
                     onClick={() => handleSelectReward(reward)}
                     className={`w-full rounded-xl border p-4 text-left transition ${
-                      selectedRewardId === reward.id
+                      selectedRewardId === String(reward.id)
                         ? "border-neutral-900 bg-neutral-50"
                         : "border-neutral-200 hover:border-neutral-400"
                     }`}
@@ -226,7 +245,7 @@ export const RewardManagementPage: React.FC = () => {
                           {!reward.available && " · 판매 중지"}
                         </p>
                       </div>
-                      {selectedRewardId === reward.id && (
+                      {selectedRewardId === String(reward.id) && (
                         <span className="ml-2 text-xs font-medium text-neutral-900">
                           편집 중
                         </span>

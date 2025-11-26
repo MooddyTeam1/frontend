@@ -41,7 +41,7 @@ export async function fetchProjectsByCategory(
   // 한글 설명: 백엔드가 배열을 반환하므로, ProjectListResponse 형태로 변환
   const items = response.data || [];
   return {
-    items: items as any[], // 한글 설명: ProjectListResponseDTO[]를 ProjectCardResponseDTO[]로 변환
+    items: items as unknown as ProjectListResponseDTO[], // 한글 설명: ProjectListResponseDTO[] 타입으로 변환
     total: items.length,
     page: 0,
     pageSize: items.length,
