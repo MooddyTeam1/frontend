@@ -151,6 +151,152 @@ export const ProjectsPage: React.FC = () => {
             }
           );
 
+          if (categoryQuery === "all") {
+            const base = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
+            const toTime = (d: string | null | undefined) => {
+              if (!d) return 0;
+              const t = Date.parse(d as any);
+              return isNaN(t) ? 0 : t;
+            };
+            const stamp = (it: ProjectListResponseDTO) => {
+              const anyIt = it as any;
+              return (
+                toTime(anyIt.liveStartAt) ||
+                toTime(it.startDate as any) ||
+                toTime(it.endDate as any)
+              );
+            };
+            const daysLeft = (endDate: string | null | undefined): number => {
+              if (!endDate) return Number.MAX_SAFE_INTEGER;
+              try {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const end = new Date(endDate);
+                end.setHours(0, 0, 0, 0);
+                const diff = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                return Math.max(diff, 0);
+              } catch {
+                return Number.MAX_SAFE_INTEGER;
+              }
+            };
+            const getRate = (it: ProjectListResponseDTO) => {
+              const anyIt = it as any;
+              const r = (anyIt && anyIt.achievementRate) as number | null | undefined;
+              if (r !== null && r !== undefined) return r as number;
+              const ga = it.goalAmount ?? 0;
+              const rv = it.raised ?? 0;
+              return ga > 0 ? Math.floor((rv * 100) / ga) : 0;
+            };
+
+            let sorted = base;
+            if (sort === "backers") {
+              sorted = [...base].sort((a, b) => (b.backerCount ?? 0) - (a.backerCount ?? 0));
+            } else if (sort === "amount") {
+              sorted = [...base].sort((a, b) => (b.raised ?? 0) - (a.raised ?? 0));
+            } else if (sort === "popular") {
+              sorted = [...base].sort((a, b) => ((b as any).recentViewCount ?? 0) - ((a as any).recentViewCount ?? 0));
+            } else if (sort === "trending") {
+              sorted = [...base].sort((a, b) => ((b as any).trendingScore ?? 0) - ((a as any).trendingScore ?? 0));
+            } else if (sort === "ending_soon") {
+              sorted = [...base].sort((a, b) => daysLeft(a.endDate as any) - daysLeft(b.endDate as any));
+            } else if (sort === "new") {
+              sorted = [...base].sort((a, b) => stamp(b) - stamp(a));
+            } else if (sort === "progress") {
+              sorted = [...base].sort((a, b) => getRate(b) - getRate(a));
+            }
+            setCategoryProjects(sorted);
+            setTotalCount(sorted.length);
+            return;
+          }
+          if (categoryQuery !== "all") {
+            const listResponse = await fetchProjectsByCategory({
+              category,
+            });
+            let arr: ProjectListResponseDTO[] = [];
+            if (
+              listResponse &&
+              listResponse.items &&
+              Array.isArray(listResponse.items)
+            ) {
+              arr = listResponse.items as unknown as ProjectListResponseDTO[];
+            }
+            if (sort === "progress") {
+              const getRate = (it: ProjectListResponseDTO) => {
+                const anyIt = it as any;
+                const r = (anyIt && anyIt.achievementRate) as number | null | undefined;
+                if (r !== null && r !== undefined) return r as number;
+                const ga = it.goalAmount ?? 0;
+                const rv = it.raised ?? 0;
+                return ga > 0 ? Math.floor((rv * 100) / ga) : 0;
+              };
+              arr = [...arr].sort((a, b) => getRate(b) - getRate(a));
+            } else if (sort === "backers") {
+              const allNull = arr.every((it) => it.backerCount == null);
+              if (allNull) {
+                const base = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
+                arr = base.filter((it) => String(it.category) === String(category));
+              }
+              arr = [...arr].sort((a, b) => (b.backerCount ?? 0) - (a.backerCount ?? 0));
+            } else if (sort === "amount") {
+              const allNull = arr.every((it) => it.raised == null);
+              if (allNull) {
+                const base = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
+                arr = base.filter((it) => String(it.category) === String(category));
+              }
+              arr = [...arr].sort((a, b) => (b.raised ?? 0) - (a.raised ?? 0));
+            } else if (sort === "new") {
+              const toTime = (d: string | null | undefined) => {
+                if (!d) return 0;
+                const t = Date.parse(d as any);
+                return isNaN(t) ? 0 : t;
+              };
+              const stamp = (it: ProjectListResponseDTO) => {
+                const anyIt = it as any;
+                return (
+                  toTime(anyIt.liveStartAt) ||
+                  toTime(it.startDate as any) ||
+                  toTime(it.endDate as any)
+                );
+              };
+              arr = [...arr].sort((a, b) => stamp(b) - stamp(a));
+            } else if (sort === "ending_soon") {
+              const daysLeft = (endDate: string | null | undefined): number => {
+                if (!endDate) return Number.MAX_SAFE_INTEGER;
+                try {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const end = new Date(endDate);
+                  end.setHours(0, 0, 0, 0);
+                  const diff = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                  return Math.max(diff, 0);
+                } catch {
+                  return Number.MAX_SAFE_INTEGER;
+                }
+              };
+              arr = [...arr].sort(
+                (a, b) => (daysLeft(a.endDate as any) - daysLeft(b.endDate as any))
+              );
+            }
+            setCategoryProjects(arr);
+            setTotalCount(arr.length);
+            return;
+          }
+
+          if (sort === "backers" && categoryQuery === "all") {
+            const base = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
+            const sorted = [...base].sort((a, b) => (b.backerCount ?? 0) - (a.backerCount ?? 0));
+            setCategoryProjects(sorted);
+            setTotalCount(sorted.length);
+            return;
+          }
+          if (sort === "amount" && categoryQuery === "all") {
+            const base = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
+            const sorted = [...base].sort((a, b) => (b.raised ?? 0) - (a.raised ?? 0));
+            setCategoryProjects(sorted);
+            setTotalCount(sorted.length);
+            return;
+          }
+
           if (sort === "popular") {
             const mostViewed = await fetchMostViewedProjects(60, 30);
             const mapped = mostViewed.map(mapMostViewedToProjectList);
@@ -172,14 +318,37 @@ export const ProjectsPage: React.FC = () => {
           }
           if (sort === "new") {
             const newest = await fetchNewlyUploadedProjects(30);
-            setCategoryProjects(newest);
-            setTotalCount(newest.length);
+            const toTime = (d: string | null | undefined) => {
+              if (!d) return 0;
+              const t = Date.parse(d as any);
+              return isNaN(t) ? 0 : t;
+            };
+            const stamp = (it: ProjectListResponseDTO) => {
+              const anyIt = it as any;
+              return (
+                toTime(anyIt.liveStartAt) ||
+                toTime(it.startDate as any) ||
+                toTime(it.endDate as any)
+              );
+            };
+            const sorted = [...newest].sort((a, b) => stamp(b) - stamp(a));
+            setCategoryProjects(sorted);
+            setTotalCount(sorted.length);
             return;
           }
           if (sort === "progress") {
             const nearGoal = await fetchNearGoalProjects(30);
-            setCategoryProjects(nearGoal);
-            setTotalCount(nearGoal.length);
+            const rate = (it: ProjectListResponseDTO) => {
+              const anyIt = it as any;
+              const r = (anyIt && anyIt.achievementRate) as number | null | undefined;
+              if (r !== null && r !== undefined) return r as number;
+              const ga = it.goalAmount ?? 0;
+              const rv = it.raised ?? 0;
+              return ga > 0 ? Math.floor((rv * 100) / ga) : 0;
+            };
+            const sorted = [...nearGoal].sort((a, b) => rate(b) - rate(a));
+            setCategoryProjects(sorted);
+            setTotalCount(sorted.length);
             return;
           }
           const listResponse = await fetchProjectsByCategory({
@@ -198,6 +367,36 @@ export const ProjectsPage: React.FC = () => {
           }
           // 한글 설명: total이 존재하는지 확인 후 설정 (없으면 0)
           setTotalCount(listResponse?.total ?? 0);
+
+          // 추가 정렬 처리: 달성률/후원자/모금액 (카테고리 모드)
+          try {
+            const itemsArr =
+              listResponse && listResponse.items && Array.isArray(listResponse.items)
+                ? (listResponse.items as unknown as ProjectListResponseDTO[])
+                : [];
+            if (itemsArr.length > 0) {
+              const getRate = (it: ProjectListResponseDTO) => {
+                const anyIt = it as any;
+                const r = (anyIt && anyIt.achievementRate) as number | null | undefined;
+                if (r !== null && r !== undefined) return r as number;
+                const ga = it.goalAmount ?? 0;
+                const rv = it.raised ?? 0;
+                return ga > 0 ? Math.floor((rv * 100) / ga) : 0;
+              };
+              let sorted = itemsArr;
+              if (sort === "progress") {
+                sorted = [...itemsArr].sort((a, b) => getRate(b) - getRate(a));
+              } else if (sort === "backers") {
+                sorted = [...itemsArr].sort((a, b) => (b.backerCount ?? 0) - (a.backerCount ?? 0));
+              } else if (sort === "amount") {
+                sorted = [...itemsArr].sort((a, b) => (b.raised ?? 0) - (a.raised ?? 0));
+              }
+              if (sorted !== itemsArr) {
+                setCategoryProjects(sorted);
+                setTotalCount(sorted.length);
+              }
+            }
+          } catch {}
         }
       } catch (fetchError) {
         console.error("프로젝트 목록 조회 실패", fetchError);

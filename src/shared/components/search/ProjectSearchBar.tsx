@@ -1,10 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import type { CategoryKey } from "../CategoryGridPicker";
-import {
-  getSuggestionsForQuery,
-  upsertSearchQuery,
-} from "../../utils/searchCache";
+import { getSuggestionsForQuery, upsertSearchQuery } from "../../utils/searchCache";
+import { CATEGORY_OPTIONS as CATEGORY_LABELS, toCategoryLabel } from "../../utils/categorymapper";
 
 interface ProjectSearchBarProps {
   initialValue: string;
@@ -91,6 +89,74 @@ export const ProjectSearchBar: React.FC<ProjectSearchBarProps> = ({
 
   const performSearch = (query: string) => {
     const trimmed = query.trim();
+
+    // 1) 카테고리 직접 입력 매칭은 의미성 검사 이전에 우선 처리
+    if (trimmed) {
+      const normalizeCat = (s: string) =>
+        s
+          .normalize("NFC")
+          .replace(/\s+/g, "")
+          .replace(/[\p{P}\p{S}]/gu, ""); // 구분점/기호 제거 (홈·리빙 등)
+
+      const norm = normalizeCat(trimmed);
+
+      // 1) 한글 라벨 매칭 (공백/구분점 제거 후 일치)
+      const labelMap = (CATEGORY_LABELS as readonly string[]).reduce<Record<string, string>>(
+        (acc, label) => {
+          acc[normalizeCat(label)] = label;
+          return acc;
+        },
+        {}
+      );
+      const matchedLabel = labelMap[norm];
+      if (matchedLabel) {
+        const params = new URLSearchParams();
+        params.set("sort", sort);
+        params.set("category", matchedLabel);
+        navigate(`/projects?${params.toString()}`);
+        setOpen(false);
+        return;
+      }
+
+      // 2) 영문 enum/별칭 매칭 (tech/design/food/fashion/beauty/home/homeliving/game/art/publish)
+      const code = norm.toUpperCase();
+      const enums = [
+        "TECH",
+        "DESIGN",
+        "FOOD",
+        "FASHION",
+        "BEAUTY",
+        "HOME_LIVING",
+        "GAME",
+        "ART",
+        "PUBLISH",
+      ] as const;
+      const aliases: Record<string, typeof enums[number]> = {
+        TECH: "TECH",
+        DESIGN: "DESIGN",
+        FOOD: "FOOD",
+        FASHION: "FASHION",
+        BEAUTY: "BEAUTY",
+        HOME: "HOME_LIVING",
+        HOMELIVING: "HOME_LIVING",
+        HOME_LIVING: "HOME_LIVING",
+        GAME: "GAME",
+        ART: "ART",
+        PUBLISH: "PUBLISH",
+        BOOK: "PUBLISH",
+      };
+      const codeKey = aliases[code];
+      if (codeKey) {
+        const label = toCategoryLabel(codeKey as any);
+        const params = new URLSearchParams();
+        params.set("sort", sort);
+        params.set("category", label);
+        navigate(`/projects?${params.toString()}`);
+        setOpen(false);
+        return;
+      }
+    }
+
     if (!trimmed || !isMeaningfulQuery(trimmed)) {
       return;
     }
