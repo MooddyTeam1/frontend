@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Container } from "../../shared/components/Container";
-import { confirmPayment, type PaymentResponseDTO } from "../../services/api";
+import { confirmPayment, type PaymentResponseDTO, type OrderSummaryResponseDTO } from "../../services/api";
 import { currencyKRW } from "../../shared/utils/format";
 
 export const PaymentSuccessPage: React.FC = () => {
@@ -203,15 +203,13 @@ export const PaymentSuccessPage: React.FC = () => {
               try {
                 const { getOrders } = await import("../../services/api");
                 const orderList = await getOrders(0, 100);
-                const foundOrder = orderList.orders.find(
-                  (o) =>
-                    (o.summary?.orderCode ?? o.orderCode) ===
-                    paymentData.orderId
+                const foundOrder = orderList.content.find(
+                  (o: OrderSummaryResponseDTO) =>
+                    o.orderCode === paymentData.orderId
                 );
 
                 if (foundOrder) {
-                  const orderId =
-                    foundOrder.summary?.orderId ?? foundOrder.orderId ?? 0;
+                  const orderId = foundOrder.orderId ?? 0;
                   navigate(`/orders/${orderId}`);
                 } else {
                   // 한글 설명: 주문을 찾을 수 없으면 주문 목록으로 이동

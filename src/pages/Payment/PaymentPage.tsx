@@ -323,7 +323,7 @@ export const PaymentPage: React.FC = () => {
             <div className="flex justify-between">
               <span className="text-neutral-500">주문명</span>
               <span className="font-medium text-neutral-900">
-                {order.summary?.orderName || order.orderName || "주문명 없음"}
+                {order.summary?.orderName || "주문명 없음"}
               </span>
             </div>
             <div className="flex justify-between border-t border-neutral-200 pt-2">
@@ -332,7 +332,7 @@ export const PaymentPage: React.FC = () => {
               </span>
               <span className="text-lg font-semibold text-neutral-900">
                 {currencyKRW(
-                  order.summary?.totalAmount || order.totalAmount || 0
+                  order.summary?.totalAmount || 0
                 )}
               </span>
             </div>

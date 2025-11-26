@@ -6,7 +6,15 @@ import {
   type ProjectStatus,
 } from "../../features/creator/stores/projectStore";
 import { useMyProjectsStore } from "../../features/projects/stores/myProjectsStore";
-import type { MyProjectStatusItemDTO } from "../../features/projects/types";
+// 한글 설명: MyProjectStatusItemDTO는 myProjectsService에서 정의되지만 types.ts에서 export되지 않음
+// 임시로 타입을 직접 정의하거나 myProjectsService에서 import
+import type { ProjectStatus } from "../../features/projects/types";
+type MyProjectStatusItemDTO = {
+  id: string;
+  title: string;
+  status: ProjectStatus;
+  // 한글 설명: 필요한 다른 필드들 추가 가능
+};
 import { statusLabel } from "./index";
 import {
   deleteProjectApi,

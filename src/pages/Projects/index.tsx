@@ -112,7 +112,7 @@ export const ProjectsPage: React.FC = () => {
             listResponse.items &&
             Array.isArray(listResponse.items)
           ) {
-            setCategoryProjects(listResponse.items as ProjectListResponseDTO[]);
+            setCategoryProjects(listResponse.items as unknown as ProjectListResponseDTO[]);
           } else {
             setCategoryProjects([]);
           }

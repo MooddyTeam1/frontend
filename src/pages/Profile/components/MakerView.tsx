@@ -5,6 +5,7 @@ import { useMyProjectsStore } from "../../../features/projects/stores/myProjects
 import { makerService } from "../../../features/maker/api/makerService";
 import type { MakerDTO } from "../../../features/maker/types";
 import { stageMeta, statusLabel } from "../constants";
+import type { ProjectDraft } from "../../../features/creator/stores/projectStore";
 import { SettlementAccountModal } from "./SettlementAccountModal";
 
 interface MakerViewProps {

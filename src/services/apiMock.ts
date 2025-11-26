@@ -42,11 +42,11 @@ export const createOrder = async (
 
   const order: OrderDetailResponseDTO = {
     summary: {
-      orderId,
-      orderCode,
+      orderId: orderId as number,
+      orderCode: String(orderCode),
       projectId: null, // 한글 설명: Mock에서는 null
-      orderName,
-      totalAmount,
+      orderName: String(orderName),
+      totalAmount: Number(totalAmount),
       status: "PENDING",
       deliveryStatus: null,
       createdAt: new Date().toISOString(),
