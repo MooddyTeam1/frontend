@@ -6,7 +6,7 @@ import type {
   ProjectCardResponseDTO,
   MostViewedProjectResponseDTO,
 } from "../../../features/projects/types";
-import { toCategoryLabel } from "../../../shared/utils/categoryMapper";
+import { toCategoryLabel } from "../../../shared/utils/categorymapper";
 
 interface PopularProjectsSectionProps {
   projects: MostViewedProjectResponseDTO[];

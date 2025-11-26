@@ -67,3 +67,4 @@ export function toCategoryEnum(label: CategoryLabel): CategoryEnum {
 export function toCategoryLabel(code: CategoryEnum): CategoryLabel {
   return CATEGORY_ENUM_TO_LABEL[code];
 }
+

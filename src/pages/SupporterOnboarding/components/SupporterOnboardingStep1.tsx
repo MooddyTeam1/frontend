@@ -12,7 +12,7 @@ import {
   categoryLabelToEnum,
   PROJECT_STYLE_OPTIONS,
 } from "../../../features/onboarding/types/supporterOnboarding";
-import type { CategoryLabel } from "../../../shared/utils/categoryMapper";
+import type { CategoryLabel } from "../../../shared/utils/categorymapper";
 
 // 한글 설명: Step1 컴포넌트 Props
 type SupporterOnboardingStep1Props = {

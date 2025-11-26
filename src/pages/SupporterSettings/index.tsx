@@ -12,7 +12,7 @@ import { resolveImageUrl } from "../../shared/utils/image";
 import {
   CATEGORY_OPTIONS,
   type CategoryLabel,
-} from "../../shared/utils/categoryMapper";
+} from "../../shared/utils/categorymapper";
 // 한글 설명: readonly 배열을 mutable 배열로 변환
 const CATEGORY_OPTIONS_MUTABLE = [...CATEGORY_OPTIONS] as CategoryLabel[];
 import {

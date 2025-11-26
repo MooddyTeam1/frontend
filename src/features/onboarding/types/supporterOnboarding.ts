@@ -111,11 +111,11 @@ import {
   CATEGORY_OPTIONS,
   toCategoryEnum,
   toCategoryLabel,
-} from "../../../shared/utils/categoryMapper";
+} from "../../../shared/utils/categorymapper";
 import type {
   CategoryLabel,
   CategoryEnum,
-} from "../../../shared/utils/categoryMapper";
+} from "../../../shared/utils/categorymapper";
 
 // 한글 설명: 카테고리 옵션 (한글 라벨 배열)
 export const CATEGORY_OPTIONS_FOR_ONBOARDING = CATEGORY_OPTIONS;
