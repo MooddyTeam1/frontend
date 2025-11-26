@@ -448,7 +448,7 @@ export const ProjectPerformancePage: React.FC = () => {
                           {project.daysLeft < 0
                             ? "종료"
                             : project.daysLeft === 0
-                              ? "오늘 마감"
+                              ? "D-0"
                               : `D-${project.daysLeft}`}
                         </span>
                         <span className="font-semibold text-red-600">
@@ -498,7 +498,7 @@ export const ProjectPerformancePage: React.FC = () => {
                           {project.daysLeft < 0
                             ? "종료"
                             : project.daysLeft === 0
-                              ? "오늘 마감"
+                              ? "D-0"
                               : `D-${project.daysLeft}`}
                         </span>
                         <span className="font-semibold text-emerald-600">

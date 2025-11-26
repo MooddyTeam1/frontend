@@ -46,7 +46,7 @@ const formatDaysLeft = (
 
   // 한글 설명: undefined나 null이면 "마감" 표시
   if (actualDaysLeft === null || actualDaysLeft === undefined) return "마감";
-  if (actualDaysLeft === 0) return "오늘 마감";
+  if (actualDaysLeft === 0) return "D-0";
   // 한글 설명: 음수면 "마감" 표시
   if (actualDaysLeft < 0) return "마감";
   return `D-${actualDaysLeft}`;

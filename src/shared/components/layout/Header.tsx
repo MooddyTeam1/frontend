@@ -16,6 +16,7 @@ export const Header: React.FC = () => {
 
     // 카테고리 직접 입력 인식 (홈 검색창도 카테고리 전환 지원)
     if (query) {
+      // 원복: 공백 제거 + 구분/기호 제거 (유니코드 속성 사용)
       const normalizeCat = (s: string) =>
         s
           .normalize("NFC")
