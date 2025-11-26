@@ -134,8 +134,55 @@ export const exportProjectOrders = async (
   return data;
 };
 
+// 한글 설명: 공지 목록 조회 (메이커용, 페이지네이션)
+// GET /api/maker/projects/:projectId/news
+export const getProjectNotices = async (
+  projectId: number,
+  params?: {
+    page?: number;
+    size?: number;
+    keyword?: string;
+    from?: string; // YYYY-MM-DD
+    to?: string; // YYYY-MM-DD
+  }
+): Promise<{
+  content: ProjectNoticeDTO[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
+}> => {
+  const queryParams = new URLSearchParams();
+  if (params) {
+    if (params.page !== undefined) {
+      queryParams.append("page", String(params.page));
+    }
+    if (params.size !== undefined) {
+      queryParams.append("size", String(params.size));
+    }
+    if (params.keyword) {
+      queryParams.append("keyword", params.keyword);
+    }
+    if (params.from) {
+      queryParams.append("from", params.from);
+    }
+    if (params.to) {
+      queryParams.append("to", params.to);
+    }
+  }
+
+  const { data } = await api.get<{
+    content: ProjectNoticeDTO[];
+    totalElements: number;
+    totalPages: number;
+    page: number;
+    size: number;
+  }>(`/api/maker/projects/${projectId}/news?${queryParams.toString()}`);
+  return data;
+};
+
 // 한글 설명: 공지 생성
-// POST /api/maker/projects/:projectId/notices
+// POST /api/maker/projects/:projectId/news
 export const createProjectNotice = async (
   projectId: number,
   notice: {
@@ -146,14 +193,14 @@ export const createProjectNotice = async (
   }
 ): Promise<ProjectNoticeDTO> => {
   const { data } = await api.post<ProjectNoticeDTO>(
-    `/api/maker/projects/${projectId}/notices`,
+    `/api/maker/projects/${projectId}/news`,
     notice
   );
   return data;
 };
 
 // 한글 설명: 공지 수정
-// PATCH /api/maker/projects/:projectId/notices/:noticeId
+// PUT /api/maker/projects/:projectId/news/:newsId
 export const updateProjectNotice = async (
   projectId: number,
   noticeId: number,
@@ -164,20 +211,20 @@ export const updateProjectNotice = async (
     notifySupporters: boolean;
   }>
 ): Promise<ProjectNoticeDTO> => {
-  const { data } = await api.patch<ProjectNoticeDTO>(
-    `/api/maker/projects/${projectId}/notices/${noticeId}`,
+  const { data } = await api.put<ProjectNoticeDTO>(
+    `/api/maker/projects/${projectId}/news/${noticeId}`,
     notice
   );
   return data;
 };
 
 // 한글 설명: 공지 삭제
-// DELETE /api/maker/projects/:projectId/notices/:noticeId
+// DELETE /api/maker/projects/:projectId/news/:newsId
 export const deleteProjectNotice = async (
   projectId: number,
   noticeId: number
 ): Promise<void> => {
-  await api.delete(`/api/maker/projects/${projectId}/notices/${noticeId}`);
+  await api.delete(`/api/maker/projects/${projectId}/news/${noticeId}`);
 };
 
 // 한글 설명: Q&A 답변 작성

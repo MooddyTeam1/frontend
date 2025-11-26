@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Container } from "../../../shared/components/Container";
 import { useAuthStore } from "../stores/authStore";
+import { getSupporterOnboardingStatus } from "../../../features/onboarding/api/supporterOnboardingApi";
 
 export const OAuthCallbackPage: React.FC = () => {
   const location = useLocation();
@@ -40,7 +41,27 @@ export const OAuthCallbackPage: React.FC = () => {
       accessToken,
       refreshToken: refreshToken ?? undefined,
     })
-      .then(() => {
+      .then(async (user) => {
+        // 한글 설명: admin 계정이면 /admin으로 리다이렉트
+        if (user.role === "ADMIN") {
+          navigate("/admin", { replace: true });
+          return;
+        }
+
+        // 한글 설명: 일반 사용자는 온보딩 상태 체크
+        try {
+          const onboardingStatus = await getSupporterOnboardingStatus();
+          // 한글 설명: 온보딩이 완료되지 않았으면 온보딩 페이지로 리다이렉트
+          if (onboardingStatus.onboardingStatus !== "COMPLETED") {
+            navigate("/supporter/onboarding", { replace: true });
+            return;
+          }
+        } catch (onboardingError) {
+          // 한글 설명: 온보딩 상태 조회 실패 시에도 홈으로 이동 (에러 무시)
+          console.warn("온보딩 상태 조회 실패:", onboardingError);
+        }
+
+        // 한글 설명: 온보딩 완료 또는 상태 조회 실패 시 홈으로 이동
         navigate("/", { replace: true });
       })
       .catch((error) => {

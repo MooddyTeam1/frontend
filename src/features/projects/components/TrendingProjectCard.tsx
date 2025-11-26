@@ -7,6 +7,8 @@ import type {
   ProjectCategory,
 } from "../types";
 import { PROJECT_CATEGORY_LABELS } from "../types";
+import { currencyKRW, progressPct } from "../../../shared/utils/format";
+import { ProgressBar } from "./ProgressBar";
 
 interface TrendingProjectCardProps {
   project: TrendingProjectResponseDTO | TrendingProjectScoreResponseDTO;
@@ -126,19 +128,64 @@ export const TrendingProjectCard: React.FC<TrendingProjectCardProps> = ({
         </span>
       </div>
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold leading-tight text-neutral-900">
+        <h3 className="text-lg font-semibold leading-tight text-neutral-900 line-clamp-2">
           {project.title}
         </h3>
+        {/* 한글 설명: 메이커 이름 표시 */}
+        {"makerName" in project && project.makerName && (
+          <p className="text-xs text-neutral-400">by {project.makerName}</p>
+        )}
         {project.summary && (
-          <p className="text-sm text-neutral-500">{project.summary}</p>
+          <p className="text-sm text-neutral-500 line-clamp-2">
+            {project.summary}
+          </p>
         )}
       </div>
-      <div className="flex items-center gap-2 text-sm text-neutral-600">
-        {"bookmarkCount" in project ? (
-          <span>찜 {project.bookmarkCount}개</span>
-        ) : "score" in project ? (
-          <span>트렌딩 점수 {project.score}</span>
+      <div className="space-y-3 pt-2">
+        {/* 한글 설명: 진행률 바와 달성률 퍼센트 함께 표시 (goalAmount와 raised가 있는 경우) */}
+        {"goalAmount" in project &&
+        project.goalAmount !== null &&
+        project.goalAmount !== undefined &&
+        project.goalAmount > 0 ? (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-neutral-500">달성률</span>
+              <span className="font-semibold text-neutral-900">
+                {progressPct(
+                  ("raised" in project && project.raised) || 0,
+                  project.goalAmount
+                ).toFixed(1)}%
+              </span>
+            </div>
+            <ProgressBar
+              value={progressPct(
+                ("raised" in project && project.raised) || 0,
+                project.goalAmount
+              )}
+            />
+          </div>
         ) : null}
+        <div className="flex items-center justify-between text-sm text-neutral-600">
+          <span>
+            {/* 한글 설명: 모금액 표시 (raised가 있는 경우) */}
+            {"raised" in project &&
+            project.raised !== null &&
+            project.raised !== undefined &&
+            !isNaN(project.raised)
+              ? currencyKRW(project.raised)
+              : currencyKRW(0)}
+          </span>
+          <span>
+            {/* 한글 설명: 후원자 수 표시 (backerCount가 있는 경우) */}
+            {"backerCount" in project &&
+            project.backerCount !== null &&
+            project.backerCount !== undefined &&
+            !isNaN(project.backerCount) &&
+            project.backerCount > 0
+              ? `${project.backerCount}명 후원`
+              : "0명 후원"}
+          </span>
+        </div>
       </div>
     </Link>
   );

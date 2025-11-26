@@ -17,6 +17,15 @@ interface PopularProjectsSectionProps {
 const convertToProjectCard = (
   project: MostViewedProjectResponseDTO
 ): ProjectCardResponseDTO => {
+  // 한글 설명: 달성률 계산 (goalAmount와 raised가 있는 경우)
+  const achievementRate =
+    project.goalAmount &&
+    project.goalAmount > 0 &&
+    project.raised !== null &&
+    project.raised !== undefined
+      ? Math.min((project.raised / project.goalAmount) * 100, 100)
+      : 0;
+
   return {
     id: String(project.id),
     slug: `project-${project.id}`, // 한글 설명: slug가 없으므로 임시 생성
@@ -24,9 +33,9 @@ const convertToProjectCard = (
     summary: project.summary ?? "",
     category: toCategoryLabel(project.category), // 한글 설명: CategoryEnum을 CategoryLabel로 변환
     coverImageUrl: project.coverImageUrl,
-    goalAmount: 0, // 한글 설명: MostViewedProjectResponseDTO에는 goalAmount가 없음
-    raised: 0, // 한글 설명: MostViewedProjectResponseDTO에는 raised가 없음
-    backerCount: 0, // 한글 설명: MostViewedProjectResponseDTO에는 backerCount가 없음
+    goalAmount: project.goalAmount ?? 0, // 한글 설명: optional 필드 사용
+    raised: project.raised ?? 0, // 한글 설명: optional 필드 사용
+    backerCount: project.backerCount ?? 0, // 한글 설명: optional 필드 사용
     endDate: project.endDate ?? "",
     status:
       project.lifecycleStatus === "LIVE"
@@ -34,9 +43,9 @@ const convertToProjectCard = (
         : project.lifecycleStatus === "SCHEDULED"
           ? "SCHEDULED"
           : "ENDED",
-    progressPercent: 0, // 한글 설명: MostViewedProjectResponseDTO에는 progressPercent가 없음
+    progressPercent: achievementRate, // 한글 설명: 계산된 달성률
     daysRemaining: project.daysLeft,
-    makerName: "", // 한글 설명: MostViewedProjectResponseDTO에는 makerName이 없음
+    makerName: project.makerName ?? "", // 한글 설명: optional 필드 사용
   };
 };
 

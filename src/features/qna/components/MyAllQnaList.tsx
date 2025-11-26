@@ -40,7 +40,9 @@ export const MyAllQnaList: React.FC<MyAllQnaListProps> = ({ projectIds }) => {
       // 한글 설명: 모든 프로젝트에 대해 Q&A 목록 조회
       const qnaPromises = projectIds.map(async (projectId) => {
         try {
-          const qnas = await getMyQnaList(projectId);
+          const response = await getMyQnaList(projectId);
+          // 한글 설명: API 응답이 배열인지 확인하고, 배열이 아니면 빈 배열로 처리
+          const qnas = Array.isArray(response) ? response : [];
           // 한글 설명: 각 Q&A에 프로젝트 ID 추가
           return qnas.map((qna) => ({
             ...qna,

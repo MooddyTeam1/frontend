@@ -551,7 +551,15 @@ export const PledgePage: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveStep("payment")}
+                    onClick={() => {
+                      // 한글 설명: 배송 정보 단계로 넘어갈 때 로그인 체크
+                      if (!user) {
+                        alert("로그인이 필요합니다.");
+                        navigate("/login");
+                        return;
+                      }
+                      setActiveStep("payment");
+                    }}
                     disabled={
                       !address.receiverName.trim() ||
                       !address.receiverPhone.trim() ||

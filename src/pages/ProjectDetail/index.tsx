@@ -15,6 +15,9 @@ import type { ProjectDetailResponseDTO } from "../../features/projects/types";
 import { resolveImageUrl } from "../../shared/utils/image";
 import { StoryViewer } from "../../shared/components/StoryViewer";
 import { ProjectQnaSection } from "../../features/qna/components/ProjectQnaSection";
+import { ProjectNewsSection } from "../../features/maker/projectManagement/components/ProjectNewsSection";
+import { useTracking } from "../../features/tracking/hooks/useTracking";
+import { ProjectRewardsTab } from "../../features/projects/components/ProjectRewardsTab";
 
 type ImageCarouselProps = {
   images: string[];
@@ -154,6 +157,8 @@ export const ProjectDetailPage: React.FC = () => {
   const navigate = useNavigate();
   // 한글 설명: 로그인 상태 확인
   const { user } = useAuthStore();
+  // 한글 설명: 트래킹 훅 사용
+  const { track } = useTracking();
 
   // 한글 설명: 현재 활성화된 탭 상태.
   const [activeTab, setActiveTab] = useState<TabKey>("story");
@@ -186,6 +191,15 @@ export const ProjectDetailPage: React.FC = () => {
         console.log("[ProjectDetailPage] makerName:", detail.makerName);
         console.log("[ProjectDetailPage] isOwner:", detail.isOwner);
         setProject(detail);
+
+        // 한글 설명: 프로젝트 상세 페이지 조회 이벤트 전송 (백엔드에서 자동으로 처리하지만, 프론트에서도 명시적으로 전송)
+        const projectIdNum = parseInt(String(detail.id), 10);
+        if (!isNaN(projectIdNum)) {
+          track("PROJECT_VIEW", projectIdNum, {
+            category: detail.category,
+            status: detail.status,
+          });
+        }
       } catch (fetchError) {
         console.error("프로젝트 상세 조회 실패", fetchError);
         setError("프로젝트 정보를 불러오지 못했습니다.");
@@ -196,7 +210,7 @@ export const ProjectDetailPage: React.FC = () => {
     };
 
     void loadProject();
-  }, [id]);
+  }, [id, track]);
 
   // 한글 설명: project가 변경될 때마다 캐러셀에 사용할 전체 이미지를 계산한다.
   const allImages = useMemo(() => {
@@ -354,19 +368,30 @@ export const ProjectDetailPage: React.FC = () => {
   const handleToggleBookmark = async () => {
     if (!project) return;
 
+    const projectId = parseInt(String(project.id), 10);
+    if (isNaN(projectId)) return;
+
     try {
       // 한글 설명: 낙관적 업데이트를 위해 먼저 로컬 상태를 바꾼다.
       if (isBookmarked) {
         setIsBookmarked(false);
         setBookmarkCount((prev) => Math.max(prev - 1, 0));
-        const res = await unbookmarkProjectApi(Number(project.id));
+        // 한글 설명: 찜 해제 이벤트 전송
+        track("PROJECT_UNBOOKMARK", projectId, {
+          category: project.category,
+        });
+        const res = await unbookmarkProjectApi(projectId);
         // 한글 설명: 서버 응답 기준으로 다시 동기화
         setIsBookmarked(res.bookmarked);
         setBookmarkCount(res.bookmarkCount);
       } else {
         setIsBookmarked(true);
         setBookmarkCount((prev) => prev + 1);
-        const res = await bookmarkProjectApi(Number(project.id));
+        // 한글 설명: 찜하기 이벤트 전송
+        track("PROJECT_BOOKMARK", projectId, {
+          category: project.category,
+        });
+        const res = await bookmarkProjectApi(projectId);
         setIsBookmarked(res.bookmarked);
         setBookmarkCount(res.bookmarkCount);
       }
@@ -427,9 +452,10 @@ export const ProjectDetailPage: React.FC = () => {
         );
       case "updates":
         return (
-          <div className="rounded-3xl border border-neutral-200 p-6 text-sm text-neutral-500">
-            아직 등록된 새소식이 없습니다.
-          </div>
+          <ProjectNewsSection
+            projectId={parseInt(String(project.id), 10) || 0}
+            isOwner={isProjectOwner}
+          />
         );
       case "community":
         return (
@@ -452,10 +478,9 @@ export const ProjectDetailPage: React.FC = () => {
         );
       case "rewards":
         return (
-          <div className="rounded-3xl border border-neutral-200 p-6 text-sm text-neutral-500">
-            리워드 옵션 및 배송 일정은 후원하기 카드에서 개별 리워드를 선택해
-            확인할 수 있습니다.
-          </div>
+          <ProjectRewardsTab
+            projectId={parseInt(String(project.id), 10) || 0}
+          />
         );
       case "qna":
         return (
@@ -585,6 +610,15 @@ export const ProjectDetailPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
+                    // 한글 설명: 공유하기 이벤트 전송
+                    const projectId = parseInt(String(project.id), 10);
+                    if (!isNaN(projectId)) {
+                      track("PROJECT_SHARE", projectId, {
+                        category: project.category,
+                        shareMethod: "clipboard", // 클립보드 복사 방식
+                      });
+                    }
+
                     // 한글 설명: 현재 페이지 URL을 클립보드에 복사
                     const url = window.location.href;
                     navigator.clipboard
@@ -634,7 +668,17 @@ export const ProjectDetailPage: React.FC = () => {
               </div>
               <button
                 disabled={project.status !== "LIVE"}
-                onClick={() => navigate(`/projects/${project.id}/pledge`)}
+                onClick={() => {
+                  // 한글 설명: 후원하기 버튼 클릭 이벤트 전송
+                  const projectId = parseInt(String(project.id), 10);
+                  if (!isNaN(projectId)) {
+                    track("PROJECT_PLEDGE_BUTTON_CLICK", projectId, {
+                      category: project.category,
+                      status: project.status,
+                    });
+                  }
+                  navigate(`/projects/${project.id}/pledge`);
+                }}
                 className={`mt-6 w-full rounded-full border px-4 py-3 text-sm font-medium ${
                   project.status === "LIVE"
                     ? "border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white"

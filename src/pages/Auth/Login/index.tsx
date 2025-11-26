@@ -5,6 +5,7 @@ import { GoogleLoginButton } from "../../../features/auth/components/GoogleLogin
 import { KakaoLoginButton } from "../../../features/auth/components/KakaoLoginButton";
 import { Container } from "../../../shared/components/Container";
 import { useAuthStore } from "../../../features/auth/stores/authStore";
+import { getSupporterOnboardingStatus } from "../../../features/onboarding/api/supporterOnboardingApi";
 
 const schema = z.object({
   email: z.string().email("이메일을 확인해 주세요"),
@@ -40,12 +41,28 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       const loggedInUser = await login(result.data);
-      // 한글 설명: admin 계정이면 /admin으로, 아니면 메인 홈페이지로 리다이렉트
+      
+      // 한글 설명: admin 계정이면 /admin으로 리다이렉트
       if (loggedInUser.role === "ADMIN") {
         navigate("/admin", { replace: true });
-      } else {
-        navigate("/", { replace: true });
+        return;
       }
+
+      // 한글 설명: 일반 사용자는 온보딩 상태 체크
+      try {
+        const onboardingStatus = await getSupporterOnboardingStatus();
+        // 한글 설명: 온보딩이 완료되지 않았으면 온보딩 페이지로 리다이렉트
+        if (onboardingStatus.onboardingStatus !== "COMPLETED") {
+          navigate("/supporter/onboarding", { replace: true });
+          return;
+        }
+      } catch (onboardingError) {
+        // 한글 설명: 온보딩 상태 조회 실패 시에도 홈으로 이동 (에러 무시)
+        console.warn("온보딩 상태 조회 실패:", onboardingError);
+      }
+
+      // 한글 설명: 온보딩 완료 또는 상태 조회 실패 시 홈으로 이동
+      navigate("/", { replace: true });
     } catch (error) {
       setGeneralError(
         error instanceof Error ? error.message : "로그인에 실패했습니다"

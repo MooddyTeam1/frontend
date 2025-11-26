@@ -45,9 +45,12 @@ export const MakerProjectQnaPanel: React.FC<MakerProjectQnaPanelProps> = ({
     try {
       setLoading(true);
       setError(null);
-      const data = await getQnaListForMaker(projectId, {
+      const response = await getQnaListForMaker(projectId, {
         unansweredOnly,
       });
+      
+      // 한글 설명: API 응답이 배열인지 확인하고, 배열이 아니면 빈 배열로 처리
+      const data = Array.isArray(response) ? response : [];
       setQnaList(data);
       
       // 한글 설명: 기존 답변이 있는 Q&A는 답변 입력 상태에 초기값으로 설정

@@ -60,9 +60,12 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
       setLoading(true);
       setError(null);
       // 한글 설명: 소유자인 경우 메이커용 API 사용, 그 외에는 서포터용 API 사용
-      const data = isOwner
+      const response = isOwner
         ? await getQnaListForMaker(projectId)
         : await getMyQnaList(projectId);
+      
+      // 한글 설명: API 응답이 배열인지 확인하고, 배열이 아니면 빈 배열로 처리
+      const data = Array.isArray(response) ? response : [];
       setQnaList(data);
     } catch (err) {
       console.error("Q&A 목록 조회 실패:", err);

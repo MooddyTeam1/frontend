@@ -10,7 +10,7 @@ import { HomePage } from "../pages/Home";
 import { LoginPage } from "../pages/Auth/Login";
 import { ForgotPasswordPage } from "../pages/Auth/ForgotPassword";
 import { EmailVerificationPage } from "../pages/Auth/EmailVerification";
-import { NotificationCenterPage } from "../pages/NotificationCenter";
+import { NotificationsPage } from "../pages/Notifications";
 import { NotFound } from "../pages/NotFound";
 import { PledgePage } from "../pages/Pledge";
 import {
@@ -212,7 +212,7 @@ export const AppRoutes: React.FC = () => (
       path="/notifications"
       element={
         <RequireAuth>
-          <NotificationCenterPage />
+          <NotificationsPage />
         </RequireAuth>
       }
     />

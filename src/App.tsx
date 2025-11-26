@@ -5,11 +5,15 @@ import { Footer } from "./shared/components/layout/Footer";
 import { SupporterOnboardingModal } from "./features/onboarding/components/SupporterOnboardingModal";
 import { useSupporterOnboardingStore } from "./features/onboarding/stores/supporterOnboardingStore";
 import { useAuthStore } from "./features/auth/stores/authStore";
+import { useSseNotification } from "./features/notifications/hooks/useSseNotification";
 
 export const App: React.FC = () => {
   // 한글 설명: 서포터 온보딩 스토어
   const { openIfNeeded } = useSupporterOnboardingStore();
   const { isAuthenticated } = useAuthStore();
+
+  // 한글 설명: SSE를 사용한 실시간 알림 구독
+  useSseNotification();
 
   // 한글 설명: 로그인 후 서포터 온보딩 모달 자동 노출 체크
   useEffect(() => {

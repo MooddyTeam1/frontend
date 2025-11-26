@@ -526,3 +526,24 @@ export interface DailyStatisticsDto {
   projectDetails: ProjectDetailDto[];
   makerDetails: MakerDetailDto[];
 }
+
+// ─────────────────────────
+// Funnel API Types
+// ─────────────────────────
+
+// 한글 설명: 퍼널 단계별 데이터 DTO
+export interface FunnelStepDto {
+  stepName: string; // 단계 이름 (예: "카드 노출", "카드 클릭", "상세 조회" 등)
+  eventType: string; // 이벤트 타입 (예: "PROJECT_CARD_IMPRESSION", "PROJECT_VIEW" 등)
+  count: number; // 이벤트 발생 건수
+  conversionRate: number; // 전환율 (이전 단계 대비 %, 소수점 1자리)
+  dropOffRate: number; // 이탈율 (이전 단계 대비 %, 소수점 1자리)
+}
+
+// 한글 설명: 퍼널 리포트 DTO
+export interface FunnelReportDto {
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  steps: FunnelStepDto[]; // 퍼널 단계별 데이터 (순서대로)
+  totalConversionRate: number; // 전체 전환율 (첫 단계 → 마지막 단계, 소수점 1자리)
+}

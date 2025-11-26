@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../../features/auth/stores/authStore";
+import { NotificationBell } from "../../../features/notifications/components/NotificationBell";
 import { Container } from "../Container";
 
 export const Header: React.FC = () => {
@@ -42,17 +43,12 @@ export const Header: React.FC = () => {
               프로젝트 만들기
             </Link>
             {isAuthenticated && (
-              <>
-                <Link
-                  to="/creator/dashboard"
-                  className="hover:text-neutral-900"
-                >
-                  대시보드
-                </Link>
-                <Link to="/notifications" className="hover:text-neutral-900">
-                  알림
-                </Link>
-              </>
+              <Link
+                to="/creator/dashboard"
+                className="hover:text-neutral-900"
+              >
+                대시보드
+              </Link>
             )}
           </nav>
           <Link
@@ -81,6 +77,8 @@ export const Header: React.FC = () => {
 
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
+              {/* 한글 설명: 알림 벨 아이콘 */}
+              <NotificationBell />
               <Link
                 to={user?.role === "ADMIN" ? "/admin" : "/profile"}
                 className="hidden text-sm text-neutral-600 hover:text-neutral-900 md:inline"

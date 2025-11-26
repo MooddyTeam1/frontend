@@ -94,20 +94,26 @@ export const PublicProjectCard: React.FC<PublicProjectCardProps> = ({
         <span>{daysLeftText}</span>
       </div>
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold leading-tight text-neutral-900">
+        <h3 className="text-lg font-semibold leading-tight text-neutral-900 line-clamp-2">
           {project.title}
         </h3>
+        {/* 한글 설명: 메이커 이름 표시 */}
+        {project.maker && (
+          <p className="text-xs text-neutral-400">by {project.maker}</p>
+        )}
         {project.summary && (
-          <p className="text-sm text-neutral-500">{project.summary}</p>
+          <p className="text-sm text-neutral-500 line-clamp-2">
+            {project.summary}
+          </p>
         )}
       </div>
       <div className="space-y-3 pt-2">
         {/* 한글 설명: 달성률 표시 (achievementRate가 있을 때만) */}
         {project.achievementRate !== null &&
         project.achievementRate !== undefined ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-neutral-500">
-              <span>달성률</span>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-neutral-500">달성률</span>
               <span className="font-semibold text-neutral-900">
                 {project.achievementRate}%
               </span>
@@ -124,9 +130,20 @@ export const PublicProjectCard: React.FC<PublicProjectCardProps> = ({
           project.goalAmount !== null &&
           project.goalAmount !== undefined &&
           project.goalAmount > 0 && (
-            <ProgressBar
-              value={progressPct(project.raised ?? 0, project.goalAmount ?? 0)}
-            />
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-neutral-500">달성률</span>
+                <span className="font-semibold text-neutral-900">
+                  {progressPct(
+                    project.raised ?? 0,
+                    project.goalAmount ?? 0
+                  ).toFixed(1)}%
+                </span>
+              </div>
+              <ProgressBar
+                value={progressPct(project.raised ?? 0, project.goalAmount ?? 0)}
+              />
+            </div>
           )
         )}
         <div className="flex items-center justify-between text-sm text-neutral-600">

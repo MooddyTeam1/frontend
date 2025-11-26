@@ -28,6 +28,7 @@ import { CategoryQuickFilter } from "./components/CategoryQuickFilter";
 import { ThemeBanner } from "./components/ThemeBanner";
 import { HowItWorksSection } from "./components/HowItWorksSection";
 import { MakerStorySection } from "./components/MakerStorySection";
+import { InterestSettingBanner } from "./components/InterestSettingBanner";
 
 export const HomePage: React.FC = () => {
   // 한글 설명: 로그인 상태 확인
@@ -142,6 +143,9 @@ export const HomePage: React.FC = () => {
 
   return (
     <>
+      {/* 한글 설명: 관심사 설정 배너 (헤더 바로 아래, 관심사가 설정되지 않은 경우만 표시) */}
+      <InterestSettingBanner />
+
       {/* 상단 히어로 + 하이라이트 카드 */}
       <section className="border-b border-neutral-200 bg-white">
         <Container>
