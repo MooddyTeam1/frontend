@@ -61,15 +61,17 @@ export const RejectReasonSection: React.FC<RejectReasonSectionProps> = ({
         </div>
       </div>
       <div className="text-sm text-neutral-500 mt-3 mb-1">운영 메모</div>
-      <textarea
-        ref={textareaRef}
-        value={reasonText}
-        onChange={(e) => onReasonTextChange(e.target.value)}
-        placeholder="심사 사유/보완 요청 메모를 남겨주세요."
-        className={`min-h-[120px] w-full rounded-2xl border border-neutral-200 bg-white p-3 text-sm focus:border-neutral-900 focus:outline-none transition ring-2 ${
-          highlight ? "ring-amber-300" : "ring-transparent"
-        }`}
-      />
+      <div className="relative">
+        <textarea
+          ref={textareaRef}
+          value={reasonText}
+          onChange={(e) => onReasonTextChange(e.target.value)}
+          placeholder="심사 사유/보완 요청 메모를 남겨주세요."
+          className={`min-h-[120px] w-full rounded-2xl border border-neutral-200 bg-white p-3 text-sm focus:border-neutral-900 focus:outline-none transition ${
+            highlight ? "ring-2 ring-amber-300" : ""
+          }`}
+        />
+      </div>
     </>
   );
 };

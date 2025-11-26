@@ -10,6 +10,7 @@ import type {
   ProjectNoticeDTO,
   ProjectQnADTO,
 } from "../../../../../features/maker/projectManagement/types";
+import { MakerProjectQnaPanel } from "../../../../../features/qna/components/MakerProjectQnaPanel";
 
 type CommunicationSectionProps = {
   projectId: number;
@@ -217,76 +218,8 @@ export const CommunicationSection: React.FC<CommunicationSectionProps> = ({
         </div>
       </div>
 
-      {/* 한글 설명: Q&A 관리 */}
-      <div className="rounded-3xl border border-neutral-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold text-neutral-900">
-          Q&A / 댓글 관리
-        </h2>
-        <div className="space-y-4">
-          {qnas.map((qna) => (
-            <div
-              key={qna.id}
-              className="rounded-xl border border-neutral-200 bg-white p-4"
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-neutral-900">
-                    {qna.questionerName}
-                  </span>
-                  <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-medium ${
-                      qna.status === "ANSWERED"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {qna.status === "ANSWERED" ? "답변완료" : "미답변"}
-                  </span>
-                </div>
-                <span className="text-xs text-neutral-400">
-                  {new Date(qna.createdAt).toLocaleDateString("ko-KR")}
-                </span>
-              </div>
-              <div className="mb-3 rounded-lg bg-neutral-50 p-3 text-xs text-neutral-700">
-                {qna.question}
-              </div>
-              {qna.answer ? (
-                <div className="rounded-lg bg-blue-50 p-3 text-xs text-neutral-700">
-                  <p className="mb-1 font-medium text-blue-700">답변:</p>
-                  {qna.answer}
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <textarea
-                    placeholder="답변을 입력하세요"
-                    rows={3}
-                    className="flex-1 rounded border border-neutral-200 bg-white px-3 py-2 text-xs"
-                    id={`answer-${qna.id}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const answer = (
-                        document.getElementById(
-                          `answer-${qna.id}`
-                        ) as HTMLTextAreaElement
-                      )?.value;
-                      if (!answer) {
-                        alert("답변을 입력해주세요.");
-                        return;
-                      }
-                      handleAnswerQnA(qna.id, answer);
-                    }}
-                    className="rounded border border-neutral-900 bg-neutral-900 px-4 py-2 text-xs font-medium text-white hover:bg-neutral-800"
-                  >
-                    답변하기
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* 한글 설명: Q&A 관리 - 새로운 API 스펙에 맞춘 컴포넌트 사용 */}
+      <MakerProjectQnaPanel projectId={projectId} />
     </div>
   );
 };

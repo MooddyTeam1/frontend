@@ -9,12 +9,14 @@ type StoryEditorProps = {
   value: string;
   onChange: (next: string) => void;
   maxChars?: number;
+  placeholder?: string; // 한글 설명: placeholder 텍스트 (선택사항)
 };
 
 export const StoryEditor: React.FC<StoryEditorProps> = ({
   value,
   onChange,
   maxChars = 20000,
+  placeholder,
 }) => {
   // 한글 설명: Toast UI Editor 인스턴스 참조
   const editorRef = useRef<Editor>(null);
@@ -143,52 +145,8 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* 한글 설명: 템플릿 버튼 및 이미지 업로드 */}
+      {/* 한글 설명: 이미지 업로드 */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-        <button
-          type="button"
-          onClick={() =>
-            insertTemplate(
-              "## 소개\n프로젝트 혹은 제품의 핵심 가치를 한 문단으로 정리해 주세요."
-            )
-          }
-          className="rounded border border-neutral-200 bg-white px-2 py-1 text-xs hover:border-neutral-900 hover:text-neutral-900"
-        >
-          소개
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            insertTemplate(
-              "## 특징\n- 주요 장점 1\n- 주요 장점 2\n- 주요 장점 3"
-            )
-          }
-          className="rounded border border-neutral-200 bg-white px-2 py-1 text-xs hover:border-neutral-900 hover:text-neutral-900"
-        >
-          특징
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            insertTemplate(
-              "## 제작·배송 계획\n제작 일정, 검수 절차, 배송 계획을 단계별로 작성해 주세요."
-            )
-          }
-          className="rounded border border-neutral-200 bg-white px-2 py-1 text-xs hover:border-neutral-900 hover:text-neutral-900"
-        >
-          제작·배송
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            insertTemplate(
-              "## 위험 요소와 대응\n발생 가능한 리스크와 대응 방안을 안내해 주세요."
-            )
-          }
-          className="rounded border border-neutral-200 bg-white px-2 py-1 text-xs hover:border-neutral-900 hover:text-neutral-900"
-        >
-          위험 요소
-        </button>
         <label className="cursor-pointer rounded border border-neutral-200 bg-white px-2 py-1 text-xs hover:border-neutral-900 hover:text-neutral-900">
           이미지 추가
           <input
@@ -280,19 +238,7 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({
             // 한글 설명: 이미지 붙여넣기/드래그앤드롭 시 자동으로 호출되는 훅
             addImageBlobHook: handleImageBlobHook,
           }}
-          placeholder="# 프로젝트 스토리를 작성해주세요 (Markdown 지원)
-
-## 소개
-...
-
-## 특징
-- ...
-
-## 제작·배송 계획
-...
-
-## 위험 요소와 대응
-..."
+          placeholder={placeholder ?? undefined}
         />
       </div>
     </div>

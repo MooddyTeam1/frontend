@@ -117,6 +117,14 @@ export const LoginPage: React.FC = () => {
               {errors.password && (
                 <p className="text-xs text-red-500">{errors.password}</p>
               )}
+              <div className="flex justify-end">
+                <Link
+                  to="/password/forgot"
+                  className="text-xs text-neutral-500 underline hover:text-neutral-700"
+                >
+                  비밀번호를 잊으셨나요?
+                </Link>
+              </div>
             </div>
 
             {generalError && (

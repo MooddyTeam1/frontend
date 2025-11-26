@@ -1,9 +1,12 @@
 // 한글 설명: Admin 요약 대시보드 페이지. 플랫폼 상황을 한눈에 보는 대시보드
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Bar, Pie } from "react-chartjs-2";
 import { currencyKRW } from "../../../../shared/utils/format";
 import { defaultChartOptions } from "../../../../shared/components/charts/ChartConfig";
+import { fetchAdminDashboardSummary } from "../../../../features/admin/api/adminStatisticsService";
+import type { DashboardSummaryDto } from "../../../../features/admin/types";
+import { PROJECT_CATEGORY_LABELS } from "../../../../features/projects/types";
 
 // 한글 설명: KPI 카드 컴포넌트
 interface KPICardProps {
@@ -143,114 +146,189 @@ export const SummaryDashboardPage: React.FC = () => {
     "funding" | "projects" | "backers"
   >("funding");
 
-  // 한글 설명: Mock 데이터 (실제로는 API에서 가져옴)
-  const kpiData = {
-    totalFunding: { value: 1250000000, change: "+12.5%", trend: "up" as const },
-    totalPayments: { value: 3420, change: "+8.3%", trend: "up" as const },
-    platformFee: { value: 62500000, change: "+12.5%", trend: "up" as const },
-    newProjects: { value: 24, change: "+2", trend: "up" as const },
-    newUsers: { value: 156, change: "+18", trend: "up" as const },
-    activeSupporters: { value: 1240, change: "+5.2%", trend: "up" as const },
-  };
+  // 한글 설명: API 데이터 상태
+  const [dashboardData, setDashboardData] = useState<DashboardSummaryDto | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 한글 설명: 기간별 매출 추이 데이터 (Mock)
-  const trendData = [
-    { date: "11/01", funding: 45000000, projects: 12, backers: 320 },
-    { date: "11/02", funding: 52000000, projects: 15, backers: 380 },
-    { date: "11/03", funding: 48000000, projects: 14, backers: 350 },
-    { date: "11/04", funding: 61000000, projects: 18, backers: 420 },
-    { date: "11/05", funding: 55000000, projects: 16, backers: 390 },
-    { date: "11/06", funding: 67000000, projects: 19, backers: 450 },
-    { date: "11/07", funding: 72000000, projects: 21, backers: 480 },
-  ];
+  // 한글 설명: 대시보드 데이터 조회
+  useEffect(() => {
+    const loadDashboard = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchAdminDashboardSummary();
+        setDashboardData(data);
+      } catch (err) {
+        console.error("대시보드 데이터 조회 실패:", err);
+        setError("대시보드 데이터를 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 한글 설명: 카테고리별 성과 데이터 (Mock)
-  const categoryPerformance = [
-    { category: "테크·가전", funding: 450000000, projects: 45, backers: 3200 },
-    { category: "디자인", funding: 320000000, projects: 38, backers: 2400 },
-    { category: "푸드", funding: 280000000, projects: 32, backers: 2100 },
-    { category: "패션", funding: 200000000, projects: 28, backers: 1800 },
-  ];
+    loadDashboard();
+  }, []);
 
-  // 한글 설명: Top 프로젝트 데이터 (Mock)
-  const topProjects = [
-    {
-      rank: 1,
-      projectId: 1,
-      thumbnail: null,
-      title: "Smart LED Lamp 프로젝트",
-      makerName: "알파메이커",
-      achievementRate: 245,
-      raised: 24500000,
-      daysLeft: 12,
-    },
-    {
-      rank: 2,
-      projectId: 2,
-      thumbnail: null,
-      title: "Compact Coffee Kit",
-      makerName: "브라보팩토리",
-      achievementRate: 198,
-      raised: 19800000,
-      daysLeft: 8,
-    },
-    {
-      rank: 3,
-      projectId: 3,
-      thumbnail: null,
-      title: "Pet AI Tracker",
-      makerName: "크래프트랩",
-      achievementRate: 156,
-      raised: 15600000,
-      daysLeft: 15,
-    },
-    {
-      rank: 4,
-      projectId: 4,
-      thumbnail: null,
-      title: "Eco-Friendly Water Bottle",
-      makerName: "그린라이프",
-      achievementRate: 142,
-      raised: 14200000,
-      daysLeft: 20,
-    },
-    {
-      rank: 5,
-      projectId: 5,
-      thumbnail: null,
-      title: "Wireless Earbuds Pro",
-      makerName: "테크노바",
-      achievementRate: 128,
-      raised: 12800000,
-      daysLeft: 5,
-    },
-  ];
+  // 한글 설명: KPI 데이터 변환 (API 응답 → UI 표시용)
+  const kpiData = dashboardData
+    ? {
+        totalFunding: {
+          value: dashboardData.kpiSummary.totalFundingAmount.value,
+          change: dashboardData.kpiSummary.totalFundingAmount.changeRate !== 0
+            ? `${dashboardData.kpiSummary.totalFundingAmount.changeRate >= 0 ? "+" : ""}${dashboardData.kpiSummary.totalFundingAmount.changeRate.toFixed(1)}%`
+            : undefined,
+          trend: dashboardData.kpiSummary.totalFundingAmount.changeRate > 0
+            ? "up" as const
+            : dashboardData.kpiSummary.totalFundingAmount.changeRate < 0
+              ? "down" as const
+              : "neutral" as const,
+        },
+        totalPayments: {
+          value: dashboardData.kpiSummary.totalOrderCount.value,
+          change: dashboardData.kpiSummary.totalOrderCount.changeRate !== 0
+            ? `${dashboardData.kpiSummary.totalOrderCount.changeRate >= 0 ? "+" : ""}${dashboardData.kpiSummary.totalOrderCount.changeRate.toFixed(1)}%`
+            : undefined,
+          trend: dashboardData.kpiSummary.totalOrderCount.changeRate > 0
+            ? "up" as const
+            : dashboardData.kpiSummary.totalOrderCount.changeRate < 0
+              ? "down" as const
+              : "neutral" as const,
+        },
+        platformFee: {
+          value: dashboardData.kpiSummary.platformFeeRevenue.value,
+          change: dashboardData.kpiSummary.platformFeeRevenue.changeRate !== 0
+            ? `${dashboardData.kpiSummary.platformFeeRevenue.changeRate >= 0 ? "+" : ""}${dashboardData.kpiSummary.platformFeeRevenue.changeRate.toFixed(1)}%`
+            : undefined,
+          trend: dashboardData.kpiSummary.platformFeeRevenue.changeRate > 0
+            ? "up" as const
+            : dashboardData.kpiSummary.platformFeeRevenue.changeRate < 0
+              ? "down" as const
+              : "neutral" as const,
+        },
+        newProjects: {
+          value: dashboardData.kpiSummary.newProjectCount.value,
+          change: dashboardData.kpiSummary.newProjectCount.changeAmount !== 0
+            ? `${dashboardData.kpiSummary.newProjectCount.changeAmount >= 0 ? "+" : ""}${dashboardData.kpiSummary.newProjectCount.changeAmount}`
+            : undefined,
+          trend: dashboardData.kpiSummary.newProjectCount.changeAmount > 0
+            ? "up" as const
+            : dashboardData.kpiSummary.newProjectCount.changeAmount < 0
+              ? "down" as const
+              : "neutral" as const,
+        },
+        newUsers: {
+          value: dashboardData.kpiSummary.newUserCount.value,
+          change: dashboardData.kpiSummary.newUserCount.changeAmount !== 0
+            ? `${dashboardData.kpiSummary.newUserCount.changeAmount >= 0 ? "+" : ""}${dashboardData.kpiSummary.newUserCount.changeAmount}`
+            : undefined,
+          trend: dashboardData.kpiSummary.newUserCount.changeAmount > 0
+            ? "up" as const
+            : dashboardData.kpiSummary.newUserCount.changeAmount < 0
+              ? "down" as const
+              : "neutral" as const,
+        },
+        activeSupporters: {
+          value: dashboardData.kpiSummary.activeSupporterCount.value,
+          change: dashboardData.kpiSummary.activeSupporterCount.changeRate !== 0
+            ? `${dashboardData.kpiSummary.activeSupporterCount.changeRate >= 0 ? "+" : ""}${dashboardData.kpiSummary.activeSupporterCount.changeRate.toFixed(1)}%`
+            : undefined,
+          trend: dashboardData.kpiSummary.activeSupporterCount.changeRate > 0
+            ? "up" as const
+            : dashboardData.kpiSummary.activeSupporterCount.changeRate < 0
+              ? "down" as const
+              : "neutral" as const,
+        },
+      }
+    : null;
 
-  // 한글 설명: 경고/알림 데이터 (Mock)
-  const alerts = [
-    {
-      type: "warning" as const,
-      title: "어제 대비 오늘 결제 성공률 급감",
-      message:
-        "결제 성공률이 85%에서 72%로 하락했습니다. PG 오류 가능성을 확인해주세요.",
-    },
-    {
-      type: "info" as const,
-      title: "환불 비율이 평소보다 높음",
-      message: "최근 7일간 환불 비율이 평균 대비 3.2%p 증가했습니다.",
-    },
-  ];
+  // 한글 설명: 트렌드 데이터 변환
+  const trendData = dashboardData
+    ? dashboardData.trendChart.data.map((item) => ({
+        date: item.date,
+        funding: item.fundingAmount,
+        projects: item.projectCount,
+        backers: item.orderCount,
+      }))
+    : [];
+
+  // 한글 설명: 카테고리별 성과 데이터 변환
+  const categoryPerformance = dashboardData
+    ? dashboardData.categoryPerformance.categories.map((cat) => ({
+        category: PROJECT_CATEGORY_LABELS[cat.categoryName as keyof typeof PROJECT_CATEGORY_LABELS] || cat.categoryName,
+        funding: cat.fundingAmount,
+        projects: cat.projectCount,
+        backers: cat.orderCount,
+        fundingRatio: cat.fundingRatio,
+      }))
+    : [];
+
+  // 한글 설명: Top 프로젝트 데이터 변환
+  const topProjects = dashboardData
+    ? dashboardData.topProjects.map((project, idx) => ({
+        rank: idx + 1,
+        projectId: project.projectId,
+        thumbnail: project.coverImageUrl || null, // 한글 설명: 백엔드에서 coverImageUrl 제공 시 사용
+        title: project.projectName,
+        makerName: project.makerName,
+        achievementRate: project.achievementRate,
+        raised: project.fundingAmount,
+        daysLeft: project.remainingDays,
+      }))
+    : [];
+
+  // 한글 설명: 알림 데이터 변환 (타입 매핑)
+  const alerts = dashboardData
+    ? dashboardData.alerts.map((alert) => ({
+        type: alert.type.toLowerCase() as "warning" | "error" | "info",
+        title: alert.title,
+        message: alert.message,
+      }))
+    : [];
 
   // 한글 설명: 그래프 최대값 계산 (y축 스케일링용)
-  const maxValue = Math.max(
-    ...trendData.map((d) =>
-      chartOption === "funding"
-        ? d.funding
-        : chartOption === "projects"
-          ? d.projects
-          : d.backers
-    )
-  );
+  const maxValue = trendData.length > 0
+    ? Math.max(
+        ...trendData.map((d) =>
+          chartOption === "funding"
+            ? d.funding
+            : chartOption === "projects"
+              ? d.projects
+              : d.backers
+        )
+      )
+    : 0;
+
+  // 한글 설명: 로딩 상태
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div className="mx-auto min-h-[80vh] max-w-full px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-sm text-neutral-500">대시보드 데이터를 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 한글 설명: 에러 상태
+  if (error || !dashboardData) {
+    return (
+      <div className="w-full">
+        <div className="mx-auto min-h-[80vh] max-w-full px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-sm font-medium text-red-600">{error || "데이터를 불러올 수 없습니다."}</p>
+              <p className="mt-2 text-xs text-neutral-500">
+                API 연결을 확인해주세요. (GET /api/admin/statistics/dashboard)
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -280,42 +358,46 @@ export const SummaryDashboardPage: React.FC = () => {
               오늘 / 이번 달 핵심 KPI
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <KPICard
-                label="총 펀딩 금액"
-                value={currencyKRW(kpiData.totalFunding.value)}
-                change={kpiData.totalFunding.change}
-                trend={kpiData.totalFunding.trend}
-              />
-              <KPICard
-                label="총 결제 건수"
-                value={kpiData.totalPayments.value.toLocaleString()}
-                change={kpiData.totalPayments.change}
-                trend={kpiData.totalPayments.trend}
-              />
-              <KPICard
-                label="플랫폼 수수료 수익"
-                value={currencyKRW(kpiData.platformFee.value)}
-                change={kpiData.platformFee.change}
-                trend={kpiData.platformFee.trend}
-              />
-              <KPICard
-                label="신규 프로젝트 수"
-                value={kpiData.newProjects.value}
-                change={kpiData.newProjects.change}
-                trend={kpiData.newProjects.trend}
-              />
-              <KPICard
-                label="신규 가입자 수"
-                value={kpiData.newUsers.value}
-                change={kpiData.newUsers.change}
-                trend={kpiData.newUsers.trend}
-              />
-              <KPICard
-                label="활성 서포터 수"
-                value={kpiData.activeSupporters.value.toLocaleString()}
-                change={kpiData.activeSupporters.change}
-                trend={kpiData.activeSupporters.trend}
-              />
+              {kpiData && (
+                <>
+                  <KPICard
+                    label="총 펀딩 금액"
+                    value={currencyKRW(kpiData.totalFunding.value)}
+                    change={kpiData.totalFunding.change}
+                    trend={kpiData.totalFunding.trend}
+                  />
+                  <KPICard
+                    label="총 결제 건수"
+                    value={kpiData.totalPayments.value.toLocaleString()}
+                    change={kpiData.totalPayments.change}
+                    trend={kpiData.totalPayments.trend}
+                  />
+                  <KPICard
+                    label="플랫폼 수수료 수익"
+                    value={currencyKRW(kpiData.platformFee.value)}
+                    change={kpiData.platformFee.change}
+                    trend={kpiData.platformFee.trend}
+                  />
+                  <KPICard
+                    label="신규 프로젝트 수"
+                    value={kpiData.newProjects.value}
+                    change={kpiData.newProjects.change}
+                    trend={kpiData.newProjects.trend}
+                  />
+                  <KPICard
+                    label="신규 가입자 수"
+                    value={kpiData.newUsers.value}
+                    change={kpiData.newUsers.change}
+                    trend={kpiData.newUsers.trend}
+                  />
+                  <KPICard
+                    label="활성 서포터 수"
+                    value={kpiData.activeSupporters.value.toLocaleString()}
+                    change={kpiData.activeSupporters.change}
+                    trend={kpiData.activeSupporters.trend}
+                  />
+                </>
+              )}
             </div>
           </section>
 
@@ -359,127 +441,38 @@ export const SummaryDashboardPage: React.FC = () => {
               </div>
             </div>
             <div className="mt-6 h-64">
-              <Bar
-                data={{
-                  labels: trendData.map((d) => d.date),
-                  datasets: [
-                    {
-                      label:
-                        chartOption === "funding"
-                          ? "펀딩 금액"
-                          : chartOption === "projects"
-                            ? "프로젝트 수"
-                            : "후원 건수",
-                      data: trendData.map((d) =>
-                        chartOption === "funding"
-                          ? d.funding
-                          : chartOption === "projects"
-                            ? d.projects
-                            : d.backers
-                      ),
-                      backgroundColor:
-                        chartOption === "funding"
-                          ? "rgba(16, 185, 129, 0.8)"
-                          : chartOption === "projects"
-                            ? "rgba(59, 130, 246, 0.8)"
-                            : "rgba(168, 85, 247, 0.8)",
-                      borderColor:
-                        chartOption === "funding"
-                          ? "rgb(16, 185, 129)"
-                          : chartOption === "projects"
-                            ? "rgb(59, 130, 246)"
-                            : "rgb(168, 85, 247)",
-                      borderWidth: 1,
-                    },
-                  ],
-                }}
-                options={{
-                  ...defaultChartOptions,
-                  plugins: {
-                    ...defaultChartOptions.plugins,
-                    tooltip: {
-                      ...defaultChartOptions.plugins?.tooltip,
-                      callbacks: {
-                        label: (context) => {
-                          const value = context.parsed.y;
-                          if (chartOption === "funding") {
-                            return `펀딩 금액: ${currencyKRW(value)}`;
-                          } else if (chartOption === "projects") {
-                            return `프로젝트 수: ${value}개`;
-                          } else {
-                            return `후원 건수: ${value.toLocaleString()}건`;
-                          }
-                        },
-                      },
-                    },
-                  },
-                }}
-              />
-            </div>
-          </section>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* 카테고리별 성과 Top N */}
-            <section className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-6">
-              <h2 className="text-lg font-semibold text-neutral-900">
-                카테고리별 성과 Top 4
-              </h2>
-              <div className="space-y-3">
-                {categoryPerformance.map((cat, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-neutral-900">
-                        {cat.category}
-                      </span>
-                      <span className="text-neutral-600">
-                        {currencyKRW(cat.funding)}
-                      </span>
-                    </div>
-                    <div className="flex gap-4 text-xs text-neutral-500">
-                      <span>프로젝트: {cat.projects}개</span>
-                      <span>후원: {cat.backers.toLocaleString()}건</span>
-                    </div>
-                    {/* 한글 설명: 간단한 진행 바 */}
-                    <div className="h-1.5 overflow-hidden rounded-full bg-neutral-100">
-                      <div
-                        className="h-full bg-neutral-900"
-                        style={{
-                          width: `${
-                            (cat.funding / categoryPerformance[0].funding) * 100
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* 카테고리별 펀딩 비율 파이 차트 */}
-            <section className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-6">
-              <h2 className="text-lg font-semibold text-neutral-900">
-                카테고리별 펀딩 비율
-              </h2>
-              <div className="h-64">
-                <Pie
+              {trendData.length > 0 ? (
+                <Bar
                   data={{
-                    labels: categoryPerformance.map((c) => c.category),
+                    labels: trendData.map((d) => d.date),
                     datasets: [
                       {
-                        data: categoryPerformance.map((c) => c.funding),
-                        backgroundColor: [
-                          "rgba(23, 23, 23, 0.8)",
-                          "rgba(82, 82, 82, 0.8)",
-                          "rgba(115, 115, 115, 0.8)",
-                          "rgba(163, 163, 163, 0.8)",
-                        ],
-                        borderColor: [
-                          "rgb(23, 23, 23)",
-                          "rgb(82, 82, 82)",
-                          "rgb(115, 115, 115)",
-                          "rgb(163, 163, 163)",
-                        ],
-                        borderWidth: 2,
+                        label:
+                          chartOption === "funding"
+                            ? "펀딩 금액"
+                            : chartOption === "projects"
+                              ? "프로젝트 수"
+                              : "후원 건수",
+                        data: trendData.map((d) =>
+                          chartOption === "funding"
+                            ? d.funding
+                            : chartOption === "projects"
+                              ? d.projects
+                              : d.backers
+                        ),
+                        backgroundColor:
+                          chartOption === "funding"
+                            ? "rgba(16, 185, 129, 0.8)"
+                            : chartOption === "projects"
+                              ? "rgba(59, 130, 246, 0.8)"
+                              : "rgba(168, 85, 247, 0.8)",
+                        borderColor:
+                          chartOption === "funding"
+                            ? "rgb(16, 185, 129)"
+                            : chartOption === "projects"
+                              ? "rgb(59, 130, 246)"
+                              : "rgb(168, 85, 247)",
+                        borderWidth: 1,
                       },
                     ],
                   }}
@@ -491,51 +484,163 @@ export const SummaryDashboardPage: React.FC = () => {
                         ...defaultChartOptions.plugins?.tooltip,
                         callbacks: {
                           label: (context) => {
-                            const label = context.label || "";
-                            const value = context.parsed || 0;
-                            const total = context.dataset.data.reduce(
-                              (a: number, b: number) => a + b,
-                              0
-                            );
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${currencyKRW(value)} (${percentage}%)`;
+                            const value = context.parsed.y;
+                            if (chartOption === "funding") {
+                              return `펀딩 금액: ${currencyKRW(value)}`;
+                            } else if (chartOption === "projects") {
+                              return `프로젝트 수: ${value}개`;
+                            } else {
+                              return `후원 건수: ${value.toLocaleString()}건`;
+                            }
                           },
                         },
                       },
                     },
                   }}
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {categoryPerformance.map((cat, idx) => {
-                  const total = categoryPerformance.reduce(
-                    (sum, c) => sum + c.funding,
-                    0
-                  );
-                  const percentage = ((cat.funding / total) * 100).toFixed(1);
-                  return (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{
-                          backgroundColor:
-                            idx === 0
-                              ? "#171717"
-                              : idx === 1
-                                ? "#525252"
-                                : idx === 2
-                                  ? "#737373"
-                                  : "#a3a3a3",
-                        }}
-                      />
-                      <span className="text-neutral-600">{cat.category}</span>
-                      <span className="font-medium text-neutral-900">
-                        {percentage}%
-                      </span>
+              ) : (
+                <div className="flex items-center justify-center h-full text-sm text-neutral-500">
+                  트렌드 데이터가 없습니다.
+                </div>
+              )}
+            </div>
+          </section>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* 카테고리별 성과 Top N */}
+            <section className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-6">
+              <h2 className="text-lg font-semibold text-neutral-900">
+                카테고리별 성과 Top 4
+              </h2>
+              <div className="space-y-3">
+                {categoryPerformance.length > 0 ? (
+                  categoryPerformance.map((cat, idx) => (
+                    <div key={idx} className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-neutral-900">
+                          {cat.category}
+                        </span>
+                        <span className="text-neutral-600">
+                          {currencyKRW(cat.funding)}
+                        </span>
+                      </div>
+                      <div className="flex gap-4 text-xs text-neutral-500">
+                        <span>프로젝트: {cat.projects}개</span>
+                        <span>후원: {cat.backers.toLocaleString()}건</span>
+                        {cat.fundingRatio !== undefined && (
+                          <span>비율: {cat.fundingRatio.toFixed(1)}%</span>
+                        )}
+                      </div>
+                      {/* 한글 설명: 간단한 진행 바 */}
+                      <div className="h-1.5 overflow-hidden rounded-full bg-neutral-100">
+                        <div
+                          className="h-full bg-neutral-900"
+                          style={{
+                            width: `${
+                              categoryPerformance[0]?.funding
+                                ? (cat.funding / categoryPerformance[0].funding) * 100
+                                : 0
+                            }%`,
+                          }}
+                        />
+                      </div>
                     </div>
-                  );
-                })}
+                  ))
+                ) : (
+                  <p className="text-sm text-neutral-500">카테고리 데이터가 없습니다.</p>
+                )}
               </div>
+            </section>
+
+            {/* 카테고리별 펀딩 비율 파이 차트 */}
+            <section className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-6">
+              <h2 className="text-lg font-semibold text-neutral-900">
+                카테고리별 펀딩 비율
+              </h2>
+              <div className="h-64">
+                {categoryPerformance.length > 0 ? (
+                  <Pie
+                    data={{
+                      labels: categoryPerformance.map((c) => c.category),
+                      datasets: [
+                        {
+                          data: categoryPerformance.map((c) => c.funding),
+                          backgroundColor: [
+                            "rgba(23, 23, 23, 0.8)",
+                            "rgba(82, 82, 82, 0.8)",
+                            "rgba(115, 115, 115, 0.8)",
+                            "rgba(163, 163, 163, 0.8)",
+                          ],
+                          borderColor: [
+                            "rgb(23, 23, 23)",
+                            "rgb(82, 82, 82)",
+                            "rgb(115, 115, 115)",
+                            "rgb(163, 163, 163)",
+                          ],
+                          borderWidth: 2,
+                        },
+                      ],
+                    }}
+                    options={{
+                      ...defaultChartOptions,
+                      plugins: {
+                        ...defaultChartOptions.plugins,
+                        tooltip: {
+                          ...defaultChartOptions.plugins?.tooltip,
+                          callbacks: {
+                            label: (context) => {
+                              const label = context.label || "";
+                              const value = context.parsed || 0;
+                              const total = context.dataset.data.reduce(
+                                (a: number, b: number) => a + b,
+                                0
+                              );
+                              const percentage = ((value / total) * 100).toFixed(1);
+                              return `${label}: ${currencyKRW(value)} (${percentage}%)`;
+                            },
+                          },
+                        },
+                      },
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-sm text-neutral-500">
+                    카테고리 데이터가 없습니다.
+                  </div>
+                )}
+              </div>
+              {categoryPerformance.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {categoryPerformance.map((cat, idx) => {
+                    const total = categoryPerformance.reduce(
+                      (sum, c) => sum + c.funding,
+                      0
+                    );
+                    const percentage = total > 0 ? ((cat.funding / total) * 100).toFixed(1) : "0.0";
+                    return (
+                      <div key={idx} className="flex items-center gap-2">
+                        <div
+                          className="h-3 w-3 rounded-full"
+                          style={{
+                            backgroundColor:
+                              idx === 0
+                                ? "#171717"
+                                : idx === 1
+                                  ? "#525252"
+                                  : idx === 2
+                                    ? "#737373"
+                                    : "#a3a3a3",
+                          }}
+                        />
+                        <span className="text-neutral-600">{cat.category}</span>
+                        <span className="font-medium text-neutral-900">
+                          {percentage}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
           </div>
 
@@ -546,9 +651,13 @@ export const SummaryDashboardPage: React.FC = () => {
                 Top 프로젝트 (펀딩액 기준)
               </h2>
               <div className="space-y-3">
-                {topProjects.map((project) => (
-                  <TopProjectCard key={project.rank} {...project} />
-                ))}
+                {topProjects.length > 0 ? (
+                  topProjects.map((project) => (
+                    <TopProjectCard key={project.rank} {...project} />
+                  ))
+                ) : (
+                  <p className="text-sm text-neutral-500">프로젝트 데이터가 없습니다.</p>
+                )}
               </div>
             </section>
 

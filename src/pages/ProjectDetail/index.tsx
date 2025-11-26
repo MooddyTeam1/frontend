@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { Container } from "../../shared/components/Container";
 import { ProgressBar } from "../../features/projects/components/ProgressBar";
 import { RewardCard } from "../../features/projects/components/RewardCard";
@@ -13,6 +13,8 @@ import { makerService } from "../../features/maker/api/makerService";
 import { useAuthStore } from "../../features/auth/stores/authStore";
 import type { ProjectDetailResponseDTO } from "../../features/projects/types";
 import { resolveImageUrl } from "../../shared/utils/image";
+import { StoryViewer } from "../../shared/components/StoryViewer";
+import { ProjectQnaSection } from "../../features/qna/components/ProjectQnaSection";
 
 type ImageCarouselProps = {
   images: string[];
@@ -94,7 +96,8 @@ type TabKey =
   | "community"
   | "supporters"
   | "refund"
-  | "rewards";
+  | "rewards"
+  | "qna";
 
 const tabs: Array<{ key: TabKey; label: string }> = [
   { key: "story", label: "스토리" },
@@ -103,6 +106,7 @@ const tabs: Array<{ key: TabKey; label: string }> = [
   { key: "supporters", label: "서포터" },
   { key: "refund", label: "환불 정책" },
   { key: "rewards", label: "리워드 정보" },
+  { key: "qna", label: "Q&A" },
 ];
 
 type MakerSummary = {
@@ -143,16 +147,6 @@ const TabButton: React.FC<{
   </button>
 );
 
-const Markdown: React.FC<{ text: string }> = ({ text }) => (
-  <div className="prose max-w-none text-neutral-700">
-    {text.split("\n\n").map((block, index) => (
-      <p key={index} className="leading-relaxed">
-        {block.replace(/^##\s/, "")}
-      </p>
-    ))}
-  </div>
-);
-
 export const ProjectDetailPage: React.FC = () => {
   // 한글 설명: URL에서 프로젝트 id를 가져온다.
   const { id } = useParams();
@@ -180,12 +174,17 @@ export const ProjectDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const projectId = parseInt(id, 10);
-        if (isNaN(projectId)) {
+        const projectId = id;
+        if (!projectId) {
           setError("유효하지 않은 프로젝트 ID입니다.");
           return;
         }
         const detail = await fetchProjectDetail(projectId);
+        // 한글 설명: 디버깅을 위해 프로젝트 상세 응답 데이터 로그 출력
+        console.log("[ProjectDetailPage] 프로젝트 상세 응답:", detail);
+        console.log("[ProjectDetailPage] makerId:", detail.makerId);
+        console.log("[ProjectDetailPage] makerName:", detail.makerName);
+        console.log("[ProjectDetailPage] isOwner:", detail.isOwner);
         setProject(detail);
       } catch (fetchError) {
         console.error("프로젝트 상세 조회 실패", fetchError);
@@ -254,15 +253,44 @@ export const ProjectDetailPage: React.FC = () => {
     ? (resolveImageUrl(makerSummary.avatarUrl) ?? makerSummary.avatarUrl)
     : undefined;
 
+  // 한글 설명: 현재 사용자가 이 프로젝트의 소유자인지 확인
+  // 백엔드에서 isOwner를 제공하지만, 프론트엔드에서도 추가로 검증
+  // 한글 설명: userId, makerId, supporterId가 모두 동일하므로 user.id와 project.makerId를 직접 비교
+  const isProjectOwner = useMemo(() => {
+    if (!project || !user) return false;
+    // 한글 설명: 백엔드에서 제공하는 isOwner 값 우선 사용
+    if (project.isOwner !== undefined) {
+      return project.isOwner;
+    }
+    // 한글 설명: 백엔드 값이 없으면 프론트엔드에서 user.id와 project.makerId 직접 비교
+    if (!project.makerId) return false;
+    // 한글 설명: userId와 makerId가 동일하므로 문자열로 변환하여 비교
+    return String(user.id) === String(project.makerId);
+  }, [project, user]);
+
   // 한글 설명: 팔로우 버튼 클릭 시, 메이커 팔로우/언팔로우 API 호출
   const handleToggleFollow = async () => {
+    // 한글 설명: 자신의 프로젝트인 경우 팔로우 불가
+    if (isProjectOwner) {
+      return;
+    }
+
     if (!user) {
       alert("팔로우 기능은 로그인 후 이용할 수 있습니다.");
       navigate("/login");
       return;
     }
 
-    if (!makerSummary.id) {
+    // 한글 설명: makerSummary.id가 없거나 빈 문자열인지 확인
+    // project.makerId도 함께 확인하여 더 정확한 검증
+    // 한글 설명: makerId가 숫자나 다른 타입일 수 있으므로 문자열로 변환
+    const makerIdRaw = makerSummary.id || project?.makerId;
+    const makerId = makerIdRaw ? String(makerIdRaw).trim() : "";
+    if (!makerId) {
+      console.error("메이커 ID가 없습니다:", {
+        makerSummaryId: makerSummary.id,
+        projectMakerId: project?.makerId,
+      });
       alert("메이커 정보가 없습니다.");
       return;
     }
@@ -279,13 +307,14 @@ export const ProjectDetailPage: React.FC = () => {
       );
 
       // 한글 설명: API 호출 (백엔드는 ResponseEntity<Void>를 반환하므로 응답 본문 없음)
+      // 한글 설명: makerId 변수 사용 (위에서 검증된 값)
       if (prevIsFollowing) {
-        await makerService.unfollowMaker(makerSummary.id);
+        await makerService.unfollowMaker(makerId);
         setIsFollowing(false);
         // 한글 설명: 언팔로우 시 팔로워 수 감소
         setFollowerCount((prev) => Math.max(0, prev - 1));
       } else {
-        await makerService.followMaker(makerSummary.id);
+        await makerService.followMaker(makerId);
         setIsFollowing(true);
         // 한글 설명: 팔로우 시 팔로워 수 증가
         setFollowerCount((prev) => prev + 1);
@@ -388,7 +417,11 @@ export const ProjectDetailPage: React.FC = () => {
               <ImageCarousel images={allImages} title={project.title} />
             )}
             <div className="rounded-3xl border border-neutral-200 p-6">
-              <Markdown text={project.storyMarkdown} />
+              {/* 한글 설명: Toast UI Viewer를 사용하여 스토리 마크다운 표시 */}
+              <StoryViewer
+                markdown={project.storyMarkdown || ""}
+                className="min-h-[200px]"
+              />
             </div>
           </>
         );
@@ -424,6 +457,18 @@ export const ProjectDetailPage: React.FC = () => {
             확인할 수 있습니다.
           </div>
         );
+      case "qna":
+        return (
+          <div className="space-y-6">
+            {/* 한글 설명: Q&A 섹션 컴포넌트 */}
+            {/* 한글 설명: project.id는 string 타입이므로 number로 변환 */}
+            {/* 한글 설명: 소유자인 경우 isOwner prop 전달하여 문의 작성 폼 숨김 */}
+            <ProjectQnaSection
+              projectId={parseInt(String(project.id), 10) || 0}
+              isOwner={isProjectOwner}
+            />
+          </div>
+        );
       default:
         return null;
     }
@@ -432,7 +477,7 @@ export const ProjectDetailPage: React.FC = () => {
   return (
     <Container>
       <div className="space-y-12 py-16">
-        <div className="space-y-6">
+        <div className="space-y-6" id="project-tabs">
           <div className="flex flex-wrap justify-center gap-6 border-b border-neutral-200 pb-2 text-center">
             {tabs.map((tab) => (
               <TabButton
@@ -459,6 +504,29 @@ export const ProjectDetailPage: React.FC = () => {
               <p className="mt-3 text-sm text-neutral-600">
                 {project.summary || "프로젝트 요약 정보가 준비 중입니다."}
               </p>
+              {/* 한글 설명: 태그 목록 표시 */}
+              {project.tags && project.tags.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {project.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs text-neutral-600"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* 한글 설명: 프로젝트 기간 정보 표시 */}
+              {(project.startDate || project.endDate) && (
+                <div className="mt-4 text-xs text-neutral-500">
+                  {project.startDate && (
+                    <span>시작일: {project.startDate}</span>
+                  )}
+                  {project.startDate && project.endDate && " · "}
+                  {project.endDate && <span>종료일: {project.endDate}</span>}
+                </div>
+              )}
               <div className="mt-6 space-y-3 rounded-2xl border border-neutral-100 bg-neutral-50 p-4">
                 <div className="flex items-baseline justify-between text-sm">
                   <span className="text-neutral-600">
@@ -606,7 +674,11 @@ export const ProjectDetailPage: React.FC = () => {
                 아니면 하나로 합쳐서 컴포넌트로 빼도 됨 */}
             <section className="rounded-3xl border border-neutral-200 p-6">
               <header className="relative flex items-center gap-4">
-                <div className="h-14 w-14 overflow-hidden rounded-full border border-neutral-200 bg-neutral-100">
+                {/* 한글 설명: 메이커 썸네일 클릭 시 메이커 페이지로 이동 */}
+                <Link
+                  to={`/makers/${makerSummary.id || project?.makerId || ""}`}
+                  className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 transition hover:opacity-80"
+                >
                   {makerAvatarSrc ? (
                     <img
                       src={makerAvatarSrc}
@@ -618,41 +690,66 @@ export const ProjectDetailPage: React.FC = () => {
                       이미지 없음
                     </div>
                   )}
-                </div>
+                </Link>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs uppercase tracking-[0.25em] text-neutral-400">
                     Maker
                   </p>
-                  <p className="truncate text-sm font-semibold text-neutral-900">
+                  {/* 한글 설명: 메이커 이름 클릭 시 메이커 페이지로 이동 */}
+                  <Link
+                    to={`/makers/${makerSummary.id || project?.makerId || ""}`}
+                    className="block truncate text-sm font-semibold text-neutral-900 transition hover:text-neutral-600"
+                  >
                     {makerSummary.name}
-                  </p>
+                  </Link>
                   <p className="text-xs text-neutral-500">
                     팔로워 {followerCount.toLocaleString()}명
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleToggleFollow}
-                  className={`absolute right-0 top-0 rounded-full border px-3 py-1 text-[11px] font-medium transition ${
-                    isFollowing
-                      ? "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
-                      : "border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
-                  }`}
-                >
-                  {isFollowing ? "팔로잉" : "팔로우"}
-                </button>
+                {/* 한글 설명: 자신의 프로젝트인 경우 팔로우 버튼 비활성화 */}
+                {isProjectOwner ? (
+                  <div className="absolute right-0 top-0 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-[11px] font-medium text-neutral-400">
+                    내 프로젝트
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleToggleFollow}
+                    className={`absolute right-0 top-0 rounded-full border px-3 py-1 text-[11px] font-medium transition ${
+                      isFollowing
+                        ? "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
+                        : "border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                    }`}
+                  >
+                    {isFollowing ? "팔로잉" : "팔로우"}
+                  </button>
+                )}
               </header>
               <div className="mt-4">
-                <a
-                  href={
-                    makerSummary.contactEmail
-                      ? `mailto:${makerSummary.contactEmail}`
-                      : "mailto:support@moa.kr"
-                  }
-                  className="mt-3 block rounded-full border border-neutral-200 px-4 py-3 text-center text-sm font-medium text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
+                <button
+                  type="button"
+                  onClick={() => {
+                    // 한글 설명: 문의하기 버튼 클릭 시 Q&A 탭으로 이동
+                    setActiveTab("qna");
+                    // 한글 설명: 탭 섹션으로 스크롤 (탭 높이에 맞춰 상단으로 이동)
+                    setTimeout(() => {
+                      const tabsSection =
+                        document.getElementById("project-tabs");
+                      if (tabsSection) {
+                        // 한글 설명: 탭 섹션의 위치를 계산하여 스크롤
+                        const tabsRect = tabsSection.getBoundingClientRect();
+                        const scrollY = window.scrollY + tabsRect.top;
+                        window.scrollTo({
+                          top: scrollY,
+                          behavior: "smooth",
+                        });
+                      }
+                    }, 100);
+                  }}
+                  className="mt-3 w-full rounded-full border border-neutral-200 px-4 py-3 text-center text-sm font-medium text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900"
                 >
                   문의하기
-                </a>
+                </button>
               </div>
             </section>
           </aside>

@@ -137,3 +137,44 @@ export interface UpdateShipmentMemoRequestDTO {
   memo: string | null;
 }
 
+// 한글 설명: 배송 일정 업데이트 요청 DTO
+export interface UpdateShipmentScheduleRequestDTO {
+  scheduledStartDate?: string | null; // 배송 시작 예정일 (yyyy-MM-dd)
+  targetEndDate?: string | null; // 배송 마감 목표일 (yyyy-MM-dd)
+}
+
+// 한글 설명: 배송 알림 발송 요청 DTO
+export interface SendShipmentNotificationRequestDTO {
+  shipmentIds: number[];
+  notificationType: "TRACKING_ADDED" | "DELIVERY_COMPLETED"; // 송장번호 입력 알림 | 배송 완료 알림
+  customMessage?: string | null; // 커스텀 메시지 (선택)
+}
+
+// 한글 설명: 배송 통계 DTO
+export interface ShipmentStatisticsDTO {
+  // 배송 현황 차트 데이터
+  statusChart: {
+    labels: string[]; // 날짜 배열
+    ready: number[]; // 배송 준비 중 건수
+    shipped: number[]; // 배송 중 건수
+    delivered: number[]; // 배송 완료 건수
+    issue: number[]; // 문제 건수
+  };
+  // 배송 기간 분석
+  deliveryPeriodAnalysis: {
+    averageDays: number; // 평균 배송 기간 (일)
+    minDays: number; // 최단 배송 기간
+    maxDays: number; // 최장 배송 기간
+    periodDistribution: Array<{
+      period: string; // 기간 범위 (예: "1-2일", "3-5일")
+      count: number; // 건수
+    }>;
+  };
+  // 택배사별 통계
+  courierStatistics: Array<{
+    courierName: string; // 택배사명
+    count: number; // 건수
+    averageDays: number; // 평균 배송 기간
+  }>;
+}
+

@@ -86,3 +86,43 @@ export const fetchAdminMakerProfile = async (
   );
   return data;
 };
+
+// 한글 설명: 관리자 반려 사유 프리셋 조회 API
+// GET /api/admin/project/reject-reason-presets
+export interface RejectReasonPresetResponse {
+  presets: string[];
+}
+
+export const fetchAdminRejectReasonPresets =
+  async (): Promise<RejectReasonPresetResponse> => {
+    console.log(
+      "[adminProjectsService] GET /api/admin/project/reject-reason-presets 요청"
+    );
+    try {
+      const { data } = await api.get<RejectReasonPresetResponse>(
+        "/admin/project/reject-reason-presets"
+      );
+      console.log(
+        "[adminProjectsService] GET /api/admin/project/reject-reason-presets 응답",
+        data
+      );
+      return data;
+    } catch (error) {
+      // 한글 설명: 백엔드 API가 없을 경우 기본 프리셋 반환 (하위 호환성)
+      console.warn(
+        "[adminProjectsService] 반려 사유 프리셋 API 호출 실패, 기본값 반환",
+        error
+      );
+      return {
+        presets: [
+          "근거 자료 부족(증빙/계약서/허가서)",
+          "리워드/배송/환불 정책 미흡",
+          "금지 콘텐츠/정책 위반 가능성",
+          "상표권/저작권/초상권 우려",
+          "메이커 신원/연락처 불명확",
+          "위험물/규제 품목 포함 우려",
+          "광고성/과장 표현 과다",
+        ],
+      };
+    }
+  };

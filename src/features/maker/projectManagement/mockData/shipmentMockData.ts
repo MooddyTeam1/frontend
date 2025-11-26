@@ -2,6 +2,7 @@
 import type {
   ShipmentDTO,
   ShipmentSummaryDTO,
+  ShipmentStatisticsDTO,
 } from "../types/shipment";
 
 // 한글 설명: Mock 배송 목록 데이터
@@ -161,5 +162,41 @@ export const mockShipmentSummary: ShipmentSummaryDTO = {
   issueCount: 10,
   scheduledStartDate: "2025-12-01",
   targetEndDate: "2025-12-31",
+};
+
+// 한글 설명: Mock 배송 통계 데이터
+export const mockShipmentStatistics: ShipmentStatisticsDTO = {
+  // 한글 설명: 배송 현황 차트 데이터 (최근 30일)
+  statusChart: {
+    labels: Array.from({ length: 30 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (29 - i));
+      return date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
+    }),
+    ready: Array.from({ length: 30 }, () => Math.floor(Math.random() * 20) + 5),
+    shipped: Array.from({ length: 30 }, () => Math.floor(Math.random() * 15) + 3),
+    delivered: Array.from({ length: 30 }, () => Math.floor(Math.random() * 10) + 2),
+    issue: Array.from({ length: 30 }, () => Math.floor(Math.random() * 3)),
+  },
+  // 한글 설명: 배송 기간 분석
+  deliveryPeriodAnalysis: {
+    averageDays: 3.5,
+    minDays: 1,
+    maxDays: 7,
+    periodDistribution: [
+      { period: "1-2일", count: 120 },
+      { period: "3-5일", count: 250 },
+      { period: "6-7일", count: 80 },
+      { period: "8일 이상", count: 30 },
+    ],
+  },
+  // 한글 설명: 택배사별 통계
+  courierStatistics: [
+    { courierName: "CJ대한통운", count: 350, averageDays: 3.2 },
+    { courierName: "한진택배", count: 280, averageDays: 3.8 },
+    { courierName: "로젠택배", count: 200, averageDays: 3.5 },
+    { courierName: "롯데택배", count: 150, averageDays: 4.0 },
+    { courierName: "기타", count: 20, averageDays: 3.0 },
+  ],
 };
 

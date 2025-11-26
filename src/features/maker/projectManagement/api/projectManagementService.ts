@@ -12,46 +12,83 @@ import type {
 
 // 한글 설명: 프로젝트 목록 조회
 // GET /api/maker/projects
+// API 명세: MAKER_PROJECT_LIST_API.md
 export const getMakerProjects = async (
   filter: ProjectListFilter = {}
 ): Promise<MakerProjectListResponseDTO> => {
   const params = new URLSearchParams();
-  if (filter.status && filter.status !== "ALL") {
-    params.append("status", filter.status);
+  
+  // 한글 설명: status 파라미터 (기본값: "ALL")
+  const status = filter.status || "ALL";
+  if (status !== "ALL") {
+    params.append("status", status);
   }
+  
+  // 한글 설명: sortBy 파라미터 (기본값: "recent")
   if (filter.sortBy) {
     params.append("sortBy", filter.sortBy);
   }
-  if (filter.page) {
-    params.append("page", String(filter.page));
-  }
-  if (filter.pageSize) {
-    params.append("pageSize", String(filter.pageSize));
-  }
+  
+  // 한글 설명: page 파라미터 (기본값: 1)
+  const page = filter.page || 1;
+  params.append("page", String(page));
+  
+  // 한글 설명: pageSize 파라미터 (기본값: 12)
+  const pageSize = filter.pageSize || 12;
+  params.append("pageSize", String(pageSize));
 
+  console.log(
+    "[projectManagementService] GET /api/maker/projects 요청",
+    { filter, queryString: params.toString() }
+  );
   const { data } = await api.get<MakerProjectListResponseDTO>(
     `/api/maker/projects?${params.toString()}`
+  );
+  console.log(
+    "[projectManagementService] GET /api/maker/projects 응답",
+    data
   );
   return data;
 };
 
 // 한글 설명: 프로젝트 통계 요약 조회
 // GET /api/maker/projects/stats/summary
+// API 명세: MAKER_PROJECT_LIST_API.md
 export const getProjectSummaryStats =
   async (): Promise<ProjectSummaryStatsDTO> => {
+    console.log(
+      "[projectManagementService] GET /api/maker/projects/stats/summary 요청"
+    );
     const { data } = await api.get<ProjectSummaryStatsDTO>(
       "/api/maker/projects/stats/summary"
+    );
+    console.log(
+      "[projectManagementService] GET /api/maker/projects/stats/summary 응답",
+      data
     );
     return data;
   };
 
 // 한글 설명: 프로젝트 상세 관리 정보 조회
 // GET /api/maker/projects/:projectId
+// API 명세: MAKER_PROJECT_DETAIL_API.md
 export const getMakerProjectDetail = async (
   projectId: number
 ): Promise<MakerProjectDetailDTO> => {
+  console.log(
+    "[projectManagementService] GET /api/maker/projects/:projectId 요청",
+    { projectId }
+  );
   const { data } = await api.get<MakerProjectDetailDTO>(
     `/api/maker/projects/${projectId}`
+  );
+  console.log(
+    "[projectManagementService] GET /api/maker/projects/:projectId 응답",
+    data
+  );
+  console.log(
+    "[projectManagementService] 리워드 개수:",
+    data.rewards?.length || 0
   );
   return data;
 };

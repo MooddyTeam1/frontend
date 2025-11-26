@@ -25,7 +25,6 @@ export const mockProjectList: MakerProjectListItemDTO[] = [
     daysLeft: 12,
     supporterCount: 245,
     lastModifiedAt: "2025-11-20T10:30:00Z",
-    createdAt: "2025-10-15T09:00:00Z",
   },
   {
     id: 2,
@@ -39,7 +38,6 @@ export const mockProjectList: MakerProjectListItemDTO[] = [
     daysLeft: null,
     supporterCount: 380,
     lastModifiedAt: "2025-11-10T14:20:00Z",
-    createdAt: "2025-09-01T08:00:00Z",
   },
   {
     id: 3,
@@ -53,7 +51,6 @@ export const mockProjectList: MakerProjectListItemDTO[] = [
     daysLeft: null,
     supporterCount: 0,
     lastModifiedAt: "2025-11-19T16:45:00Z",
-    createdAt: "2025-11-15T10:00:00Z",
   },
   {
     id: 4,
@@ -67,7 +64,6 @@ export const mockProjectList: MakerProjectListItemDTO[] = [
     daysLeft: null,
     supporterCount: 0,
     lastModifiedAt: "2025-11-21T09:15:00Z",
-    createdAt: "2025-11-18T11:00:00Z",
   },
   {
     id: 5,
@@ -81,7 +77,6 @@ export const mockProjectList: MakerProjectListItemDTO[] = [
     daysLeft: 5,
     supporterCount: 0,
     lastModifiedAt: "2025-11-20T13:30:00Z",
-    createdAt: "2025-11-10T09:00:00Z",
   },
   {
     id: 6,
@@ -95,7 +90,6 @@ export const mockProjectList: MakerProjectListItemDTO[] = [
     daysLeft: null,
     supporterCount: 0,
     lastModifiedAt: "2025-11-15T10:20:00Z",
-    createdAt: "2025-11-05T08:00:00Z",
   },
   {
     id: 7,
@@ -109,19 +103,16 @@ export const mockProjectList: MakerProjectListItemDTO[] = [
     daysLeft: null,
     supporterCount: 68,
     lastModifiedAt: "2025-11-05T16:30:00Z",
-    createdAt: "2025-10-01T09:00:00Z",
   },
 ];
 
 // 한글 설명: Mock 통계 요약 데이터
+// API 명세: MAKER_PROJECT_LIST_API.md
 export const mockSummaryStats: ProjectSummaryStatsDTO = {
   totalProjects: 12,
   liveProjects: 3,
   totalRaised: 125000000,
   newProjectsThisMonth: 4,
-  newProjectsThisWeek: 2,
-  averageSupportAmount: 125000,
-  averageSupporterCount: 180,
 };
 
 // 한글 설명: Mock 일별 통계 데이터
@@ -275,9 +266,11 @@ export const mockQnAs: ProjectQnADTO[] = [
 // 한글 설명: Mock 프로젝트 상세 데이터
 // 한글 설명: 프로젝트 ID에 따라 다른 상태의 mock 데이터 반환
 export const getMockProjectDetail = (projectId?: string): MakerProjectDetailDTO => {
-  // 한글 설명: 프로젝트 ID가 2이면 ENDED_SUCCESS, 7이면 ENDED_FAILED, 나머지는 LIVE
+  // 한글 설명: 프로젝트 ID에 따라 상태 결정
+  // 2, 1202 등은 ENDED_SUCCESS, 7은 ENDED_FAILED, 나머지는 LIVE
+  const projectIdNum = projectId ? Number(projectId) : 1;
   const status = 
-    projectId === "2" ? "ENDED_SUCCESS" as const :
+    projectId === "2" || projectIdNum >= 1000 ? "ENDED_SUCCESS" as const :
     projectId === "7" ? "ENDED_FAILED" as const :
     "LIVE" as const;
 

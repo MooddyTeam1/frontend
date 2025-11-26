@@ -9,7 +9,7 @@ const api = axios.create({
   baseURL:  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
 
   // 한글 설명: 요청 타임아웃 (10초)
-  timeout: 10000,
+  timeout: 30000,
 
   // 한글 설명: CORS + 인증정보(쿠키 등) 포함 요청 허용
   // - 지금은 JWT를 Authorization 헤더로 쓰지만,
@@ -36,6 +36,22 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// 한글 설명: 백엔드 에러 응답 형식에서 메시지 추출 유틸 함수
+export const extractErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | { message?: string; error?: string }
+      | undefined;
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
+    return error.message || "알 수 없는 오류가 발생했습니다.";
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "알 수 없는 오류가 발생했습니다.";
+};
 
 // 한글 설명: 응답 인터셉터 (에러 처리)
 api.interceptors.response.use(

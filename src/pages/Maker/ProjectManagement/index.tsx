@@ -19,7 +19,8 @@ import {
 import { currencyKRW } from "../../../shared/utils/format";
 
 // 한글 설명: Mock API 사용 여부 (개발 중 확인용)
-const USE_MOCK_DATA = true;
+// 실제 백엔드 API 연결 시 false로 설정
+const USE_MOCK_DATA = false;
 
 // 한글 설명: 상태별 배지 색상 매핑
 const STATUS_BADGE_COLORS: Record<MakerProjectStatus, string> = {
@@ -122,7 +123,24 @@ export const MakerProjectManagementPage: React.FC = () => {
         }
       } catch (error) {
         console.error("프로젝트 목록 조회 실패:", error);
-        alert("프로젝트 목록을 불러오는데 실패했습니다.");
+        // 한글 설명: 에러 상세 정보 로깅
+        if (error instanceof Error) {
+          console.error("에러 상세:", error.message);
+        }
+        // 한글 설명: 사용자에게 친화적인 에러 메시지 표시
+        const errorMessage =
+          error instanceof Error
+            ? error.message.includes("401")
+              ? "인증이 필요합니다. 로그인해주세요."
+              : error.message.includes("403")
+              ? "권한이 없습니다."
+              : error.message.includes("404")
+              ? "API 엔드포인트를 찾을 수 없습니다."
+              : error.message.includes("Network")
+              ? "네트워크 연결을 확인해주세요."
+              : `프로젝트 목록을 불러오는데 실패했습니다: ${error.message}`
+            : "프로젝트 목록을 불러오는데 실패했습니다.";
+        alert(errorMessage);
       } finally {
         setLoading(false);
       }

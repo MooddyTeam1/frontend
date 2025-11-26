@@ -21,12 +21,16 @@ export const ProfilePage: React.FC = () => {
           </p>
         </header>
 
-        <div className="flex items-center gap-2 rounded-full border border-neutral-200 p-1 text-sm text-neutral-600">
+        <div className="flex items-center gap-2 rounded-full border border-neutral-200 p-1 text-sm">
           <NavLink
             to="/profile/supporter"
             end
             className={({ isActive }) =>
-              `flex flex-1 items-center justify-center rounded-full px-4 py-2 transition ${isActive ? "bg-neutral-900 text-white" : "hover:text-neutral-900"}`
+              `flex flex-1 items-center justify-center rounded-full px-4 py-2 font-medium transition ${
+                isActive
+                  ? "bg-neutral-900 !text-white"
+                  : "text-neutral-600 hover:text-neutral-900"
+              }`
             }
           >
             서포터 보기
@@ -34,7 +38,11 @@ export const ProfilePage: React.FC = () => {
           <NavLink
             to="/profile/maker"
             className={({ isActive }) =>
-              `flex flex-1 items-center justify-center rounded-full px-4 py-2 transition ${isActive ? "bg-neutral-900 text-white" : "hover:text-neutral-900"}`
+              `flex flex-1 items-center justify-center rounded-full px-4 py-2 font-medium transition ${
+                isActive
+                  ? "bg-neutral-900 !text-white"
+                  : "text-neutral-600 hover:text-neutral-900"
+              }`
             }
           >
             메이커 보기

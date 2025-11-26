@@ -124,6 +124,11 @@ const mapRewardResponse = (raw: RewardApiResponse): RewardResponseDTO => {
 const mapProjectDetailResponse = (
   raw: ProjectDetailApiResponse
 ): ProjectDetailResponseDTO => {
+  // 한글 설명: 디버깅을 위해 API 응답 데이터 로그 출력
+  console.log("[mapProjectDetailResponse] 원본 API 응답:", raw);
+  console.log("[mapProjectDetailResponse] makerId:", raw.makerId);
+  console.log("[mapProjectDetailResponse] makerName:", raw.makerName);
+  
   // 한글 설명: lifecycleStatus 또는 projectLifecycleStatus를 status로 변환
   // API 응답에는 lifecycleStatus가 오지만, DTO에는 status가 필요함
   const lifecycleStatus =
@@ -135,6 +140,14 @@ const mapProjectDetailResponse = (
 
   // 한글 설명: API 응답의 rewards 배열을 프론트엔드 DTO로 변환
   const rewards = (raw.rewards ?? []).map(mapRewardResponse);
+
+  // 한글 설명: makerId가 없거나 빈 문자열인 경우 경고 로그 출력
+  if (!raw.makerId || String(raw.makerId).trim() === "") {
+    console.warn("[mapProjectDetailResponse] ⚠️ makerId가 없습니다!", {
+      rawMakerId: raw.makerId,
+      rawData: raw,
+    });
+  }
 
   return {
     ...raw,
@@ -150,6 +163,8 @@ const mapProjectDetailResponse = (
     status: mappedStatus,
     // 한글 설명: rewards 배열 매핑
     rewards,
+    // 한글 설명: makerId가 없으면 빈 문자열로 설정 (타입 안정성을 위해)
+    makerId: raw.makerId ?? "",
   };
 };
 

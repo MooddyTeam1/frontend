@@ -157,7 +157,7 @@ export const authService = {
     }
   },
 
-  // 한글 설명: 회원가입 → 토큰 저장 → 프로필 조회
+  // 한글 설명: 회원가입 → 토큰 저장 → 프로필 조회 (기존 방식, 인증번호 없음)
   signup: async (input: SignupInput): Promise<AuthUser> => {
     try {
       const payload = signupSchema.parse(input);
@@ -169,6 +169,44 @@ export const authService = {
       console.log("[authService] POST /auth/signup 응답", data);
       persistTokensToStorage(data);
       return await fetchMyProfile();
+    } catch (error) {
+      throw toReadableError(error);
+    }
+  },
+
+  // 한글 설명: 회원가입 (이메일 인증번호 포함) - 인증번호 검증은 백엔드에서 처리
+  signUp: async (input: {
+    email: string;
+    password: string;
+    name: string;
+    verificationCode: string;
+  }): Promise<{ id: number; email: string; name: string }> => {
+    try {
+      const signUpSchema = z.object({
+        email: z.string().email("올바른 이메일을 입력해 주세요."),
+        password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다."),
+        name: z
+          .string()
+          .min(1, "이름을 입력해 주세요.")
+          .max(50, "이름은 50자 이하여야 합니다."),
+        verificationCode: z
+          .string()
+          .min(6, "인증번호는 6자리여야 합니다.")
+          .max(6, "인증번호는 6자리여야 합니다.")
+          .regex(/^\d+$/, "인증번호는 숫자만 입력 가능합니다."),
+      });
+      const payload = signUpSchema.parse(input);
+      console.log("[authService] POST /auth/signup 요청 본문", {
+        ...payload,
+        verificationCode: `${payload.verificationCode.slice(0, 2)}...`,
+      });
+      const { data } = await api.post<{
+        id: number;
+        email: string;
+        name: string;
+      }>("/auth/signup", payload);
+      console.log("[authService] POST /auth/signup 응답", data);
+      return data;
     } catch (error) {
       throw toReadableError(error);
     }
@@ -224,6 +262,88 @@ export const authService = {
       console.warn("로그아웃 API 호출 실패:", error);
     } finally {
       clearTokensInStorage();
+    }
+  },
+
+  // 한글 설명: 비밀번호 재설정용 인증코드 발송
+  sendPasswordResetCode: async (email: string): Promise<void> => {
+    try {
+      const emailSchema = z.string().email("올바른 이메일을 입력해 주세요.");
+      const validatedEmail = emailSchema.parse(email);
+      console.log("[authService] POST /auth/password/code/send 요청", {
+        email: validatedEmail,
+      });
+      await api.post("/auth/password/code/send", { email: validatedEmail });
+      console.log("[authService] POST /auth/password/code/send 응답 성공");
+    } catch (error) {
+      throw toReadableError(error);
+    }
+  },
+
+  // 한글 설명: 비밀번호 재설정 - 이메일 + 인증코드 + 새 비밀번호로 변경
+  resetPasswordByCode: async (data: {
+    email: string;
+    code: string;
+    newPassword: string;
+  }): Promise<void> => {
+    try {
+      const resetSchema = z.object({
+        email: z.string().email("올바른 이메일을 입력해 주세요."),
+        code: z
+          .string()
+          .min(6, "인증번호는 6자리여야 합니다.")
+          .max(6, "인증번호는 6자리여야 합니다.")
+          .regex(/^\d+$/, "인증번호는 숫자만 입력 가능합니다."),
+        newPassword: z
+          .string()
+          .min(8, "비밀번호는 8자 이상이어야 합니다."),
+      });
+      const payload = resetSchema.parse(data);
+      console.log("[authService] POST /auth/password/code/reset 요청", {
+        email: payload.email,
+        codePreview: `${payload.code.slice(0, 2)}...`,
+      });
+      await api.post("/auth/password/code/reset", payload);
+      console.log("[authService] POST /auth/password/code/reset 응답 성공");
+    } catch (error) {
+      throw toReadableError(error);
+    }
+  },
+
+  // 한글 설명: 이메일 인증번호 전송
+  sendEmailVerification: async (email: string): Promise<void> => {
+    try {
+      const emailSchema = z.string().email("올바른 이메일을 입력해 주세요.");
+      const validatedEmail = emailSchema.parse(email);
+      console.log("[authService] POST /auth/email/send 요청", {
+        email: validatedEmail,
+      });
+      await api.post("/auth/email/send", { email: validatedEmail });
+      console.log("[authService] POST /auth/email/send 응답 성공");
+    } catch (error) {
+      throw toReadableError(error);
+    }
+  },
+
+  // 한글 설명: 이메일 인증번호 검증
+  verifyEmail: async (data: {
+    email: string;
+    code: string;
+  }): Promise<void> => {
+    try {
+      const verifySchema = z.object({
+        email: z.string().email("올바른 이메일을 입력해 주세요."),
+        code: z.string().min(1, "인증번호를 입력해 주세요."),
+      });
+      const payload = verifySchema.parse(data);
+      console.log("[authService] POST /auth/email/verify 요청", {
+        email: payload.email,
+        codePreview: `${payload.code.slice(0, 2)}...`,
+      });
+      await api.post("/auth/email/verify", payload);
+      console.log("[authService] POST /auth/email/verify 응답 성공");
+    } catch (error) {
+      throw toReadableError(error);
     }
   },
 };

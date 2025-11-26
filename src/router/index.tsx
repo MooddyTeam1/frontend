@@ -8,6 +8,8 @@ import { RequireAdmin } from "./RequireAdmin";
 import { CreatorDashboardPage } from "../pages/CreatorDashboard";
 import { HomePage } from "../pages/Home";
 import { LoginPage } from "../pages/Auth/Login";
+import { ForgotPasswordPage } from "../pages/Auth/ForgotPassword";
+import { EmailVerificationPage } from "../pages/Auth/EmailVerification";
 import { NotificationCenterPage } from "../pages/NotificationCenter";
 import { NotFound } from "../pages/NotFound";
 import { PledgePage } from "../pages/Pledge";
@@ -32,6 +34,7 @@ import {
   MakerNewsRoute,
   MakerInfoRoute,
 } from "../pages/MakerProfile";
+import { MakerNewsCreatePage } from "../pages/MakerProfile/CreateNews";
 import { RequireAuth } from "./RequireAuth";
 import { PaymentPage } from "../pages/Payment/PaymentPage";
 import { PaymentSuccessPage } from "../pages/Payment/SuccessPage";
@@ -50,12 +53,15 @@ import { MakerProjectDetailPage } from "../pages/Maker/ProjectManagement/[projec
 import { SupporterOnboardingPage } from "../pages/SupporterOnboarding";
 import { OrderListPage } from "../pages/OrderList";
 import { OrderDetailPage } from "../pages/OrderDetail";
+import { SupporterOrderDetailPage } from "../pages/SupporterOrderDetail";
 
 export const AppRoutes: React.FC = () => (
   <Routes>
     <Route path="/" element={<HomePage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/signup" element={<SignupPage />} />
+    <Route path="/auth/email" element={<EmailVerificationPage />} />
+    <Route path="/password/forgot" element={<ForgotPasswordPage />} />
     <Route path="/verify-email" element={<VerifyEmailPage />} />
     <Route path="/oauth2/callback" element={<OAuthCallbackPage />} />
     <Route path="/projects" element={<ProjectsPage />} />
@@ -100,12 +106,28 @@ export const AppRoutes: React.FC = () => (
         </RequireAuth>
       }
     />
+    <Route
+      path="/supporter/orders/:orderId"
+      element={
+        <RequireAuth>
+          <SupporterOrderDetailPage />
+        </RequireAuth>
+      }
+    />
     <Route path="/supporters/:userId" element={<SupporterPublicPage />} />
     <Route path="/makers/:makerId" element={<MakerPublicPage />}>
       <Route index element={<MakerProjectsRoute />} />
       <Route path="news" element={<MakerNewsRoute />} />
       <Route path="info" element={<MakerInfoRoute />} />
     </Route>
+    <Route
+      path="/makers/:makerId/news/create"
+      element={
+        <RequireAuth>
+          <MakerNewsCreatePage />
+        </RequireAuth>
+      }
+    />
     <Route
       path="/settings/account"
       element={

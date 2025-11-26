@@ -47,6 +47,7 @@ export interface ProjectListFilter {
 }
 
 // 한글 설명: 프로젝트 목록 항목 DTO
+// GET /api/maker/projects 응답 필드와 일치
 export interface MakerProjectListItemDTO {
   id: number;
   thumbnailUrl: string | null;
@@ -54,12 +55,11 @@ export interface MakerProjectListItemDTO {
   category: string;
   status: MakerProjectStatus;
   progressPercent: number; // 진행률 (0-100)
-  currentAmount: number; // 현재 모금 금액
-  goalAmount: number; // 목표 금액
-  daysLeft: number | null; // D-Day (null이면 종료됨)
+  currentAmount: number; // 현재 모금 금액 (원)
+  goalAmount: number; // 목표 금액 (원)
+  daysLeft: number | null; // D-Day (null: 종료됨 또는 종료일 없음, 음수: 종료됨)
   supporterCount: number; // 서포터 수
-  lastModifiedAt: string; // 마지막 수정일
-  createdAt: string; // 생성일
+  lastModifiedAt: string; // 마지막 수정일시 (ISO 8601 형식)
 }
 
 // 한글 설명: 프로젝트 목록 응답 DTO
@@ -72,14 +72,12 @@ export interface MakerProjectListResponseDTO {
 }
 
 // 한글 설명: 프로젝트 통계 요약 DTO
+// GET /api/maker/projects/stats/summary 응답 필드와 일치
 export interface ProjectSummaryStatsDTO {
-  totalProjects: number; // 전체 프로젝트 수
-  liveProjects: number; // 진행중 프로젝트 수
-  totalRaised: number; // 총 모금액 합계
-  newProjectsThisMonth: number; // 이번 달 새 프로젝트 수
-  newProjectsThisWeek: number; // 이번 주 새 프로젝트 수
-  averageSupportAmount: number; // 평균 후원 금액
-  averageSupporterCount: number; // 평균 후원자 수
+  totalProjects: number; // 전체 프로젝트 수 (모든 상태 포함)
+  liveProjects: number; // 진행중 프로젝트 수 (status = LIVE)
+  totalRaised: number; // 총 모금액 (원) - 모든 프로젝트의 currentAmount 합계
+  newProjectsThisMonth: number; // 이번 달 신규 프로젝트 수 (이번 달에 생성된 프로젝트)
 }
 
 // 한글 설명: 프로젝트 상세 통계 DTO

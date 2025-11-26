@@ -5,6 +5,7 @@ import { useMyProjectsStore } from "../../../features/projects/stores/myProjects
 import { makerService } from "../../../features/maker/api/makerService";
 import type { MakerDTO } from "../../../features/maker/types";
 import { stageMeta, statusLabel } from "../constants";
+import { SettlementAccountModal } from "./SettlementAccountModal";
 
 interface MakerViewProps {
   displayName: string;
@@ -21,6 +22,10 @@ export const MakerView: React.FC<MakerViewProps> = ({ displayName }) => {
   const [makerProfile, setMakerProfile] = React.useState<MakerDTO | null>(null);
   const [profileLoading, setProfileLoading] = React.useState(true);
   const [profileError, setProfileError] = React.useState<string | null>(null);
+
+  // 한글 설명: 정산 계좌 모달 상태
+  const [isSettlementModalOpen, setIsSettlementModalOpen] =
+    React.useState(false);
 
   // 한글 설명: 메이커 프로필 조회
   React.useEffect(() => {
@@ -170,6 +175,13 @@ export const MakerView: React.FC<MakerViewProps> = ({ displayName }) => {
             >
               프로젝트 관리
             </Link>
+            <button
+              type="button"
+              onClick={() => setIsSettlementModalOpen(true)}
+              className="rounded-full border border-neutral-200 px-3 py-1 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+            >
+              정산 계좌 관리
+            </button>
           </div>
         </header>
 
@@ -274,6 +286,16 @@ export const MakerView: React.FC<MakerViewProps> = ({ displayName }) => {
           )}
         </div>
       </section>
+
+      {/* 한글 설명: 정산 계좌 입력/수정 모달 */}
+      <SettlementAccountModal
+        isOpen={isSettlementModalOpen}
+        onClose={() => setIsSettlementModalOpen(false)}
+        onSuccess={() => {
+          // 한글 설명: 저장 성공 시 추가 작업이 필요하면 여기에 작성
+          console.log("정산 계좌 정보가 저장되었습니다.");
+        }}
+      />
     </div>
   );
 };

@@ -9,6 +9,8 @@ import { resolveImageUrl } from "../../../shared/utils/image";
 import { toInterestName } from "../../../shared/utils/interestMapper";
 import { daysLeft } from "../../../shared/utils/format";
 import { SupporterOnboardingBanner } from "../../../features/onboarding/components/SupporterOnboardingBanner";
+import { MyAllQnaList } from "../../../features/qna/components/MyAllQnaList";
+import { getOrders } from "../../../services/api";
 
 // 한글 설명: 서포터 탭 뷰. 서포터 프로필 정보, 최근 후원 내역, 관심 프로젝트 등을 보여준다.
 export const SupporterView: React.FC = () => {
@@ -29,6 +31,10 @@ export const SupporterView: React.FC = () => {
   const fetchMyProfile = useSupporterStore((state) => state.fetchMyProfile);
   const lastRequestedUserRef = React.useRef<string | null>(null);
 
+  // 한글 설명: 후원한 프로젝트 ID 목록 (Q&A 조회용)
+  const [supportedProjectIds, setSupportedProjectIds] = React.useState<number[]>([]);
+  const [loadingOrders, setLoadingOrders] = React.useState(false);
+
   React.useEffect(() => {
     if (!userId) {
       lastRequestedUserRef.current = null;
@@ -42,6 +48,33 @@ export const SupporterView: React.FC = () => {
       lastRequestedUserRef.current = null;
     });
   }, [userId, loading, fetchMyProfile]);
+
+  // 한글 설명: 후원한 프로젝트 ID 목록 조회 (주문 목록에서 추출)
+  React.useEffect(() => {
+    const loadSupportedProjects = async () => {
+      try {
+        setLoadingOrders(true);
+        // 한글 설명: 주문 목록 조회 (최대 100개)
+        const orderData = await getOrders(0, 100);
+        const orders = orderData?.content ?? [];
+        
+        // 한글 설명: 주문 목록에서 프로젝트 ID 추출 (중복 제거)
+        const projectIds = orders
+          .map((order) => order.projectId)
+          .filter((id): id is number => id !== null && id !== undefined)
+          .filter((id, index, self) => self.indexOf(id) === index); // 한글 설명: 중복 제거
+        
+        setSupportedProjectIds(projectIds);
+      } catch (err) {
+        console.error("후원한 프로젝트 목록 조회 실패:", err);
+        setSupportedProjectIds([]);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+
+    loadSupportedProjects();
+  }, []);
 
   const profileImageSrc = profile?.imageUrl
     ? (resolveImageUrl(profile.imageUrl) ?? profile.imageUrl)
@@ -311,6 +344,31 @@ export const SupporterView: React.FC = () => {
                 찜해보세요.
               </p>
             </div>
+          )}
+        </div>
+      </section>
+
+      {/* 한글 설명: 내가 작성한 모든 프로젝트의 문의사항 */}
+      <section className="rounded-3xl border border-neutral-200 bg-white p-6">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-base font-semibold text-neutral-900">
+              내가 작성한 문의사항
+            </h3>
+            <p className="mt-1 text-xs text-neutral-500">
+              후원한 모든 프로젝트에 남긴 문의사항을 한눈에 확인할 수 있습니다.
+            </p>
+          </div>
+
+          {/* 한글 설명: 모든 프로젝트의 Q&A 목록 컴포넌트 */}
+          {loadingOrders ? (
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-8 text-center">
+              <p className="text-sm text-neutral-500">
+                후원한 프로젝트를 불러오는 중...
+              </p>
+            </div>
+          ) : (
+            <MyAllQnaList projectIds={supportedProjectIds} />
           )}
         </div>
       </section>

@@ -20,7 +20,7 @@ export const CategoryQuickFilter: React.FC = () => {
                 to={`/projects${category.key === "all" ? "" : `?category=${category.key}`}`}
                 className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
                   isActive
-                    ? "border-neutral-900 bg-neutral-900 text-white"
+                    ? "border-neutral-900 bg-neutral-900 !text-white"
                     : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
                 }`}
               >

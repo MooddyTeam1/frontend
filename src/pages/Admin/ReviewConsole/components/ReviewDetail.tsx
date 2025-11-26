@@ -10,6 +10,8 @@ import type {
   AdminMakerProfileDTO,
 } from "../../../../features/admin/types";
 import { fetchAdminMakerProfile } from "../../../../features/admin/api/adminProjectsService";
+import type { RewardDisclosure } from "../../../../features/creator/types/rewardDisclosure";
+import { REWARD_CATEGORY_LABELS } from "../../../../features/creator/types/rewardDisclosure";
 
 interface ReviewDetailProps {
   detail: AdminProjectDetailDTO | null;
@@ -134,7 +136,7 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
   }, [detail?.makerId]);
 
   return (
-    <div className="col-span-8 flex h-[72vh] flex-col rounded-3xl border border-neutral-200 bg-white">
+    <div className="col-span-9 flex h-[72vh] flex-col rounded-3xl border border-neutral-200 bg-white">
       <div className="border-b border-neutral-200 p-4">
         <h2 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
           <svg
@@ -153,9 +155,9 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
           심사 상세
         </h2>
       </div>
-      <div className="grid grid-cols-12 gap-4 flex-1 overflow-hidden p-4">
+      <div className="grid grid-cols-12 gap-6 flex-1 overflow-hidden p-4">
         {/* 메이커 카드 */}
-        <div className="col-span-4 space-y-3 overflow-y-auto">
+        <div className="col-span-3 space-y-3 overflow-y-auto">
           <div className="text-sm font-semibold text-neutral-900">메이커 정보</div>
           {makerProfileLoading ? (
             <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 p-3 text-sm text-center text-neutral-500">
@@ -179,7 +181,13 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
                       {makerProfile.makerType === "BUSINESS" ? "사업자" : "개인"}
                     </dd>
                   </div>
-                  {makerProfile.makerType === "BUSINESS" && (
+                  <div>
+                    <dt className="text-neutral-500">소유자 유저 ID</dt>
+                    <dd className="mt-0.5 text-neutral-700">
+                      {makerProfile.ownerUserId}
+                    </dd>
+                  </div>
+                  {makerProfile.makerType === "BUSINESS" ? (
                     <>
                       {makerProfile.businessName && (
                         <div>
@@ -242,6 +250,38 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
                           <dt className="text-neutral-500">소재지</dt>
                           <dd className="mt-0.5 text-neutral-700">
                             {makerProfile.location}
+                          </dd>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* 한글 설명: 개인 메이커 추가 정보 */}
+                      {makerProfile.imageUrl && (
+                        <div>
+                          <dt className="text-neutral-500">메이커 이미지</dt>
+                          <dd className="mt-0.5">
+                            <img
+                              src={makerProfile.imageUrl}
+                              alt="메이커 이미지"
+                              className="w-full h-32 object-cover rounded-lg border border-neutral-200"
+                            />
+                          </dd>
+                        </div>
+                      )}
+                      {makerProfile.techStack && makerProfile.techStack.length > 0 && (
+                        <div>
+                          <dt className="text-neutral-500">기술 스택</dt>
+                          <dd className="mt-0.5 text-neutral-700">
+                            {makerProfile.techStack.join(", ")}
+                          </dd>
+                        </div>
+                      )}
+                      {makerProfile.keywords && makerProfile.keywords.length > 0 && (
+                        <div>
+                          <dt className="text-neutral-500">키워드</dt>
+                          <dd className="mt-0.5 text-neutral-700">
+                            {makerProfile.keywords.join(", ")}
                           </dd>
                         </div>
                       )}
@@ -348,7 +388,7 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
         </div>
 
         {/* 프로젝트 요약 + 액션 */}
-        <div className="col-span-8 flex flex-col h-full">
+        <div className="col-span-9 flex flex-col h-full overflow-y-auto min-h-0">
           <div className="flex items-center justify-between pb-2">
             <div>
               <div className="text-sm text-neutral-500">프로젝트</div>
@@ -404,7 +444,7 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
           <div className="border-t border-neutral-200"></div>
 
           {/* 상단 요약 카드 */}
-          <div className="grid grid-cols-3 gap-3 py-3 text-sm">
+          <div className="grid grid-cols-4 gap-3 py-3 text-sm">
             <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
               <div className="text-xs text-neutral-500">라이프사이클</div>
               <div className="mt-1">
@@ -441,6 +481,17 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
                 {detail?.startDate ?? "–"} ~ {detail?.endDate ?? "–"}
               </div>
             </div>
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="text-xs text-neutral-500">모금 현황</div>
+              <div className="mt-1 text-xs">
+                {detail?.raised ? currencyKRW(detail.raised) : "0원"} / {detail?.goalAmount ? currencyKRW(detail.goalAmount) : "0원"}
+              </div>
+              {detail?.progressPercent !== undefined && (
+                <div className="mt-1 text-xs text-neutral-600">
+                  {detail.progressPercent.toFixed(1)}% 달성
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 자동 점검 결과 */}
@@ -468,11 +519,37 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
                   </dd>
                 </div>
                 <div>
+                  <dt className="text-neutral-500">현재 모금액</dt>
+                  <dd className="mt-1 font-medium text-neutral-900">
+                    {detail?.raised ? currencyKRW(detail.raised) : "0원"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-neutral-500">후원자 수</dt>
+                  <dd className="mt-1 text-neutral-700">
+                    {detail?.backerCount ? detail.backerCount.toLocaleString() + "명" : "0명"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-neutral-500">진행률</dt>
+                  <dd className="mt-1 text-neutral-700">
+                    {detail?.progressPercent !== undefined 
+                      ? `${detail.progressPercent.toFixed(1)}%` 
+                      : "0%"}
+                  </dd>
+                </div>
+                <div>
                   <dt className="text-neutral-500">태그</dt>
                   <dd className="mt-1 text-neutral-700">
                     {detail?.tags?.length
                       ? detail.tags.join(", ")
                       : "태그 없음"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-neutral-500">프로젝트 ID</dt>
+                  <dd className="mt-1 text-neutral-700">
+                    {detail?.id ?? selectedProject?.id ?? "–"}
                   </dd>
                 </div>
                 <div className="col-span-2">
@@ -484,36 +561,93 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
               </dl>
             </div>
 
-            {/* 커버 이미지 */}
-            {detail && (detail.coverImageUrl || (detail.coverGallery && detail.coverGallery.length > 0)) && (
-              <div className="rounded-xl border border-neutral-200 bg-white p-4">
-                <h3 className="text-sm font-semibold text-neutral-900 mb-3">커버 이미지</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {detail.coverImageUrl && (
-                    <div className="overflow-hidden rounded-xl">
-                      <img
-                        src={detail.coverImageUrl}
-                        alt="커버 이미지"
-                        className="w-full h-32 object-cover"
-                      />
-                    </div>
-                  )}
-                  {detail.coverGallery?.map((img, idx) => (
-                    <div key={idx} className="overflow-hidden rounded-xl">
-                      <img
-                        src={img}
-                        alt={`갤러리 이미지 ${idx + 1}`}
-                        className="w-full h-32 object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* 아코디언: 스토리, 리워드 */}
+          {/* 아코디언: 커버 이미지, 스토리, 리워드 */}
           <div className="space-y-2 mb-3">
+            {/* 커버 이미지 및 갤러리 */}
+            <div className="border border-neutral-200 rounded-xl">
+              <button
+                type="button"
+                onClick={() => toggleAccordion("images")}
+                className="w-full flex items-center justify-between p-3 text-sm font-medium text-neutral-900"
+              >
+                <span>
+                  커버 이미지 및 갤러리{" "}
+                  {detail && detail.coverImageUrl && detail.coverGallery && detail.coverGallery.length > 0
+                    ? `(${1 + detail.coverGallery.length}개)`
+                    : detail && detail.coverImageUrl
+                      ? "(1개)"
+                      : detail && detail.coverGallery && detail.coverGallery.length > 0
+                        ? `(${detail.coverGallery.length}개)`
+                        : "(없음)"}
+                </span>
+                <svg
+                  className={`h-4 w-4 transition-transform ${
+                    accordionOpen.includes("images") ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {accordionOpen.includes("images") && (
+                <div className="p-3 border-t border-neutral-200">
+                  {detail && (detail.coverImageUrl || (detail.coverGallery && detail.coverGallery.length > 0)) ? (
+                    <div className="space-y-3">
+                      {detail.coverImageUrl && (
+                        <div className="overflow-hidden rounded-xl border border-neutral-200">
+                          <img
+                            src={detail.coverImageUrl}
+                            alt="대표 커버 이미지"
+                            className="w-full h-64 object-contain bg-neutral-50"
+                          />
+                          <div className="p-2 bg-neutral-50 text-xs text-neutral-500 text-center border-t border-neutral-200">
+                            대표 이미지
+                          </div>
+                        </div>
+                      )}
+                      {detail.coverGallery && detail.coverGallery.length > 0 && (
+                        <div>
+                          <div className="text-xs text-neutral-500 mb-2">
+                            갤러리 이미지 ({detail.coverGallery.length}개)
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            {detail.coverGallery.map((img, idx) => (
+                              <div
+                                key={idx}
+                                className="overflow-hidden rounded-xl border border-neutral-200"
+                              >
+                                <img
+                                  src={img}
+                                  alt={`갤러리 이미지 ${idx + 1}`}
+                                  className="w-full h-48 object-contain bg-neutral-50"
+                                />
+                                <div className="p-2 bg-neutral-50 text-xs text-neutral-500 text-center border-t border-neutral-200">
+                                  갤러리 {idx + 1}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-sm text-neutral-500">
+                      등록된 이미지가 없습니다.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* 스토리 */}
             <div className="border border-neutral-200 rounded-xl">
               <button
@@ -646,6 +780,122 @@ export const ReviewDetail: React.FC<ReviewDetailProps> = ({
                                     )}
                                   </div>
                                 ))}
+                              </div>
+                            </div>
+                          )}
+                          {/* 한글 설명: 리워드 정보고시 표시 */}
+                          {r.disclosure && (
+                            <div className="mt-3 pt-3 border-t border-neutral-200">
+                              <p className="text-xs font-semibold text-neutral-900 mb-2">
+                                정보고시 (전자상거래법)
+                              </p>
+                              <div className="space-y-2 text-xs">
+                                <div>
+                                  <span className="font-medium text-neutral-700">카테고리:</span>{" "}
+                                  <span className="text-neutral-600">
+                                    {REWARD_CATEGORY_LABELS[r.disclosure.category] || r.disclosure.category}
+                                  </span>
+                                </div>
+                                {/* 한글 설명: 공통 정보고시 */}
+                                {r.disclosure.common && (
+                                  <div className="pl-2 space-y-1 text-neutral-600">
+                                    {r.disclosure.common.manufacturer && (
+                                      <div>
+                                        <span className="text-neutral-500">제조자:</span>{" "}
+                                        {r.disclosure.common.manufacturer}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.importer && (
+                                      <div>
+                                        <span className="text-neutral-500">수입자:</span>{" "}
+                                        {r.disclosure.common.importer}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.countryOfOrigin && (
+                                      <div>
+                                        <span className="text-neutral-500">제조국/원산지:</span>{" "}
+                                        {r.disclosure.common.countryOfOrigin}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.manufacturingDate && (
+                                      <div>
+                                        <span className="text-neutral-500">제조연월:</span>{" "}
+                                        {r.disclosure.common.manufacturingDate}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.releaseDate && (
+                                      <div>
+                                        <span className="text-neutral-500">출시년월:</span>{" "}
+                                        {r.disclosure.common.releaseDate}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.expirationDate && (
+                                      <div>
+                                        <span className="text-neutral-500">유통기한:</span>{" "}
+                                        {r.disclosure.common.expirationDate}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.qualityAssurance && (
+                                      <div>
+                                        <span className="text-neutral-500">품질보증 기준:</span>{" "}
+                                        {r.disclosure.common.qualityAssurance}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.asContactName && (
+                                      <div>
+                                        <span className="text-neutral-500">A/S 책임자:</span>{" "}
+                                        {r.disclosure.common.asContactName}
+                                        {r.disclosure.common.asContactPhone && (
+                                          <span> ({r.disclosure.common.asContactPhone})</span>
+                                        )}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.shippingFee !== null && r.disclosure.common.shippingFee !== undefined && (
+                                      <div>
+                                        <span className="text-neutral-500">배송비:</span>{" "}
+                                        {r.disclosure.common.shippingFee === 0 ? "무료" : currencyKRW(r.disclosure.common.shippingFee)}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.installationFee !== null && r.disclosure.common.installationFee !== undefined && (
+                                      <div>
+                                        <span className="text-neutral-500">설치비:</span>{" "}
+                                        {r.disclosure.common.installationFee === 0 ? "무료" : currencyKRW(r.disclosure.common.installationFee)}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.kcCertification && (
+                                      <div>
+                                        <span className="text-neutral-500">KC 인증:</span>{" "}
+                                        {r.disclosure.common.kcCertification ? "예" : "아니오"}
+                                        {r.disclosure.common.kcCertificationNumber && (
+                                          <span> ({r.disclosure.common.kcCertificationNumber})</span>
+                                        )}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.functionalCertification && (
+                                      <div>
+                                        <span className="text-neutral-500">기능성 인증:</span>{" "}
+                                        {r.disclosure.common.functionalCertification ? "예" : "아니오"}
+                                      </div>
+                                    )}
+                                    {r.disclosure.common.importDeclaration && (
+                                      <div>
+                                        <span className="text-neutral-500">수입신고:</span>{" "}
+                                        {r.disclosure.common.importDeclaration ? "예" : "아니오"}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {/* 한글 설명: 카테고리별 정보고시 (간단히 표시) */}
+                                {r.disclosure.categorySpecific && (
+                                  <div className="pl-2 pt-2 border-t border-neutral-100">
+                                    <p className="text-xs font-medium text-neutral-700 mb-1">
+                                      카테고리별 상세 정보:
+                                    </p>
+                                    <div className="text-xs text-neutral-600 whitespace-pre-wrap">
+                                      {JSON.stringify(r.disclosure.categorySpecific, null, 2)}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )}

@@ -6,6 +6,7 @@ import {
   fetchAdminProjectDetail,
   approveAdminProject,
   rejectAdminProject,
+  fetchAdminRejectReasonPresets,
 } from "../../../features/admin/api/adminProjectsService";
 import type {
   AdminProjectReviewDTO,
@@ -15,8 +16,8 @@ import { ReviewList } from "./components/ReviewList";
 import { ReviewDetail } from "./components/ReviewDetail";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 
-// 한글 설명: 반려 사유 프리셋 (운영팀 합의 후 수정 가능)
-const REJECT_PRESETS = [
+// 한글 설명: 반려 사유 프리셋 기본값 (API 호출 실패 시 사용)
+const DEFAULT_REJECT_PRESETS = [
   "근거 자료 부족(증빙/계약서/허가서)",
   "리워드/배송/환불 정책 미흡",
   "금지 콘텐츠/정책 위반 가능성",
@@ -69,6 +70,10 @@ export const ReviewConsolePage: React.FC = () => {
     Array.from({ length: CHECK_ITEMS.length }, () => false)
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  // 한글 설명: 반려 사유 프리셋 목록 (API에서 조회)
+  const [rejectPresets, setRejectPresets] = useState<string[]>(
+    Array.from(DEFAULT_REJECT_PRESETS)
+  );
 
   // 한글 설명: 확인 다이얼로그 상태
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -209,9 +214,22 @@ export const ReviewConsolePage: React.FC = () => {
     }
   };
 
+  // 한글 설명: 반려 사유 프리셋 조회
+  const loadRejectPresets = async () => {
+    try {
+      const response = await fetchAdminRejectReasonPresets();
+      setRejectPresets(response.presets);
+    } catch (error) {
+      console.error("반려 사유 프리셋 조회 실패:", error);
+      // 한글 설명: API 호출 실패 시 기본값 사용
+      setRejectPresets(Array.from(DEFAULT_REJECT_PRESETS));
+    }
+  };
+
   // 한글 설명: 초기 로드
   useEffect(() => {
     loadProjects();
+    loadRejectPresets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -321,7 +339,7 @@ export const ReviewConsolePage: React.FC = () => {
               setConfirmDialog({ open: true, type: "approve" })
             }
             isProcessing={isProcessing}
-            rejectPresets={REJECT_PRESETS}
+            rejectPresets={rejectPresets}
           />
         </div>
 

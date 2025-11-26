@@ -16,12 +16,14 @@ type ShipmentDetailModalProps = {
   onStatusChange: (
     shipmentId: number,
     status: ShipmentStatus,
-    issueReason?: string
+    issueReason?: string,
+    sendNotification?: boolean
   ) => Promise<void>;
   onTrackingUpdate: (
     shipmentId: number,
     courierName: string,
-    trackingNumber: string
+    trackingNumber: string,
+    sendNotification?: boolean
   ) => Promise<void>;
   onMemoUpdate: (shipmentId: number, memo: string) => Promise<void>;
 };
@@ -43,6 +45,8 @@ export const ShipmentDetailModal: React.FC<ShipmentDetailModalProps> = ({
   const [changingStatus, setChangingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState<ShipmentStatus | null>(null);
   const [issueReason, setIssueReason] = useState("");
+  const [sendNotificationOnTracking, setSendNotificationOnTracking] = useState(false);
+  const [sendNotificationOnDelivery, setSendNotificationOnDelivery] = useState(false);
 
   // 한글 설명: 송장 정보 저장
   const handleSaveTracking = async () => {
@@ -50,8 +54,14 @@ export const ShipmentDetailModal: React.FC<ShipmentDetailModalProps> = ({
       alert("택배사와 송장번호를 모두 입력해주세요.");
       return;
     }
-    await onTrackingUpdate(shipment.id, courierName.trim(), trackingNumber.trim());
+    await onTrackingUpdate(
+      shipment.id,
+      courierName.trim(),
+      trackingNumber.trim(),
+      sendNotificationOnTracking
+    );
     setEditingTracking(false);
+    setSendNotificationOnTracking(false);
   };
 
   // 한글 설명: 메모 저장
@@ -72,10 +82,12 @@ export const ShipmentDetailModal: React.FC<ShipmentDetailModalProps> = ({
       await onStatusChange(
         shipment.id,
         newStatus,
-        newStatus === "ISSUE" ? issueReason.trim() : undefined
+        newStatus === "ISSUE" ? issueReason.trim() : undefined,
+        sendNotificationOnDelivery && newStatus === "DELIVERED"
       );
       setNewStatus(null);
       setIssueReason("");
+      setSendNotificationOnDelivery(false);
     } finally {
       setChangingStatus(false);
     }
@@ -259,25 +271,41 @@ export const ShipmentDetailModal: React.FC<ShipmentDetailModalProps> = ({
                         className="mt-1 w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm font-mono"
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={handleSaveTracking}
-                        className="flex-1 rounded-xl border border-neutral-900 bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-                      >
-                        저장
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingTracking(false);
-                          setCourierName(shipment.courierName || "");
-                          setTrackingNumber(shipment.trackingNumber || "");
-                        }}
-                        className="flex-1 rounded-xl border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-400"
-                      >
-                        취소
-                      </button>
+                    <div className="space-y-3">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={sendNotificationOnTracking}
+                          onChange={(e) =>
+                            setSendNotificationOnTracking(e.target.checked)
+                          }
+                          className="rounded border-neutral-300"
+                        />
+                        <span className="text-xs text-neutral-600">
+                          서포터에게 송장번호 입력 알림 발송
+                        </span>
+                      </label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={handleSaveTracking}
+                          className="flex-1 rounded-xl border border-neutral-900 bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                        >
+                          저장
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingTracking(false);
+                            setCourierName(shipment.courierName || "");
+                            setTrackingNumber(shipment.trackingNumber || "");
+                            setSendNotificationOnTracking(false);
+                          }}
+                          className="flex-1 rounded-xl border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-400"
+                        >
+                          취소
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -331,7 +359,7 @@ export const ShipmentDetailModal: React.FC<ShipmentDetailModalProps> = ({
                         </button>
                       ))}
                     </div>
-                    {newStatus && (
+                        {newStatus && (
                       <div className="mt-3 space-y-2">
                         {newStatus === "ISSUE" && (
                           <div>
@@ -347,6 +375,21 @@ export const ShipmentDetailModal: React.FC<ShipmentDetailModalProps> = ({
                             />
                           </div>
                         )}
+                        {newStatus === "DELIVERED" && (
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={sendNotificationOnDelivery}
+                              onChange={(e) =>
+                                setSendNotificationOnDelivery(e.target.checked)
+                              }
+                              className="rounded border-neutral-300"
+                            />
+                            <span className="text-xs text-neutral-600">
+                              서포터에게 배송 완료 알림 발송
+                            </span>
+                          </label>
+                        )}
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -360,6 +403,7 @@ export const ShipmentDetailModal: React.FC<ShipmentDetailModalProps> = ({
                             onClick={() => {
                               setNewStatus(null);
                               setIssueReason("");
+                              setSendNotificationOnDelivery(false);
                             }}
                             className="flex-1 rounded-xl border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-400"
                           >

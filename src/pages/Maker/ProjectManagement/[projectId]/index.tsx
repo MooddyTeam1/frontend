@@ -26,16 +26,10 @@ export const MakerProjectDetailPage: React.FC = () => {
   );
   const [loading, setLoading] = React.useState(true);
 
-  // 한글 설명: URL 파라미터에서 탭 정보 읽기 (기본값: overview)
-  const tabFromUrl = searchParams.get("tab") as
-    | "overview"
-    | "rewards"
-    | "settlement"
-    | "shipment"
-    | null;
+  // 한글 설명: 탭 상태 관리
   const [activeTab, setActiveTab] = React.useState<
     "overview" | "rewards" | "settlement" | "shipment"
-  >(tabFromUrl || "overview");
+  >("overview");
 
   // 한글 설명: 탭 변경 시 URL 파라미터 업데이트
   const handleTabChange = (
@@ -45,8 +39,9 @@ export const MakerProjectDetailPage: React.FC = () => {
     setSearchParams({ tab });
   };
 
-  // 한글 설명: 프로젝트 로드 후 URL 파라미터의 탭이 유효한지 확인하고 적용
+  // 한글 설명: URL 파라미터에서 탭 정보를 읽어서 적용 (프로젝트 로드 후)
   React.useEffect(() => {
+    // 한글 설명: 프로젝트가 로드되지 않았으면 대기
     if (!project) return;
 
     const tabFromUrl = searchParams.get("tab") as
@@ -56,19 +51,33 @@ export const MakerProjectDetailPage: React.FC = () => {
       | "shipment"
       | null;
 
+    console.log("[MakerProjectDetailPage] URL tab 파라미터:", tabFromUrl);
+    console.log("[MakerProjectDetailPage] 프로젝트 상태:", project.status);
+
     if (tabFromUrl) {
       // 한글 설명: 배송 관리 탭은 달성 종료된 프로젝트에만 유효
-      if (
-        tabFromUrl === "shipment" &&
-        project.status !== "ENDED_SUCCESS" &&
-        project.status !== "ENDED_FAILED"
-      ) {
-        // 한글 설명: 배송 관리 탭이 유효하지 않으면 개요 탭으로 리다이렉트
-        setActiveTab("overview");
-        setSearchParams({});
+      if (tabFromUrl === "shipment") {
+        if (
+          project.status === "ENDED_SUCCESS" ||
+          project.status === "ENDED_FAILED"
+        ) {
+          // 한글 설명: 배송 관리 탭이 유효하면 적용
+          console.log("[MakerProjectDetailPage] 배송 관리 탭 활성화");
+          setActiveTab("shipment");
+        } else {
+          // 한글 설명: 배송 관리 탭이 유효하지 않으면 개요 탭으로 리다이렉트
+          console.log("[MakerProjectDetailPage] 배송 관리 탭이 유효하지 않음, 개요 탭으로 이동");
+          setActiveTab("overview");
+          setSearchParams({});
+        }
       } else {
+        // 한글 설명: 다른 탭들은 그대로 적용
+        console.log("[MakerProjectDetailPage] 탭 설정:", tabFromUrl);
         setActiveTab(tabFromUrl);
       }
+    } else {
+      // 한글 설명: URL에 탭 파라미터가 없으면 기본값으로 설정
+      setActiveTab("overview");
     }
   }, [project, searchParams, setSearchParams]);
 

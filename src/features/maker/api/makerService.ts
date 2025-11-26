@@ -1,7 +1,11 @@
 // 한글 설명: 메이커 프로필 API 함수 모음
 import { isAxiosError } from "axios";
 import api from "../../../services/api";
-import type { MakerDTO } from "../types";
+import type {
+  MakerDTO,
+  MakerSettlementProfileDTO,
+  MakerSettlementProfileUpdateRequest,
+} from "../types";
 
 // 한글 설명: 백엔드 API 응답 타입 (MakerProfileResponse)
 // GET /profile/me/maker 응답은 평평한 구조로 받음
@@ -341,6 +345,89 @@ export const makerService = {
         throw new Error(message ?? "메이커 프로필을 불러오지 못했습니다.");
       }
       throw new Error("메이커 프로필 조회 중 알 수 없는 오류가 발생했습니다.");
+    }
+  },
+
+  // 한글 설명: 공개 메이커 프로젝트 목록 조회 API
+  // 한글 설명: GET /public/makers/{makerId}/projects 엔드포인트 호출
+  getPublicProjects: async (makerId: string, params?: {
+    page?: number;
+    size?: number;
+    sort?: string;
+    order?: "asc" | "desc";
+  }): Promise<any> => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.page) queryParams.append("page", String(params.page));
+      if (params?.size) queryParams.append("size", String(params.size));
+      if (params?.sort) queryParams.append("sort", params.sort);
+      if (params?.order) queryParams.append("order", params.order);
+
+      const queryString = queryParams.toString();
+      const url = `/public/makers/${makerId}/projects${queryString ? `?${queryString}` : ""}`;
+      
+      console.log("[makerService] GET /public/makers/{makerId}/projects 요청", { makerId, params });
+      const { data } = await api.get(url);
+      console.log("[makerService] GET /public/makers/{makerId}/projects 응답", data);
+      return data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const message =
+          (error.response?.data as { message?: string } | undefined)?.message;
+        throw new Error(message ?? "메이커 프로젝트 목록을 불러오지 못했습니다.");
+      }
+      throw new Error("메이커 프로젝트 목록 조회 중 알 수 없는 오류가 발생했습니다.");
+    }
+  },
+
+  // 한글 설명: 로그인한 사용자의 정산 계좌 정보를 조회한다.
+  // 한글 설명: GET /profile/me/maker/settlement 엔드포인트 호출
+  getSettlementProfile: async (): Promise<MakerSettlementProfileDTO | null> => {
+    try {
+      console.log("[makerService] GET /profile/me/maker/settlement 요청");
+      const { data } = await api.get<MakerSettlementProfileDTO>(
+        "/profile/me/maker/settlement"
+      );
+      console.log("[makerService] GET /profile/me/maker/settlement 응답", data);
+      return data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        // 한글 설명: 404 에러는 정산 계좌 정보가 없는 경우이므로 null 반환
+        if (error.response?.status === 404) {
+          console.log("[makerService] 정산 계좌 정보가 없습니다.");
+          return null;
+        }
+        const message =
+          (error.response?.data as { message?: string } | undefined)?.message;
+        throw new Error(message ?? "정산 계좌 정보를 불러오지 못했습니다.");
+      }
+      throw new Error("정산 계좌 정보 조회 중 알 수 없는 오류가 발생했습니다.");
+    }
+  },
+
+  // 한글 설명: 로그인한 사용자의 정산 계좌 정보를 생성 또는 업데이트한다.
+  // 한글 설명: PUT /profile/me/maker/settlement 엔드포인트 호출
+  updateSettlementProfile: async (
+    updateRequest: MakerSettlementProfileUpdateRequest
+  ): Promise<MakerSettlementProfileDTO> => {
+    try {
+      console.log(
+        "[makerService] PUT /profile/me/maker/settlement 요청",
+        updateRequest
+      );
+      const { data } = await api.put<MakerSettlementProfileDTO>(
+        "/profile/me/maker/settlement",
+        updateRequest
+      );
+      console.log("[makerService] PUT /profile/me/maker/settlement 응답", data);
+      return data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const message =
+          (error.response?.data as { message?: string } | undefined)?.message;
+        throw new Error(message ?? "정산 계좌 정보를 저장하지 못했습니다.");
+      }
+      throw new Error("정산 계좌 정보 저장 중 알 수 없는 오류가 발생했습니다.");
     }
   },
 };

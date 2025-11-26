@@ -10,6 +10,7 @@ import {
   bulkUploadTracking,
   updateShipmentMemo,
   exportShipments,
+  sendShipmentNotification,
 } from "../../../../../features/maker/projectManagement/api/shipmentService";
 import type {
   ShipmentDTO,
@@ -23,6 +24,8 @@ import {
 } from "../../../../../features/maker/projectManagement/types/shipment";
 import { ShipmentDetailModal } from "./ShipmentDetailModal";
 import { BulkTrackingUploadModal } from "./BulkTrackingUploadModal";
+import { ShipmentScheduleSection } from "./ShipmentScheduleSection";
+import { ShipmentStatisticsSection } from "./ShipmentStatisticsSection";
 import {
   mockShipments,
   mockShipmentSummary,
@@ -135,13 +138,29 @@ export const ShipmentConsole: React.FC<ShipmentConsoleProps> = ({
   const handleStatusChange = async (
     shipmentId: number,
     status: ShipmentStatus,
-    issueReason?: string
+    issueReason?: string,
+    sendNotification: boolean = false
   ) => {
     try {
       await updateShipmentStatus(projectId, shipmentId, {
         status,
         issueReason: status === "ISSUE" ? issueReason : null,
       });
+      
+      // 한글 설명: 배송 완료 시 알림 발송 옵션이 활성화된 경우
+      if (status === "DELIVERED" && sendNotification) {
+        try {
+          await sendShipmentNotification(projectId, {
+            shipmentIds: [shipmentId],
+            notificationType: "DELIVERY_COMPLETED",
+          });
+          alert("배송 상태가 변경되었고 서포터에게 알림이 발송되었습니다.");
+        } catch (notifError) {
+          console.error("알림 발송 실패", notifError);
+          alert("배송 상태는 변경되었지만 알림 발송에 실패했습니다.");
+        }
+      }
+      
       await loadShipments();
     } catch (error) {
       console.error("배송 상태 변경 실패", error);
@@ -186,13 +205,29 @@ export const ShipmentConsole: React.FC<ShipmentConsoleProps> = ({
   const handleTrackingUpdate = async (
     shipmentId: number,
     courierName: string,
-    trackingNumber: string
+    trackingNumber: string,
+    sendNotification: boolean = false
   ) => {
     try {
       await updateTrackingInfo(projectId, shipmentId, {
         courierName,
         trackingNumber,
       });
+      
+      // 한글 설명: 알림 발송 옵션이 활성화된 경우
+      if (sendNotification) {
+        try {
+          await sendShipmentNotification(projectId, {
+            shipmentIds: [shipmentId],
+            notificationType: "TRACKING_ADDED",
+          });
+          alert("송장 정보가 업데이트되었고 서포터에게 알림이 발송되었습니다.");
+        } catch (notifError) {
+          console.error("알림 발송 실패", notifError);
+          alert("송장 정보는 업데이트되었지만 알림 발송에 실패했습니다.");
+        }
+      }
+      
       await loadShipments();
     } catch (error) {
       console.error("송장 정보 업데이트 실패", error);
@@ -252,8 +287,51 @@ export const ShipmentConsole: React.FC<ShipmentConsoleProps> = ({
     }
   };
 
+  // 한글 설명: 일괄 알림 발송
+  const handleBulkNotification = async (
+    notificationType: "TRACKING_ADDED" | "DELIVERY_COMPLETED"
+  ) => {
+    if (selectedIds.size === 0) {
+      alert("선택된 배송이 없습니다.");
+      return;
+    }
+
+    const typeLabel =
+      notificationType === "TRACKING_ADDED"
+        ? "송장번호 입력 알림"
+        : "배송 완료 알림";
+
+    if (
+      !confirm(
+        `선택한 ${selectedIds.size}건의 서포터에게 "${typeLabel}"을 발송하시겠습니까?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const result = await sendShipmentNotification(projectId, {
+        shipmentIds: Array.from(selectedIds),
+        notificationType,
+      });
+      alert(
+        `알림 발송 완료:\n성공: ${result.sentCount}건\n실패: ${result.failedCount}건`
+      );
+    } catch (error) {
+      console.error("일괄 알림 발송 실패", error);
+      alert("일괄 알림 발송에 실패했습니다.");
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* 한글 설명: 배송 일정 관리 섹션 */}
+      <ShipmentScheduleSection
+        projectId={projectId}
+        summary={summary}
+        onUpdate={loadShipments}
+      />
+
       {/* 한글 설명: 배송 요약 카드 */}
       {summary && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
@@ -346,7 +424,7 @@ export const ShipmentConsole: React.FC<ShipmentConsoleProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           {/* 한글 설명: 일괄 작업 버튼 */}
           {selectedIds.size > 0 && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-neutral-500">
                 {selectedIds.size}건 선택됨
               </span>
@@ -370,6 +448,21 @@ export const ShipmentConsole: React.FC<ShipmentConsoleProps> = ({
                 className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
               >
                 문제로 표시
+              </button>
+              <div className="h-4 w-px bg-neutral-200" />
+              <button
+                type="button"
+                onClick={() => handleBulkNotification("TRACKING_ADDED")}
+                className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-medium text-purple-700 hover:bg-purple-100"
+              >
+                송장 알림 발송
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkNotification("DELIVERY_COMPLETED")}
+                className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
+              >
+                배송완료 알림 발송
               </button>
             </div>
           )}
@@ -561,6 +654,9 @@ export const ShipmentConsole: React.FC<ShipmentConsoleProps> = ({
           }}
         />
       )}
+
+      {/* 한글 설명: 배송 통계 및 리포트 섹션 */}
+      <ShipmentStatisticsSection projectId={projectId} />
     </div>
   );
 };

@@ -11,6 +11,9 @@ import type {
   BulkTrackingUploadRequestDTO,
   BulkTrackingUploadResponseDTO,
   UpdateShipmentMemoRequestDTO,
+  UpdateShipmentScheduleRequestDTO,
+  SendShipmentNotificationRequestDTO,
+  ShipmentStatisticsDTO,
 } from "../types/shipment";
 
 // 한글 설명: 배송 목록 조회
@@ -215,6 +218,82 @@ export const exportShipments = async (
   console.log(
     "[shipmentService] GET /api/maker/projects/:projectId/shipments/export 응답",
     "Blob"
+  );
+  return data;
+};
+
+// 한글 설명: 배송 일정 업데이트
+// PUT /api/maker/projects/:projectId/shipments/schedule
+
+export const updateShipmentSchedule = async (
+  projectId: number,
+  request: UpdateShipmentScheduleRequestDTO
+): Promise<ShipmentSummaryDTO> => {
+  console.log(
+    "[shipmentService] PUT /api/maker/projects/:projectId/shipments/schedule 요청",
+    { projectId, request }
+  );
+  const { data } = await api.put<ShipmentSummaryDTO>(
+    `/api/maker/projects/${projectId}/shipments/schedule`,
+    request
+  );
+  console.log(
+    "[shipmentService] PUT /api/maker/projects/:projectId/shipments/schedule 응답",
+    data
+  );
+  return data;
+};
+
+// 한글 설명: 배송 알림 발송
+// POST /api/maker/projects/:projectId/shipments/notifications
+export const sendShipmentNotification = async (
+  projectId: number,
+  request: SendShipmentNotificationRequestDTO
+): Promise<{ sentCount: number; failedCount: number }> => {
+  console.log(
+    "[shipmentService] POST /api/maker/projects/:projectId/shipments/notifications 요청",
+    { projectId, request }
+  );
+  const { data } = await api.post<{ sentCount: number; failedCount: number }>(
+    `/api/maker/projects/${projectId}/shipments/notifications`,
+    request
+  );
+  console.log(
+    "[shipmentService] POST /api/maker/projects/:projectId/shipments/notifications 응답",
+    data
+  );
+  return data;
+};
+
+// 한글 설명: 배송 통계 조회
+// GET /api/maker/projects/:projectId/shipments/summary
+export const fetchShipmentStatistics = async (
+  projectId: number
+): Promise<ShipmentStatisticsDTO> => {
+  // 한글 설명: Mock API 사용 여부 (개발 중 확인용)
+  const USE_MOCK_DATA = true;
+
+  if (USE_MOCK_DATA) {
+    // 한글 설명: Mock 데이터 사용
+    await new Promise((resolve) => setTimeout(resolve, 300)); // 로딩 시뮬레이션
+    const { mockShipmentStatistics } = await import("../mockData/shipmentMockData");
+    console.log(
+      "[shipmentService] GET /api/maker/projects/:projectId/shipments/summary 응답 (Mock)",
+      mockShipmentStatistics
+    );
+    return mockShipmentStatistics;
+  }
+
+  console.log(
+    "[shipmentService] GET /api/maker/projects/:projectId/shipments/summary 요청",
+    { projectId }
+  );
+  const { data } = await api.get<ShipmentStatisticsDTO>(
+    `/api/maker/projects/${projectId}/shipments/summary`
+  );
+  console.log(
+    "[shipmentService] GET /api/maker/projects/:projectId/shipments/summary 응답",
+    data
   );
   return data;
 };

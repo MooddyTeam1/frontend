@@ -52,7 +52,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({
   loading = false,
 }) => {
   return (
-    <div className="col-span-4 flex h-[72vh] flex-col rounded-3xl border border-neutral-200 bg-white">
+    <div className="col-span-3 flex h-[72vh] flex-col rounded-3xl border border-neutral-200 bg-white">
       <div className="border-b border-neutral-200 p-4">
         <h2 className="text-base font-semibold text-neutral-900">심사 대기/이력</h2>
       </div>
