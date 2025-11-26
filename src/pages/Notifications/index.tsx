@@ -26,6 +26,7 @@ export const NotificationsPage: React.FC = () => {
     error,
     fetchNotifications,
     markAsRead,
+    fetchUnreadCount,
   } = useNotificationStore();
 
   // 한글 설명: 컴포넌트 마운트 시 알림 목록 불러오기
@@ -42,16 +43,13 @@ export const NotificationsPage: React.FC = () => {
 
   // 한글 설명: 메이커 탭의 읽지 않은 알림 개수
   const makerUnreadCount = useMemo(() => {
-    return notifications.filter(
-      (n) => n.type === "MAKER" && !n.read
-    ).length;
+    return notifications.filter((n) => n.type === "MAKER" && !n.read).length;
   }, [notifications]);
 
   // 한글 설명: 서포터 탭의 읽지 않은 알림 개수
   const supporterUnreadCount = useMemo(() => {
-    return notifications.filter(
-      (n) => n.type === "SUPPORTER" && !n.read
-    ).length;
+    return notifications.filter((n) => n.type === "SUPPORTER" && !n.read)
+      .length;
   }, [notifications]);
 
   /**
@@ -66,6 +64,9 @@ export const NotificationsPage: React.FC = () => {
     if (!notification.read) {
       try {
         await markAsRead(notification.id);
+        // 한글 설명: 읽음 처리 후 알림 목록 갱신 (markAsRead 내부에서 fetchUnreadCount 호출됨)
+        // 한글 설명: 추가로 알림 목록도 갱신하여 UI 동기화
+        await fetchNotifications();
       } catch (error) {
         console.error("알림 읽음 처리 실패:", error);
       }
@@ -137,9 +138,10 @@ export const NotificationsPage: React.FC = () => {
     try {
       // 한글 설명: 현재 탭의 읽지 않은 알림만 읽음 처리
       const unreadInCurrentTab = filteredNotifications.filter((n) => !n.read);
-      await Promise.all(
-        unreadInCurrentTab.map((n) => markAsRead(n.id))
-      );
+      await Promise.all(unreadInCurrentTab.map((n) => markAsRead(n.id)));
+      // 한글 설명: 읽음 처리 후 알림 목록 및 카운트 갱신
+      await fetchNotifications();
+      await fetchUnreadCount();
     } catch (error) {
       console.error("전체 읽음 처리 실패:", error);
       alert("전체 읽음 처리에 실패했습니다.");
@@ -297,4 +299,3 @@ const getNotificationTypeLabel = (type: string): string => {
       return type;
   }
 };
-

@@ -43,7 +43,7 @@ type NotificationStore = {
  */
 export const useNotificationStore = create<NotificationStore>()(
   devtools(
-    (set) => ({
+    (set, get) => ({
       notifications: [],
       unreadCount: 0,
       loading: false,
@@ -68,6 +68,7 @@ export const useNotificationStore = create<NotificationStore>()(
       fetchUnreadCount: async () => {
         try {
           const count = await getUnreadCount();
+          console.log("[NotificationStore] 읽지 않은 알림 개수 조회:", count);
           set({ unreadCount: count });
         } catch (error) {
           console.error("읽지 않은 알림 개수 조회 실패:", error);
@@ -100,10 +101,15 @@ export const useNotificationStore = create<NotificationStore>()(
       markAllAsRead: async () => {
         try {
           await markAllAsRead();
+          // 한글 설명: 로컬 상태 즉시 업데이트 (낙관적 업데이트)
           set((state) => ({
             notifications: state.notifications.map((n) => ({ ...n, read: true })),
             unreadCount: 0,
           }));
+          // 한글 설명: 백엔드에서 최신 카운트 가져와서 동기화 (중요: 백엔드 실제 값 반영)
+          // 한글 설명: get()을 사용하여 store의 다른 함수에 접근
+          const state = get();
+          await state.fetchUnreadCount();
         } catch (error) {
           console.error("알림 전체 읽음 처리 실패:", error);
           throw error;
@@ -114,6 +120,7 @@ export const useNotificationStore = create<NotificationStore>()(
       markAsRead: async (notificationId: number) => {
         try {
           await markAsRead(notificationId);
+          // 한글 설명: 로컬 상태 즉시 업데이트 (낙관적 업데이트)
           set((state) => {
             const updatedNotifications = state.notifications.map((n) =>
               n.id === notificationId ? { ...n, read: true } : n
@@ -128,6 +135,10 @@ export const useNotificationStore = create<NotificationStore>()(
                 : state.unreadCount,
             };
           });
+          // 한글 설명: 백엔드에서 최신 카운트 가져와서 동기화 (중요: 백엔드 실제 값 반영)
+          // 한글 설명: get()을 사용하여 store의 다른 함수에 접근
+          const state = get();
+          await state.fetchUnreadCount();
         } catch (error) {
           console.error("알림 읽음 처리 실패:", error);
           throw error;

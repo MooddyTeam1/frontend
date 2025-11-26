@@ -809,6 +809,7 @@ export const useCreatorWizard = (options?: CreatorWizardOptions) => {
           estShippingMonth: reward.estShippingMonth,
           available: reward.available,
           optionConfig,
+          disclosure: reward.disclosure, // 한글 설명: 리워드 정보고시 포함
         };
       });
 
@@ -821,6 +822,8 @@ export const useCreatorWizard = (options?: CreatorWizardOptions) => {
           제목: r.title,
           가격: r.price,
           옵션_있음: r.optionConfig?.hasOptions ?? false,
+          정보고시_있음: !!r.disclosure,
+          정보고시_내용: r.disclosure ? JSON.stringify(r.disclosure, null, 2) : null,
         })),
       });
 
@@ -946,9 +949,12 @@ export const useCreatorWizard = (options?: CreatorWizardOptions) => {
       );
     } catch (error) {
       console.error("검토 요청 실패", error);
-      alert(
-        "검토 요청 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
-      );
+      // 한글 설명: 백엔드 검증 에러 메시지 표시
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "검토 요청 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+      alert(errorMessage);
     } finally {
       setIsRequestingReview(false);
     }

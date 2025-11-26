@@ -282,11 +282,15 @@ export const ProjectStatusPage: React.FC = () => {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {augmentedProjects.map((project, index) => {
+              // 한글 설명: 프로젝트 ID 추출 (remoteId 우선, 없으면 projectId, 없으면 id)
+              const projectId =
+                project.remoteId ?? project.projectId ?? project.id;
+
               // 한글 설명: DRAFT는 편집 페이지로, 나머지는 프로젝트 상세 페이지로 이동
               const destination =
                 normalizedStatus === "DRAFT"
-                  ? `/creator/projects/new/${project.remoteId ?? project.id}`
-                  : `/projects/${project.id}`;
+                  ? `/creator/projects/new/${projectId}`
+                  : `/projects/${projectId}`;
 
               const linkState =
                 normalizedStatus === "DRAFT"
@@ -295,8 +299,6 @@ export const ProjectStatusPage: React.FC = () => {
                       remoteProjectId: project.remoteId ?? project.id,
                     }
                   : undefined;
-
-              const projectId = project.remoteId ?? project.id;
               const isDeleting = deletingIds.has(projectId);
               const isCancelingReview = cancelingReviewIds.has(projectId);
               const isCancelingScheduled = cancelingScheduledIds.has(projectId);
@@ -372,9 +374,7 @@ export const ProjectStatusPage: React.FC = () => {
                       disabled={isCancelingReview}
                       className="w-full rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-600 transition hover:border-orange-300 hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {isCancelingReview
-                        ? "취소 중..."
-                        : "심사요청 취소하기"}
+                      {isCancelingReview ? "취소 중..." : "심사요청 취소하기"}
                     </button>
                   )}
 
