@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CATEGORY_OPTIONS as CATEGORY_LABELS, toCategoryLabel } from "../../utils/categorymapper";
 import { useAuthStore } from "../../../features/auth/stores/authStore";
 import { NotificationBell } from "../../../features/notifications/components/NotificationBell";
 import { Container } from "../Container";
@@ -12,9 +13,61 @@ export const Header: React.FC = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = search.trim();
-    navigate(
-      query ? `/projects?search=${encodeURIComponent(query)}` : "/projects"
-    );
+
+    // 카테고리 직접 입력 인식 (홈 검색창도 카테고리 전환 지원)
+    if (query) {
+      // 원복: 공백 제거 + 구분/기호 제거 (유니코드 속성 사용)
+      const normalizeCat = (s: string) =>
+        s
+          .normalize("NFC")
+          .replace(/\s+/g, "")
+          .replace(/[\p{P}\p{S}]/gu, "");
+
+      const norm = normalizeCat(query);
+      // 한글 라벨 매칭
+      const labelMap = (CATEGORY_LABELS as readonly string[]).reduce<Record<string, string>>(
+        (acc, label) => {
+          acc[normalizeCat(label)] = label;
+          return acc;
+        },
+        {}
+      );
+      const matchedLabel = labelMap[norm];
+      if (matchedLabel) {
+        const params = new URLSearchParams();
+        params.set("sort", "popular");
+        params.set("category", matchedLabel);
+        navigate(`/projects?${params.toString()}`);
+        return;
+      }
+      // 영문 enum/별칭 매칭
+      const code = norm.toUpperCase();
+      const aliases: Record<string, string> = {
+        TECH: "TECH",
+        DESIGN: "DESIGN",
+        FOOD: "FOOD",
+        FASHION: "FASHION",
+        BEAUTY: "BEAUTY",
+        HOME: "HOME_LIVING",
+        HOMELIVING: "HOME_LIVING",
+        HOME_LIVING: "HOME_LIVING",
+        GAME: "GAME",
+        ART: "ART",
+        PUBLISH: "PUBLISH",
+        BOOK: "PUBLISH",
+      };
+      const codeKey = aliases[code];
+      if (codeKey) {
+        const label = toCategoryLabel(codeKey as any);
+        const params = new URLSearchParams();
+        params.set("sort", "popular");
+        params.set("category", label);
+        navigate(`/projects?${params.toString()}`);
+        return;
+      }
+    }
+
+    navigate(query ? `/projects?search=${encodeURIComponent(query)}` : "/projects");
   };
 
   const displayName = user?.name ?? user?.email?.split("@")[0] ?? "";

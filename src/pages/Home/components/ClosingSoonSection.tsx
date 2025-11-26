@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PublicProjectCard } from "../../../features/projects/components/PublicProjectCard";
 import type { ProjectListResponseDTO } from "../../../features/projects/types";
-import { fetchClosingSoonProjects } from "../../../features/projects/api/publicProjectsService";
+import { fetchClosingSoonProjects, fetchTrendingScoredProjects } from "../../../features/projects/api/publicProjectsService";
 
 export const ClosingSoonSection: React.FC = () => {
   const [projects, setProjects] = useState<ProjectListResponseDTO[]>([]);
@@ -16,7 +16,30 @@ export const ClosingSoonSection: React.FC = () => {
       setError(null);
       try {
         const data = await fetchClosingSoonProjects();
-        setProjects(data);
+        const daysLeft = (endDate: string | null | undefined): number => {
+          if (!endDate) return Number.MAX_SAFE_INTEGER;
+          try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(0, 0, 0, 0);
+            const diff = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            return Math.max(diff, 0);
+          } catch {
+            return Number.MAX_SAFE_INTEGER;
+          }
+        };
+        if (Array.isArray(data) && data.length > 0) {
+          const filtered = data.filter((p) => daysLeft(p.endDate as any) <= 10);
+          setProjects(filtered.slice(0, 6));
+        } else {
+          const trending = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
+          const derived = trending
+            .filter((p) => p.endDate && daysLeft(p.endDate as any) <= 10)
+            .sort((a, b) => daysLeft(a.endDate as any) - daysLeft(b.endDate as any))
+            .slice(0, 6);
+          setProjects(derived);
+        }
       } catch (err) {
         console.error("마감 임박 프로젝트 조회 실패", err);
         setError("마감 임박 프로젝트를 불러오지 못했습니다.");
@@ -27,6 +50,41 @@ export const ClosingSoonSection: React.FC = () => {
 
     loadProjects();
   }, []);
+
+  // fallback: if API returns empty or errors, derive from trending-scored by endDate (<= 10 days)
+  useEffect(() => {
+    const deriveFromTrending = async () => {
+      try {
+        const trending = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
+        const daysLeft = (endDate: string | null | undefined): number => {
+          if (!endDate) return Number.MAX_SAFE_INTEGER;
+          try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(0, 0, 0, 0);
+            const diff = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            return Math.max(diff, 0);
+          } catch {
+            return Number.MAX_SAFE_INTEGER;
+          }
+        };
+        const derived = trending
+          .filter((p) => p.endDate && daysLeft(p.endDate as any) <= 10)
+          .sort((a, b) => daysLeft(a.endDate as any) - daysLeft(b.endDate as any))
+          .slice(0, 6);
+        if (derived.length > 0) {
+          setProjects(derived);
+          setError(null);
+        }
+      } catch (_) {
+        // ignore
+      }
+    };
+    if (!loading && projects.length === 0) {
+      deriveFromTrending();
+    }
+  }, [loading, projects.length]);
 
   return (
     <section className="relative">

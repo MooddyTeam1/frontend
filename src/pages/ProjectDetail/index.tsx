@@ -324,14 +324,8 @@ export const ProjectDetailPage: React.FC = () => {
       // 한글 설명: makerId 변수 사용 (위에서 검증된 값)
       if (prevIsFollowing) {
         await makerService.unfollowMaker(makerId);
-        setIsFollowing(false);
-        // 한글 설명: 언팔로우 시 팔로워 수 감소
-        setFollowerCount((prev) => Math.max(0, prev - 1));
       } else {
         await makerService.followMaker(makerId);
-        setIsFollowing(true);
-        // 한글 설명: 팔로우 시 팔로워 수 증가
-        setFollowerCount((prev) => prev + 1);
       }
     } catch (error) {
       console.error("메이커 팔로우 상태 변경 실패", error);

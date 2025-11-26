@@ -11,9 +11,10 @@ import { useTracking } from "../../tracking/hooks/useTracking";
 
 type ProjectCardProps = {
   project: ProjectCardResponseDTO;
+  hideFunding?: boolean;
 };
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+export const ProjectCard: React.FC<ProjectCardProps> = ({ project, hideFunding = false }) => {
   // 한글 설명: 트래킹 훅 사용
   const { track } = useTracking();
   // 한글 설명: 카드 요소 참조 (Intersection Observer용)
@@ -109,6 +110,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         </p>
       )}
     </div>
+    {!hideFunding && (
     <div className="space-y-3 pt-2">
       {/* 한글 설명: 진행률 바와 달성률 퍼센트 함께 표시 */}
       <div className="space-y-1.5">
@@ -147,6 +149,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         </span>
       </div>
     </div>
+    )}
       </Link>
     </div>
   );

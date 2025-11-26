@@ -26,7 +26,7 @@ const calculateDaysLeft = (endDate: string | null): number | null => {
 // 한글 설명: D-day 표기 포맷팅
 const formatDaysLeft = (daysLeft: number | null): string => {
   if (daysLeft === null) return "마감";
-  if (daysLeft === 0) return "오늘 마감";
+  if (daysLeft === 0) return "D-0";
   return `D-${daysLeft}`;
 };
 
