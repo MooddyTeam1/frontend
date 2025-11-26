@@ -1,10 +1,11 @@
 import React from "react";
+import { API_BASE_URL } from "../../../services/api";
 
 const DEFAULT_GOOGLE_ENDPOINT = "/oauth2/authorization/google";
 
 export const GoogleLoginButton: React.FC = () => {
-  // 백엔드 베이스 URL (예: http://localhost:8080)
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? "";
+  // 한글 설명: API 기본 URL을 중앙에서 관리하는 변수 사용
+  const apiBase = API_BASE_URL;
   // 구글 OAuth 리다이렉트 URL
   const redirectUrl =
     import.meta.env.VITE_GOOGLE_OAUTH_URL ??

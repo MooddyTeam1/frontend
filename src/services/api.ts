@@ -1,12 +1,40 @@
 // 한글 설명: API 통신을 위한 axios 인스턴스 및 API 함수들
 import axios from "axios";
 
+// 한글 설명: 환경별 API 기본 URL 설정
+// - 개발 환경 (.env.development): http://localhost:8080
+// - 배포 환경 (.env.production): EC2 백엔드 주소
+// - 로컬 오버라이드 (.env.local): 개인 설정 (선택적)
+const getApiBaseUrl = (): string => {
+  const env = import.meta.env.MODE; // 'development' | 'production'
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+  if (baseUrl) {
+    return baseUrl;
+  }
+
+  // 한글 설명: 환경변수가 없을 경우 환경에 따라 기본값 설정
+  if (env === "production") {
+    console.warn(
+      "⚠️ VITE_API_BASE_URL이 설정되지 않았습니다. 프로덕션 환경에서는 EC2 백엔드 주소를 설정해주세요."
+    );
+    // 한글 설명: 프로덕션에서는 기본값을 제공하지 않음 (명시적 설정 필요)
+    throw new Error(
+      "프로덕션 환경에서는 VITE_API_BASE_URL 환경변수를 설정해야 합니다."
+    );
+  }
+
+  // 한글 설명: 개발 환경 기본값
+  return "http://localhost:8080";
+};
+
+// 한글 설명: API 기본 URL을 export하여 다른 파일에서도 사용 가능하도록 함
+export const API_BASE_URL = getApiBaseUrl();
+
 // 한글 설명: Axios 인스턴스 생성
 const api = axios.create({
   // 한글 설명: 백엔드 기본 URL 설정
-  // - 개발 환경: VITE_API_BASE_URL 없으면 자동으로 http://localhost:8080 사용
-  // - 배포 환경(Vercel): VITE_API_BASE_URL에 EC2(또는 백엔드) 주소를 넣어줌
-  baseURL:  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  baseURL: getApiBaseUrl(),
 
   // 한글 설명: 요청 타임아웃 (10초)
   timeout: 30000,
@@ -20,6 +48,15 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// 한글 설명: 현재 API 설정 로그 (개발 환경에서만)
+if (import.meta.env.DEV) {
+  console.log("🔧 API 설정:", {
+    mode: import.meta.env.MODE,
+    baseURL: api.defaults.baseURL,
+    useMockApi: import.meta.env.VITE_USE_MOCK_API === "true",
+  });
+}
 
 // 한글 설명: 요청 인터셉터 (JWT 토큰 자동 추가)
 api.interceptors.request.use(
