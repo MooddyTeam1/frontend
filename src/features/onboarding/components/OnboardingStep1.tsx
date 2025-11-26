@@ -112,7 +112,7 @@ export const OnboardingStep1: React.FC<OnboardingStep1Props> = ({
           관심 카테고리 <span className="text-red-500">*</span>
         </label>
         <div className="flex flex-wrap gap-2">
-          {CATEGORY_OPTIONS_FOR_ONBOARDING.map((label) => {
+          {CATEGORY_OPTIONS_FOR_ONBOARDING.map((label: CategoryLabel) => {
             const isSelected = selectedCategories.has(label);
             return (
               <button
