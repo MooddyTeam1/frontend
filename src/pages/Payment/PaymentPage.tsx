@@ -84,19 +84,19 @@ export const PaymentPage: React.FC = () => {
         console.log("✅ 주문 상세 조회 완료:", orderData);
         console.log(
           "  - 주문 ID:",
-          orderData.summary?.orderId || orderData.orderId
+          orderData.summary?.orderId || ""
         );
         console.log(
           "  - 주문 코드:",
-          orderData.summary?.orderCode || orderData.orderCode
+          orderData.summary?.orderCode || ""
         );
         console.log(
           "  - 총 금액:",
-          orderData.summary?.totalAmount || orderData.totalAmount
+          orderData.summary?.totalAmount || 0
         );
         console.log(
           "  - 주문 상태:",
-          orderData.summary?.status || orderData.status
+          orderData.summary?.status || ""
         );
         console.log("  - 항목 수:", orderData.items?.length || 0);
 
@@ -150,8 +150,8 @@ export const PaymentPage: React.FC = () => {
 
     // 한글 설명: Mock 결제 승인을 위해 결제 성공 페이지로 직접 이동
     // 주의: 토스가 리다이렉트할 때 orderId 파라미터에는 orderCode가 들어감
-    const orderCode = order.summary?.orderCode || order.orderCode;
-    const totalAmount = order.summary?.totalAmount || order.totalAmount;
+    const orderCode = order.summary?.orderCode || "";
+    const totalAmount = order.summary?.totalAmount || 0;
     const mockPaymentKey = `mock_payment_${Date.now()}`;
     const successUrl = `/payment/success?paymentKey=${mockPaymentKey}&orderId=${orderCode}&amount=${totalAmount}`;
     navigate(successUrl);
@@ -172,10 +172,10 @@ export const PaymentPage: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      // 한글 설명: 주문 정보 추출 (summary 객체가 있으면 summary에서, 없으면 직접 접근)
-      const orderCode = order.summary?.orderCode || order.orderCode || "";
-      const orderName = order.summary?.orderName || order.orderName || "주문";
-      const totalAmount = order.summary?.totalAmount || order.totalAmount || 0;
+      // 한글 설명: 주문 정보 추출 (summary 객체에서만 접근)
+      const orderCode = order.summary?.orderCode || "";
+      const orderName = order.summary?.orderName || "주문";
+      const totalAmount = order.summary?.totalAmount || 0;
 
       // 한글 설명: 필수 값 검증
       if (!orderCode) {
@@ -313,11 +313,8 @@ export const PaymentPage: React.FC = () => {
             <div className="flex justify-between">
               <span className="text-neutral-500">주문번호</span>
               <span className="font-medium text-neutral-900">
-                {/* 한글 설명: summary 객체가 있으면 summary.orderCode 사용, 없으면 직접 접근 */}
-                {order.summary?.orderCode ||
-                  order.orderCode ||
-                  order.summary?.orderId ||
-                  order.orderId}
+                {/* 한글 설명: summary 객체에서 orderCode 또는 orderId 사용 */}
+                {order.summary?.orderCode || String(order.summary?.orderId || "")}
               </span>
             </div>
             <div className="flex justify-between">
@@ -382,7 +379,7 @@ export const PaymentPage: React.FC = () => {
             className="w-full rounded-full border border-neutral-900 bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-neutral-800"
           >
             🧪 Mock 결제하기 (
-            {currencyKRW(order.summary?.totalAmount || order.totalAmount || 0)})
+            {currencyKRW(order.summary?.totalAmount || 0)})
           </button>
         ) : (
           <button
@@ -392,7 +389,7 @@ export const PaymentPage: React.FC = () => {
           >
             {isProcessing
               ? "결제 처리 중..."
-              : `${currencyKRW(order.summary?.totalAmount || order.totalAmount || 0)} 결제하기`}
+              : `${currencyKRW(order.summary?.totalAmount || 0)} 결제하기`}
           </button>
         )}
       </div>

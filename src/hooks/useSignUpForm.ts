@@ -108,7 +108,7 @@ export const useSignUpForm = () => {
     const emailResult = emailSchema.safeParse(form.email);
     if (!emailResult.success) {
       setFieldErrors({
-        email: emailResult.error.errors[0]?.message || "이메일을 확인해 주세요",
+        email: emailResult.error.issues[0]?.message || "이메일을 확인해 주세요",
       });
       return;
     }

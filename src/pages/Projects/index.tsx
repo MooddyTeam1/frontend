@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Container } from "../../shared/components/Container";
 import { PublicProjectCard } from "../../features/projects/components/PublicProjectCard";
 import { useQuery } from "../../shared/hooks/useQuery";

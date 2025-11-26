@@ -120,7 +120,7 @@ interface MyProjectsStoreState {
   tempProject?: TempProjectResponseDTO;
   hasFetchedOverview: boolean;
   pendingStatusFetches: Set<ProjectStatus>;
-  fetchOverview: () => Promise<void>;
+  fetchOverview: (options?: { force?: boolean }) => Promise<void>;
   fetchByStatus: (
     status: ProjectStatus,
     options?: { force?: boolean }

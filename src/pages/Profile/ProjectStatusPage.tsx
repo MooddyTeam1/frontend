@@ -1,19 +1,19 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { Container } from "../../shared/components/Container";
-import {
-  useProjectStore,
-  type ProjectStatus,
-} from "../../features/creator/stores/projectStore";
+import { useProjectStore } from "../../features/creator/stores/projectStore";
 import { useMyProjectsStore } from "../../features/projects/stores/myProjectsStore";
-// 한글 설명: MyProjectStatusItemDTO는 myProjectsService에서 정의되지만 types.ts에서 export되지 않음
-// 임시로 타입을 직접 정의하거나 myProjectsService에서 import
+// 한글 설명: MyProjectStatusItemDTO는 myProjectsService에서 정의되지만 export되지 않음
+// 임시로 타입을 직접 정의 (myProjectsService의 mapMyProjectStatusItem 반환 타입과 일치)
 import type { ProjectStatus } from "../../features/projects/types";
 type MyProjectStatusItemDTO = {
   id: string;
+  projectId: string;
   title: string;
-  status: ProjectStatus;
-  // 한글 설명: 필요한 다른 필드들 추가 가능
+  summary?: string | null;
+  imgUrl?: string | null;
+  projectLifecycleStatus?: string;
+  projectReviewStatus?: string;
 };
 import { statusLabel } from "./index";
 import {
@@ -68,7 +68,7 @@ export const ProjectStatusPage: React.FC = () => {
     if (!normalizedStatus) return [];
 
     if (projects.length > 0) {
-      return projects.map((item) => ({
+      return projects.map((item: MyProjectStatusItemDTO) => ({
         ...item,
         remoteId: item.id,
         origin: "remote" as const,
@@ -79,6 +79,7 @@ export const ProjectStatusPage: React.FC = () => {
       .filter((draft) => draft.status === normalizedStatus)
       .map((draft) => ({
         id: draft.id,
+        projectId: draft.remoteId || draft.id, // 한글 설명: projectId 필수 필드 추가
         title: draft.title,
         summary: draft.summary,
         imgUrl: draft.coverImageUrl ?? null,
@@ -104,9 +105,11 @@ export const ProjectStatusPage: React.FC = () => {
   }, [normalizedStatus, fetchOverview, fetchByStatus, resetError]);
 
   // 한글 설명: status를 대문자로 변환하여 라벨 조회
+  // 한글 설명: statusLabel은 ProjectDraft["status"] 타입이지만, normalizedStatus는 ProjectStatus 타입
+  // 두 타입이 호환되므로 타입 단언 사용
   const statusTitle =
     normalizedStatus && normalizedStatus in statusLabel
-      ? statusLabel[normalizedStatus]
+      ? statusLabel[normalizedStatus as keyof typeof statusLabel]
       : "프로젝트";
 
   // 한글 설명: 프로젝트 삭제 핸들러 (DRAFT 상태에서만 가능)

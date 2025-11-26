@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { makerService } from "../../../features/maker/api/makerService";
 import type {
-  MakerSettlementProfileDTO,
   MakerSettlementProfileUpdateRequest,
 } from "../../../features/maker/types";
 

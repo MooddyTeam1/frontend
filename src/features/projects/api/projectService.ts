@@ -1,5 +1,5 @@
 import api from "../../../services/api";
-import type { ProjectListResponse, ProjectCategory, ProjectListResponseDTO } from "../types";
+import type { ProjectListResponse, ProjectCategory, ProjectListResponseDTO, ProjectCardResponseDTO } from "../types";
 
 // 한글 설명: 카테고리 + 정렬 기준으로 프로젝트 목록을 조회하는 API 호출 함수
 export interface FetchProjectsByCategoryParams {
@@ -39,9 +39,11 @@ export async function fetchProjectsByCategory(
   );
 
   // 한글 설명: 백엔드가 배열을 반환하므로, ProjectListResponse 형태로 변환
+  // 한글 설명: ProjectListResponse.items는 ProjectCardResponseDTO[] 타입이지만,
+  // 실제로는 ProjectListResponseDTO[]를 반환하므로 타입 변환 필요
   const items = response.data || [];
   return {
-    items: items as unknown as ProjectListResponseDTO[], // 한글 설명: ProjectListResponseDTO[] 타입으로 변환
+    items: items as unknown as ProjectCardResponseDTO[], // 한글 설명: ProjectCardResponseDTO[] 타입으로 변환
     total: items.length,
     page: 0,
     pageSize: items.length,

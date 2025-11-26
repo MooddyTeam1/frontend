@@ -13,6 +13,8 @@ import {
   CATEGORY_OPTIONS,
   type CategoryLabel,
 } from "../../shared/utils/categoryMapper";
+// 한글 설명: readonly 배열을 mutable 배열로 변환
+const CATEGORY_OPTIONS_MUTABLE = [...CATEGORY_OPTIONS] as CategoryLabel[];
 import {
   getSupporterOnboardingData,
   saveSupporterOnboardingStep1,
@@ -104,7 +106,7 @@ export const SupporterSettingsPage: React.FC = () => {
   const [form, setForm] =
     React.useState<SupporterProfileFormState>(emptyFormState);
   // 한글 설명: 관심사는 카테고리 매퍼의 카테고리 옵션을 사용
-  const allInterests: CategoryLabel[] = CATEGORY_OPTIONS;
+  const allInterests: CategoryLabel[] = CATEGORY_OPTIONS_MUTABLE;
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(
     emptyFormState.imageUrl
@@ -824,8 +826,8 @@ export const SupporterSettingsPage: React.FC = () => {
                         try {
                           // 한글 설명: Step1 저장 (관심 카테고리 + 선호 스타일)
                           const interestCategories: ProjectCategory[] =
-                            form.interests.map((label) =>
-                              categoryLabelToEnum(label)
+                            (form.interests as CategoryLabel[]).map((label: CategoryLabel) =>
+                              categoryLabelToEnum(label) as ProjectCategory
                             );
                           await saveSupporterOnboardingStep1({
                             interestCategories,

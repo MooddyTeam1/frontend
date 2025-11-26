@@ -70,7 +70,7 @@ export const PledgePage: React.FC = () => {
           setProjectError("유효하지 않은 프로젝트 ID입니다.");
           return;
         }
-        const detail = await fetchProjectDetail(projectId);
+        const detail = await fetchProjectDetail(String(projectId));
         setProject(detail);
       } catch (fetchError) {
         console.error("프로젝트 상세 조회 실패", fetchError);

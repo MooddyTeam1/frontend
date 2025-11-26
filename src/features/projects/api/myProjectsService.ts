@@ -197,6 +197,17 @@ type MyProjectStatusItemApiResponse = {
   [key: string]: any; // 한글 설명: 기타 필드 허용
 };
 
+// 한글 설명: MyProjectStatusItemDTO 타입 정의 (내부에서만 사용)
+type MyProjectStatusItemDTO = {
+  id: string;
+  projectId: string;
+  title: string;
+  summary?: string | null;
+  imgUrl?: string | null;
+  projectLifecycleStatus?: string;
+  projectReviewStatus?: string;
+};
+
 // 한글 설명: API 응답을 프론트엔드 DTO로 변환
 const mapMyProjectStatusItem = (
   raw: MyProjectStatusItemApiResponse
@@ -225,7 +236,7 @@ const mapMyProjectStatusItem = (
 // 한글 설명: 상태 기준 내 프로젝트 조회 (라이프사이클/심사 상태 필터)
 export const fetchMyProjectsByStatus = async (
   params: StatusFilterParams
-): Promise<MyProjectStatusResponseDTO> => {
+): Promise<MyProjectStatusItemDTO[]> => {
   const { lifecycle, review } = params;
   console.log("[myProjectsService] GET /project/me/status 요청 파라미터", {
     lifecycle,
