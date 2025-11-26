@@ -3,7 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Container } from "../../shared/components/Container";
 import { PublicProjectCard } from "../../features/projects/components/PublicProjectCard";
 import { useQuery } from "../../shared/hooks/useQuery";
-import type { ProjectListResponseDTO } from "../../features/projects/types";
+import type {
+  ProjectListResponseDTO,
+  MostViewedProjectResponseDTO,
+} from "../../features/projects/types";
 import {
   CategoryGridPicker,
   CATEGORY_OPTIONS,
@@ -13,6 +16,13 @@ import {
   fetchProjectsByCategory,
   searchProjects,
 } from "../../features/projects/api/projectService";
+import {
+  fetchMostViewedProjects,
+  fetchClosingSoonProjects,
+  fetchNewlyUploadedProjects,
+  fetchNearGoalProjects,
+  fetchTrendingScoredProjects,
+} from "../../features/projects/api/publicProjectsService";
 import { ProjectSearchBar } from "../../shared/components/search/ProjectSearchBar";
 import type { ProjectCategory } from "../../features/projects/types";
 import {
@@ -22,6 +32,7 @@ import {
 
 type SortKey =
   | "popular"
+  | "trending"
   | "new"
   | "ending_soon"
   | "amount"
@@ -56,6 +67,44 @@ export const ProjectsPage: React.FC = () => {
   const [totalCount, setTotalCount] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  // MostViewed -> ProjectListResponseDTO 매퍼
+  const mapMostViewedToProjectList = React.useCallback(
+    (
+      p: MostViewedProjectResponseDTO
+    ): ProjectListResponseDTO => {
+      const goal = p.goalAmount ?? null;
+      const raised = p.raised ?? null;
+      const achievementRate =
+        goal !== null && goal > 0 && raised !== null && raised !== undefined
+          ? Math.round(((raised / goal) * 100) * 10) / 10
+          : null;
+
+      return {
+        id: p.id,
+        maker: p.makerName ?? "",
+        title: p.title,
+        summary: p.summary ?? null,
+        goalAmount: goal,
+        raised: raised,
+        backerCount: p.backerCount ?? null,
+        startDate: p.startDate ?? null,
+        endDate: p.endDate ?? null,
+        category: p.category,
+        coverImageUrl: p.coverImageUrl,
+        coverGallery: null,
+        resultStatus: null,
+        liveStartAt: null,
+        liveEndAt: null,
+        badgeNew: false,
+        badgeClosingSoon: false,
+        badgeSuccessMaker: false,
+        badgeFirstChallengeMaker: false,
+        achievementRate,
+      };
+    },
+    []
+  );
 
   // 한글 설명: 카테고리 / 검색 / 정렬 변경 시 프로젝트 목록을 백엔드에서 조회
   React.useEffect(() => {
@@ -102,7 +151,38 @@ export const ProjectsPage: React.FC = () => {
             }
           );
 
-        const listResponse = await fetchProjectsByCategory({
+          if (sort === "popular") {
+            const mostViewed = await fetchMostViewedProjects(60, 30);
+            const mapped = mostViewed.map(mapMostViewedToProjectList);
+            setCategoryProjects(mapped);
+            setTotalCount(mapped.length);
+            return;
+          }
+          if (sort === "trending") {
+            const trending = (await fetchTrendingScoredProjects(30)) as unknown as ProjectListResponseDTO[];
+            setCategoryProjects(trending);
+            setTotalCount(trending.length);
+            return;
+          }
+          if (sort === "ending_soon") {
+            const closing = await fetchClosingSoonProjects();
+            setCategoryProjects(closing);
+            setTotalCount(closing.length);
+            return;
+          }
+          if (sort === "new") {
+            const newest = await fetchNewlyUploadedProjects(30);
+            setCategoryProjects(newest);
+            setTotalCount(newest.length);
+            return;
+          }
+          if (sort === "progress") {
+            const nearGoal = await fetchNearGoalProjects(30);
+            setCategoryProjects(nearGoal);
+            setTotalCount(nearGoal.length);
+            return;
+          }
+          const listResponse = await fetchProjectsByCategory({
             category, // 한글 설명: ⭐ 필수 - 백엔드 enum과 동일한 문자열
             // 한글 설명: 백엔드 API는 category만 받고 sort, page, size는 지원하지 않음
           });
