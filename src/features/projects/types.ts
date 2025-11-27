@@ -227,6 +227,7 @@ export interface ProjectCardResponseDTO {
   goalAmount: number;
   raised: number;
   backerCount: number;
+  bookmarkCount?: number | null;
   endDate: string;
   status: ProjectStatus;
   progressPercent: number;
@@ -256,6 +257,7 @@ export interface TrendingProjectResponseDTO {
   raised?: number | null; // 누적 모금액
   backerCount?: number | null; // 후원자 수
   makerName?: string | null; // 메이커 이름
+  bookmarkCount?: number | null;
 }
 
 /**
@@ -308,6 +310,7 @@ export interface MostViewedProjectResponseDTO {
   goalAmount?: number | null; // 목표 모금액
   raised?: number | null; // 누적 모금액
   backerCount?: number | null; // 후원자 수
+  bookmarkCount?: number | null;
 }
 
 /**
@@ -322,6 +325,8 @@ export interface ProjectListResponseDTO {
   goalAmount: number | null;
   raised: number | null; // 한글 설명: 누적 모금액 (null 가능)
   backerCount: number | null; // 한글 설명: 후원자 수 (null 가능)
+   bookmarkCount?: number | null; // 한글 설명: 찜 수
+   bookmarkedByMe?: boolean | null; // 한글 설명: 내가 찜했는지 여부
   startDate: string | null; // YYYY-MM-DD 형식
   endDate: string | null; // YYYY-MM-DD 형식
   category: CategoryEnum;
@@ -330,6 +335,10 @@ export interface ProjectListResponseDTO {
   resultStatus: ResultStatus;
   liveStartAt: string | null; // 한글 설명: 필요 시 상세에서 사용
   liveEndAt: string | null; // 한글 설명: 필요 시 상세에서 사용
+   lifecycleStatus?: ProjectLifecycleStatus;
+   reviewStatus?: ProjectReviewStatus | null;
+   live?: boolean | null;
+   scheduled?: boolean | null;
   // 한글 설명: 뱃지 플래그들
   badgeNew: boolean; // "신규" 뱃지 여부
   badgeClosingSoon: boolean; // "마감 임박" 뱃지 여부
