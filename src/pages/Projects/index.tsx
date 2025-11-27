@@ -208,7 +208,8 @@ export const ProjectsPage: React.FC = () => {
             setTotalCount(sorted.length);
             return;
           }
-          if (categoryQuery !== "all") {
+          // 한글 설명: categoryQuery가 "all"이 아닌 경우 (이미 위에서 "all" 체크를 했으므로 여기서는 항상 true)
+          if ((categoryQuery as CategoryKey) !== "all") {
             const listResponse = await fetchProjectsByCategory({
               category,
             });
@@ -282,14 +283,14 @@ export const ProjectsPage: React.FC = () => {
             return;
           }
 
-          if (sort === "backers" && categoryQuery === "all") {
+          if (sort === "backers" && (categoryQuery as CategoryKey) === "all") {
             const base = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
             const sorted = [...base].sort((a, b) => (b.backerCount ?? 0) - (a.backerCount ?? 0));
             setCategoryProjects(sorted);
             setTotalCount(sorted.length);
             return;
           }
-          if (sort === "amount" && categoryQuery === "all") {
+          if (sort === "amount" && (categoryQuery as CategoryKey) === "all") {
             const base = (await fetchTrendingScoredProjects(60)) as unknown as ProjectListResponseDTO[];
             const sorted = [...base].sort((a, b) => (b.raised ?? 0) - (a.raised ?? 0));
             setCategoryProjects(sorted);
@@ -384,7 +385,7 @@ export const ProjectsPage: React.FC = () => {
                 return ga > 0 ? Math.floor((rv * 100) / ga) : 0;
               };
               let sorted = itemsArr;
-              if (sort === "progress") {
+              if ((sort as SortKey) === "progress") {
                 sorted = [...itemsArr].sort((a, b) => getRate(b) - getRate(a));
               } else if (sort === "backers") {
                 sorted = [...itemsArr].sort((a, b) => (b.backerCount ?? 0) - (a.backerCount ?? 0));

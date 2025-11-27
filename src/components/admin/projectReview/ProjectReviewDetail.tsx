@@ -13,23 +13,6 @@ import type {
 } from "../../../types/admin/projectReview";
 import { StoryViewer } from "../../../shared/components/StoryViewer";
 
-// 한글 설명: 날짜 포맷팅 함수 (date-fns 대신 기본 Date 객체 사용)
-const formatDate = (dateString: string | null): string => {
-  if (!dateString) return "-";
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return dateString;
-  }
-};
-
 // 한글 설명: 날짜만 포맷팅 (YYYY-MM-DD 형식)
 const formatDateOnly = (dateString: string | null): string => {
   if (!dateString) return "-";

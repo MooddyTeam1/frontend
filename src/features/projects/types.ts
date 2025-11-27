@@ -258,7 +258,6 @@ export interface TrendingProjectResponseDTO {
   raised?: number | null; // 누적 모금액
   backerCount?: number | null; // 후원자 수
   makerName?: string | null; // 메이커 이름
-  bookmarkCount?: number | null;
 }
 
 /**

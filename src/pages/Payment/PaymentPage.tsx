@@ -6,13 +6,6 @@ import { currencyKRW } from "../../shared/utils/format";
 import { getOrder, type OrderResponseDTO } from "../../services/api";
 import { requestTossPayment } from "../../shared/utils/payment";
 
-// 한글 설명: 토스페이먼츠 클라이언트 키 (결제창 SDK용)
-// 주의: 결제창 SDK 방식은 위젯 키(test_gck_)가 아닌 일반 클라이언트 키(test_ck_)도 사용 가능
-const clientKey =
-  import.meta.env.VITE_TOSS_CLIENT_KEY ||
-  import.meta.env.VITE_TOSS_WIDGET_CLIENT_KEY ||
-  "";
-
 export const PaymentPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,14 +22,6 @@ export const PaymentPage: React.FC = () => {
   const [loadingOrder, setLoadingOrder] = useState(false);
   // 한글 설명: 주문 로드 에러
   const [orderError, setOrderError] = useState<string | null>(null);
-
-  // ============================================
-  // Mock 결제 모드 사용 중단 - 주석처리됨
-  // ============================================
-  // 한글 설명: 클라이언트 키가 없거나 기본값인 경우 Mock 결제 모드
-  // 주의: 결제창 SDK 방식은 위젯 키 없이도 일반 클라이언트 키로 사용 가능
-  // const isMockMode = !clientKey || clientKey === "test_ck_xxxxxxxxx";
-  const isMockMode = false; // Mock 모드 비활성화
 
   // 한글 설명: 주문 상세 조회 (location.state에 주문 정보가 없을 때 orderId로 조회)
   useEffect(() => {
