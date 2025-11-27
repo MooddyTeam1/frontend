@@ -23,16 +23,21 @@ type OrdersSectionProps = {
 
 const PAYMENT_STATUS_LABELS: Record<OrderItemDTO["paymentStatus"], string> = {
   SUCCESS: "결제완료",
+  PAID: "결제완료",
   CANCELLED: "취소됨",
+  CANCELED: "취소됨",
   REFUNDED: "환불됨",
   PENDING: "대기중",
 };
 
 const DELIVERY_STATUS_LABELS: Record<OrderItemDTO["deliveryStatus"], string> = {
   PREPARING: "준비중",
-  SHIPPED: "발송완료",
+  SHIPPING: "배송중",
+  SHIPPED: "발송완료", // 하위호환
   DELIVERED: "전달완료",
   NONE: "배송없음",
+  CONFIRMED: "수령확정",
+  ISSUE: "배송이슈",
 };
 
 export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
@@ -140,9 +145,8 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
           className="rounded border border-neutral-200 bg-white px-3 py-2 text-xs"
         >
           <option value="">결제 상태 전체</option>
-          <option value="SUCCESS">결제완료</option>
-          <option value="CANCELLED">취소됨</option>
-          <option value="REFUNDED">환불됨</option>
+          <option value="PAID">결제완료</option>
+          <option value="CANCELED">취소/환불</option>
           <option value="PENDING">대기중</option>
         </select>
         <select
@@ -206,9 +210,10 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
                   <td className="px-3 py-3 text-center">
                     <span
                       className={`rounded-full px-2 py-1 text-[10px] font-medium ${
-                        order.paymentStatus === "SUCCESS"
+                        order.paymentStatus === "SUCCESS" || order.paymentStatus === "PAID"
                           ? "bg-green-100 text-green-700"
                           : order.paymentStatus === "CANCELLED" ||
+                              order.paymentStatus === "CANCELED" ||
                               order.paymentStatus === "REFUNDED"
                             ? "bg-red-100 text-red-700"
                             : "bg-yellow-100 text-yellow-700"

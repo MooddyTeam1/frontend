@@ -108,18 +108,50 @@ export const getProjectOrders = async (
   }
 ): Promise<{ orders: OrderItemDTO[]; totalCount: number }> => {
   const queryParams = new URLSearchParams();
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
-        queryParams.append(key, String(value));
-      }
-    });
+
+  // 백엔드 페이지는 0-based, 프론트는 1-based → 변환
+  const page = params?.page ? Math.max(params.page - 1, 0) : 0;
+  queryParams.append("page", String(page));
+
+  // 백엔드 파라미터 이름은 size
+  const size = params?.pageSize ?? 50;
+  queryParams.append("size", String(size));
+
+  if (params?.rewardId !== undefined) {
+    queryParams.append("rewardId", String(params.rewardId));
   }
 
-  const { data } = await api.get<{ orders: OrderItemDTO[]; totalCount: number }>(
-    `/api/maker/projects/${projectId}/orders?${queryParams.toString()}`
-  );
-  return data;
+  // 결제 상태 매핑: 프론트 표기 → 백엔드 Enum
+  if (params?.paymentStatus) {
+    const mappedPayment =
+      params.paymentStatus === "SUCCESS" ? "PAID" :
+      params.paymentStatus === "CANCELLED" ? "CANCELED" :
+      params.paymentStatus === "REFUNDED" ? "CANCELED" :
+      params.paymentStatus;
+    queryParams.append("paymentStatus", mappedPayment);
+  }
+
+  // 배송 상태는 그대로 전달 (백엔드: NONE/PREPARING/SHIPPING/DELIVERED/CONFIRMED/ISSUE)
+  if (params?.deliveryStatus) {
+    queryParams.append("deliveryStatus", params.deliveryStatus);
+  }
+
+  if (params?.startDate) queryParams.append("startDate", params.startDate);
+  if (params?.endDate) queryParams.append("endDate", params.endDate);
+
+  const { data } = await api.get<{
+    content: OrderItemDTO[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+  }>(`/api/maker/projects/${projectId}/orders?${queryParams.toString()}`);
+
+  return {
+    orders: data?.content ?? [],
+    totalCount: data?.totalElements ?? 0,
+  };
 };
 
 // 한글 설명: 주문 목록 엑셀 다운로드
