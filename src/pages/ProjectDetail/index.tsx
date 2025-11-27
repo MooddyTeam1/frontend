@@ -14,7 +14,7 @@ import { useAuthStore } from "../../features/auth/stores/authStore";
 import type { ProjectDetailResponseDTO } from "../../features/projects/types";
 import { resolveImageUrl } from "../../shared/utils/image";
 import { StoryViewer } from "../../shared/components/StoryViewer";
-import { ProjectQnaSection } from "../../features/qna/components/ProjectQnaSection";
+import { ProjectQnaSection as ProjectQnaSectionFixed } from "../../features/qna/components/ProjectQnaSectionFixed";
 import { ProjectNewsSection } from "../../features/maker/projectManagement/components/ProjectNewsSection";
 import { useTracking } from "../../features/tracking/hooks/useTracking";
 import { ProjectRewardsTab } from "../../features/projects/components/ProjectRewardsTab";
@@ -482,7 +482,7 @@ export const ProjectDetailPage: React.FC = () => {
             {/* 한글 설명: Q&A 섹션 컴포넌트 */}
             {/* 한글 설명: project.id는 string 타입이므로 number로 변환 */}
             {/* 한글 설명: 소유자인 경우 isOwner prop 전달하여 문의 작성 폼 숨김 */}
-            <ProjectQnaSection
+            <ProjectQnaSectionFixed
               projectId={parseInt(String(project.id), 10) || 0}
               isOwner={isProjectOwner}
             />

@@ -1,10 +1,11 @@
-// 한글 설명: 서포터용 프로젝트 Q&A 섹션 컴포넌트
+// ?��? ?�명: ?�포?�용 ?�로?�트 Q&A ?�션 컴포?�트
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "../../auth/stores/authStore";
 import {
   createQuestion,
   getMyQnaList,
   getQnaListForMaker,
+  getPublicQnaList,
 } from "../api/qnaApi";
 import type {
   ProjectQnaResponse,
@@ -13,63 +14,59 @@ import type {
 
 type ProjectQnaSectionProps = {
   projectId: number;
-  // 한글 설명: 프로젝트 소유자인지 여부 (소유자면 문의 작성 불가, 목록만 조회)
+  // ?��? ?�명: ?�로?�트 ?�유?�인지 ?��? (?�유?�면 문의 ?�성 불�?, 목록�?조회)
   isOwner?: boolean;
 };
 
 /**
- * 한글 설명: 프로젝트 상세 페이지 하단에 붙는 Q&A 섹션
- * 서포터가 질문을 작성하고, 자신이 남긴 Q&A 목록을 볼 수 있음
+ * ?��? ?�명: ?�로?�트 ?�세 ?�이지 ?�단??붙는 Q&A ?�션
+ * ?�포?��? 질문???�성?�고, ?�신???�긴 Q&A 목록??�????�음
  */
 export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
   projectId,
   isOwner = false,
 }) => {
-  // 한글 설명: 로그인 상태 확인
+  // ?��? ?�명: 로그???�태 ?�인
   const { user } = useAuthStore();
   
-  // 한글 설명: Q&A 목록 상태
+  // ?��? ?�명: Q&A 목록 ?�태
   const [qnaList, setQnaList] = useState<ProjectQnaResponse[]>([]);
   
-  // 한글 설명: 로딩 상태
+  // ?��? ?�명: 로딩 ?�태
   const [loading, setLoading] = useState(false);
   
-  // 한글 설명: 에러 상태
+  // ?��? ?�명: ?�러 ?�태
   const [error, setError] = useState<string | null>(null);
   
-  // 한글 설명: 질문 작성 폼 상태
+  // ?��? ?�명: 질문 ?�성 ???�태
   const [questionForm, setQuestionForm] = useState({
     question: "",
-    isPrivate: true, // 한글 설명: 기본값은 비공개
+    isPrivate: true, // ?��? ?�명: 기본값�? 비공�?
   });
   
-  // 한글 설명: 질문 작성 중 상태
+  // ?��? ?�명: 질문 ?�성 �??�태
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
-   * 한글 설명: Q&A 목록 불러오기
-   * 소유자인 경우 모든 서포터의 문의를, 서포터인 경우 자신의 문의만 조회
+   * ?��? ?�명: Q&A 목록 불러?�기
+   * ?�유?�인 경우 모든 ?�포?�의 문의�? ?�포?�인 경우 ?�신??문의�?조회
    */
   const fetchMyQnaList = async () => {
-    if (!user) {
-      setQnaList([]);
-      return;
-    }
+    if (!user) {\r\n      try {\r\n        setLoading(true);\r\n        setError(null);\r\n        const publicList = await getPublicQnaList(projectId);\r\n        setQnaList(Array.isArray(publicList) ? publicList : []);\r\n      } catch (err) {\r\n        console.error('���� Q&A ��� ��ȸ ����:', err);\r\n        setError('Q&A�� �ҷ����� ���߽��ϴ�.');\r\n        setQnaList([]);\r\n      } finally {\r\n        setLoading(false);\r\n      }\r\n      return;\r\n    }
 
     try {
       setLoading(true);
       setError(null);
-      // 한글 설명: 소유자인 경우 메이커용 API 사용, 그 외에는 서포터용 API 사용
+      // ?��? ?�명: ?�유?�인 경우 메이커용 API ?�용, �??�에???�포?�용 API ?�용
       const response = isOwner
         ? await getQnaListForMaker(projectId)
         : await getMyQnaList(projectId);
       
-      // 한글 설명: API 응답이 배열인지 확인하고, 배열이 아니면 빈 배열로 처리
-      const data = Array.isArray(response) ? response : [];
-      setQnaList(data);
+      // ?��? ?�명: API ?�답??배열?��? ?�인?�고, 배열???�니�?�?배열�?처리
+      setQnaList(Array.isArray(response) ? response : []);
     } catch (err) {
-      console.error("Q&A 목록 조회 실패:", err);
-      setError("Q&A 목록을 불러오는 도중 문제가 발생했습니다.");
+      console.error("Q&A 목록 조회 ?�패:", err);
+      setError("Q&A 목록??불러?�는 ?�중 문제가 발생?�습?�다.");
       setQnaList([]);
     } finally {
       setLoading(false);
@@ -77,7 +74,7 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
   };
 
   /**
-   * 한글 설명: 컴포넌트 마운트 시 및 로그인 상태 변경 시 Q&A 목록 불러오기
+   * ?��? ?�명: 컴포?�트 마운????�?로그???�태 변�???Q&A 목록 불러?�기
    */
   useEffect(() => {
     fetchMyQnaList();
@@ -85,16 +82,16 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
   }, [projectId, user, isOwner]);
 
   /**
-   * 한글 설명: 질문 작성 핸들러
+   * ?��? ?�명: 질문 ?�성 ?�들??
    */
   const handleSubmitQuestion = async () => {
     if (!user) {
-      alert("로그인 후 문의를 남길 수 있습니다.");
+      alert("로그????문의�??�길 ???�습?�다.");
       return;
     }
 
     if (!questionForm.question.trim()) {
-      alert("질문 내용을 입력해주세요.");
+      alert("질문 ?�용???�력?�주?�요.");
       return;
     }
 
@@ -107,23 +104,23 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
       
       await createQuestion(projectId, payload);
       
-      // 한글 설명: 성공 시 폼 초기화 및 목록 새로고침
+      // ?��? ?�명: ?�공 ????초기??�?목록 ?�로고침
       setQuestionForm({
         question: "",
         isPrivate: true,
       });
       await fetchMyQnaList();
-      alert("질문이 등록되었습니다.");
+      alert("질문???�록?�었?�니??");
     } catch (err) {
-      console.error("질문 작성 실패:", err);
-      alert("질문 등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      console.error("질문 ?�성 ?�패:", err);
+      alert("질문 ?�록???�패?�습?�다. ?�시 ???�시 ?�도?�주?�요.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   /**
-   * 한글 설명: 날짜 포맷팅 유틸 함수 (간단한 형식)
+   * ?��? ?�명: ?�짜 ?�맷???�틸 ?�수 (간단???�식)
    */
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -137,23 +134,23 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 한글 설명: Q&A 작성 폼 - 소유자가 아닐 때만 표시 */}
+      {/* ?��? ?�명: Q&A ?�성 ??- ?�유?��? ?�닐 ?�만 ?�시 */}
       {!isOwner && (
         <div className="rounded-3xl border border-neutral-200 bg-white p-6">
           <h2 className="mb-4 text-lg font-semibold text-neutral-900">
-            문의하기
+            문의?�기
           </h2>
           
           {!user ? (
-            // 한글 설명: 비로그인 상태 안내
+            // ?��? ?�명: 비로그인 ?�태 ?�내
             <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-center text-sm text-neutral-500">
-              로그인 후 문의를 남길 수 있습니다.
+              로그????문의�??�길 ???�습?�다.
             </div>
           ) : (
             <div className="space-y-4">
-              {/* 한글 설명: 질문 입력 영역 */}
+              {/* ?��? ?�명: 질문 ?�력 ?�역 */}
               <textarea
-                placeholder="프로젝트에 대해 궁금한 점을 남겨주세요."
+                placeholder="?�로?�트???�??궁금???�을 ?�겨주세??"
                 value={questionForm.question}
                 onChange={(e) =>
                   setQuestionForm((prev) => ({
@@ -165,7 +162,7 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
                 className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none"
               />
               
-              {/* 한글 설명: 비공개 체크박스 */}
+              {/* ?��? ?�명: 비공�?체크박스 */}
               <label className="flex items-center gap-2 text-sm text-neutral-600">
                 <input
                   type="checkbox"
@@ -178,65 +175,65 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
                   }
                   className="h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
                 />
-                <span>비공개 질문으로 남기기 (나와 메이커만 볼 수 있습니다)</span>
+                <span>비공�?질문?�로 ?�기�?(?��? 메이커만 �????�습?�다)</span>
               </label>
               
-              {/* 한글 설명: 질문 등록 버튼 */}
+              {/* ?��? ?�명: 질문 ?�록 버튼 */}
               <button
                 type="button"
                 onClick={handleSubmitQuestion}
                 disabled={isSubmitting || !questionForm.question.trim()}
                 className="w-full rounded-full border border-neutral-900 bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isSubmitting ? "등록 중..." : "질문 등록"}
+                {isSubmitting ? "?�록 �?.." : "질문 ?�록"}
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* 한글 설명: Q&A 목록 - 소유자는 서포터가 남긴 문의, 서포터는 내가 남긴 문의 */}
+      {/* ?��? ?�명: Q&A 목록 - ?�유?�는 ?�포?��? ?�긴 문의, ?�포?�는 ?��? ?�긴 문의 */}
       <div className="rounded-3xl border border-neutral-200 bg-white p-6">
         <h2 className="mb-4 text-lg font-semibold text-neutral-900">
-          {isOwner ? "서포터가 남긴 문의" : "내가 남긴 문의"}
+          {isOwner ? "?�포?��? ?�긴 문의" : "?��? ?�긴 문의"}
         </h2>
         
         {!user ? (
-          // 한글 설명: 비로그인 상태 안내
+          // ?��? ?�명: 비로그인 ?�태 ?�내
           <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-center text-sm text-neutral-500">
             {isOwner
-              ? "로그인 후 서포터가 남긴 문의를 확인할 수 있습니다."
-              : "로그인 후 내가 남긴 문의를 확인할 수 있습니다."}
+              ? "로그?????�포?��? ?�긴 문의�??�인?????�습?�다."
+              : "로그?????��? ?�긴 문의�??�인?????�습?�다."}
           </div>
         ) : loading ? (
-          // 한글 설명: 로딩 상태
+          // ?��? ?�명: 로딩 ?�태
           <div className="py-8 text-center text-sm text-neutral-500">
-            로딩 중...
+            로딩 �?..
           </div>
         ) : error ? (
-          // 한글 설명: 에러 상태
+          // ?��? ?�명: ?�러 ?�태
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-600">
             {error}
           </div>
         ) : qnaList.length === 0 ? (
-          // 한글 설명: Q&A가 없을 때
+          // ?��? ?�명: Q&A가 ?�을 ??
           <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-center text-sm text-neutral-500">
             {isOwner
-              ? "아직 서포터가 남긴 문의가 없습니다."
-              : "아직 남긴 문의가 없습니다."}
+              ? "?�직 ?�포?��? ?�긴 문의가 ?�습?�다."
+              : "?�직 ?�긴 문의가 ?�습?�다."}
           </div>
         ) : (
-          // 한글 설명: Q&A 목록 표시
+          // ?��? ?�명: Q&A 목록 ?�시
           <div className="space-y-4">
             {qnaList.map((qna) => (
               <div
                 key={qna.id}
                 className="rounded-xl border border-neutral-200 bg-white p-4"
               >
-                {/* 한글 설명: Q&A 헤더 (상태 뱃지 + 날짜) */}
+                {/* ?��? ?�명: Q&A ?�더 (?�태 뱃�? + ?�짜) */}
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {/* 한글 설명: 상태 뱃지 */}
+                    {/* ?��? ?�명: ?�태 뱃�? */}
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-medium ${
                         qna.status === "ANSWERED"
@@ -244,29 +241,29 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
                           : "bg-yellow-100 text-yellow-700"
                       }`}
                     >
-                      {qna.status === "ANSWERED" ? "답변 완료" : "답변 대기"}
+                      {qna.status === "ANSWERED" ? "?��? ?�료" : "?��? ?��?}
                     </span>
                   </div>
-                  {/* 한글 설명: 질문 등록 일시 */}
+                  {/* ?��? ?�명: 질문 ?�록 ?�시 */}
                   <span className="text-xs text-neutral-500">
                     {formatDate(qna.createdAt)}
                   </span>
                 </div>
                 
-                {/* 한글 설명: 질문 내용 */}
+                {/* ?��? ?�명: 질문 ?�용 */}
                 <div className="mb-3 rounded-lg bg-neutral-50 p-3 text-sm text-neutral-700">
                   <p className="font-medium text-neutral-900">질문:</p>
                   <p className="mt-1 whitespace-pre-wrap">{qna.question}</p>
                 </div>
                 
-                {/* 한글 설명: 답변 내용 (있을 때만 표시) */}
+                {/* ?��? ?�명: ?��? ?�용 (?�을 ?�만 ?�시) */}
                 {qna.answer && (
                   <div className="rounded-lg bg-blue-50 p-3 text-sm text-neutral-700">
-                    <p className="mb-1 font-medium text-blue-700">메이커 답변:</p>
+                    <p className="mb-1 font-medium text-blue-700">메이�??��?:</p>
                     <p className="whitespace-pre-wrap">{qna.answer}</p>
                     {qna.answeredAt && (
                       <p className="mt-2 text-xs text-neutral-500">
-                        답변일시: {formatDate(qna.answeredAt)}
+                        ?��??�시: {formatDate(qna.answeredAt)}
                       </p>
                     )}
                   </div>
@@ -279,4 +276,6 @@ export const ProjectQnaSection: React.FC<ProjectQnaSectionProps> = ({
     </div>
   );
 };
+
+
 
