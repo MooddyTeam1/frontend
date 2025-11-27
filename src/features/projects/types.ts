@@ -182,6 +182,7 @@ export interface ProjectDetailResponseDTO {
   id: ProjectId;
   makerId: MakerId;
   makerName: string; // makers.name
+  makerImageUrl?: string | null;
   slug: string;
   title: string;
   summary: string;

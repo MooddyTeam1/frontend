@@ -127,7 +127,7 @@ const buildMakerSummary = (
 ): MakerSummary => ({
   id: project.makerId,
   name: project.makerName ?? "메이커",
-  avatarUrl: project.coverImageUrl ?? undefined,
+  avatarUrl: project.makerImageUrl ?? undefined,
   followerCount: 0,
   isFollowing: false,
   contactEmail: undefined,
