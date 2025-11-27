@@ -36,6 +36,7 @@ const convertToProjectCard = (
     goalAmount: project.goalAmount ?? 0, // 한글 설명: optional 필드 사용
     raised: project.raised ?? 0, // 한글 설명: optional 필드 사용
     backerCount: project.backerCount ?? 0, // 한글 설명: optional 필드 사용
+    bookmarkCount: project.bookmarkCount ?? 0,
     endDate: project.endDate ?? "",
     status:
       project.lifecycleStatus === "LIVE"

@@ -96,6 +96,10 @@ export const TrendingProjectCard: React.FC<TrendingProjectCardProps> = ({
   };
 
   const statusLabel = getStatusLabel();
+  const bookmarkCount =
+    ("bookmarkCount" in project && project.bookmarkCount !== undefined)
+      ? project.bookmarkCount ?? 0
+      : 0;
 
   return (
     <Link
@@ -192,6 +196,7 @@ export const TrendingProjectCard: React.FC<TrendingProjectCardProps> = ({
               ? `${project.backerCount}명 후원`
               : "0명 후원"}
           </span>
+          <span className="text-xs text-neutral-500">찜 {bookmarkCount}</span>
         </div>
       </div>
     </Link>

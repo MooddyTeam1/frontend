@@ -66,6 +66,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, hideFunding =
     }
   };
 
+  const bookmarkCount = project.bookmarkCount ?? 0;
+
   return (
     <div ref={cardRef}>
       <Link
@@ -147,6 +149,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, hideFunding =
             ? `${project.backerCount}명 후원`
             : "0명 후원"}
         </span>
+      </div>
+      <div className="flex items-center justify-between text-xs text-neutral-500">
+        <span>찜 {bookmarkCount}</span>
+        {project.backerCount !== undefined && (
+          <span className="sr-only">후원자 {project.backerCount ?? 0}명</span>
+        )}
       </div>
     </div>
     )}
