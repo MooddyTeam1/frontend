@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Container } from "../../shared/components/Container";
-import { currencyKRW } from "../../shared/utils/format";
 import { useAuthStore } from "../../features/auth/stores/authStore";
 import type {
   ProjectCardResponseDTO,
@@ -51,16 +50,6 @@ export const HomePage: React.FC = () => {
   const [loadingTrending, setLoadingTrending] = useState(false);
   const [loadingPopular, setLoadingPopular] = useState(false);
   const [loadingNearGoal, setLoadingNearGoal] = useState(false);
-  // 한글 설명: 하이라이트 카드용 프로젝트 (trending의 첫 번째 항목)
-  const highlight = trending[0]
-    ? {
-        id: String(trending[0].projectId ?? trending[0].id ?? 0),
-        title: trending[0].title,
-        summary: trending[0].summary ?? "",
-        raised: 0, // 한글 설명: trending API에는 raised 정보가 없음
-        backerCount: 0, // 한글 설명: trending API에는 backerCount 정보가 없음
-      }
-    : null;
 
   // 한글 설명: 지금 뜨는 프로젝트 조회 (점수 기반)
   useEffect(() => {

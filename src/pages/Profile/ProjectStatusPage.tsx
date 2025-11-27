@@ -286,11 +286,27 @@ export const ProjectStatusPage: React.FC = () => {
               const projectId =
                 project.remoteId ?? project.projectId ?? project.id;
 
-              // 한글 설명: DRAFT는 편집 페이지로, 나머지는 프로젝트 상세 페이지로 이동
-              const destination =
-                normalizedStatus === "DRAFT"
-                  ? `/creator/projects/new/${projectId}`
-                  : `/projects/${projectId}`;
+              // 한글 설명: 상태별 이동 페이지 결정
+              // - DRAFT: 편집 페이지
+              // - REVIEW (심사중): 메이커 프로젝트 관리 페이지 (프로젝트 정보 페이지)
+              // - APPROVED, SCHEDULED: 메이커 프로젝트 관리 페이지
+              // - LIVE, ENDED: 공개 프로젝트 상세 페이지
+              // - REJECTED: 메이커 프로젝트 관리 페이지
+              let destination: string;
+              if (normalizedStatus === "DRAFT") {
+                destination = `/creator/projects/new/${projectId}`;
+              } else if (
+                normalizedStatus === "REVIEW" ||
+                normalizedStatus === "APPROVED" ||
+                normalizedStatus === "SCHEDULED" ||
+                normalizedStatus === "REJECTED"
+              ) {
+                // 한글 설명: 심사중, 승인됨, 공개예정, 반려됨 상태는 메이커 프로젝트 관리 페이지로
+                destination = `/maker/projects/${projectId}`;
+              } else {
+                // 한글 설명: LIVE, ENDED 상태는 공개 프로젝트 상세 페이지로
+                destination = `/projects/${projectId}`;
+              }
 
               const linkState =
                 normalizedStatus === "DRAFT"
