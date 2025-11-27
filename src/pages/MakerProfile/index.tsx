@@ -44,6 +44,7 @@ export const MakerPublicPage: React.FC = () => {
   const [maker, setMaker] = React.useState<PublicMaker | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [myMakerId, setMyMakerId] = React.useState<string | null>(null); // 한글 설명: 내 메이커 ID
   const [allKeywords] = React.useState<MakerKeywordDTO[]>([
     { id: 1, name: "친환경" },
     { id: 2, name: "소셜임팩트" },
@@ -111,6 +112,28 @@ export const MakerPublicPage: React.FC = () => {
       ? "projects"
       : lastPart;
 
+  // 한글 설명: 내 메이커 프로필 조회 (본인 여부 체크용)
+  React.useEffect(() => {
+    const loadMyMakerProfile = async () => {
+      if (!user) {
+        setMyMakerId(null);
+        return;
+      }
+
+      try {
+        const myProfile = await makerService.getMyProfile();
+        setMyMakerId(myProfile.id);
+        console.log("[MakerPublicPage] 내 메이커 ID:", myProfile.id);
+      } catch (err) {
+        // 한글 설명: 메이커 프로필이 없거나 조회 실패 시 null로 설정 (에러 무시)
+        console.log("[MakerPublicPage] 내 메이커 프로필 조회 실패 (정상일 수 있음):", err);
+        setMyMakerId(null);
+      }
+    };
+
+    loadMyMakerProfile();
+  }, [user]);
+
   // 한글 설명: 메이커 프로필 조회
   React.useEffect(() => {
     const loadMakerProfile = async () => {
@@ -121,10 +144,15 @@ export const MakerPublicPage: React.FC = () => {
         setError(null);
         const data = await makerService.getPublicProfile(makerIdForApi);
 
+        // 한글 설명: 디버깅을 위한 로그
+        console.log("[MakerPublicPage] API 응답:", data);
+        console.log("[MakerPublicPage] 현재 사용자:", user);
+        console.log("[MakerPublicPage] ownerUserId:", data.ownerUserId || data.ownerId);
+
         // 한글 설명: API 응답을 PublicMaker 타입으로 변환
         setMaker({
           makerId: data.makerId || makerId,
-          ownerUserId: data.ownerUserId || "",
+          ownerUserId: data.ownerUserId || data.ownerId || "",
           name: data.name || "메이커",
           imageUrl: data.imageUrl || null,
           productIntro: data.productIntro || null,
@@ -152,7 +180,24 @@ export const MakerPublicPage: React.FC = () => {
     };
 
     loadMakerProfile();
-  }, [makerIdForApi, makerId]);
+  }, [makerIdForApi, makerId, user]);
+
+  // 한글 설명: 본인 여부 체크 (내 메이커 ID와 현재 URL의 makerId 비교)
+  // 한글 설명: React Hooks 규칙을 지키기 위해 early return 전에 호출
+  const isOwner = React.useMemo(() => {
+    if (!myMakerId || !makerIdForApi) return false;
+    
+    // 한글 설명: 내 메이커 ID와 현재 페이지의 makerId 비교
+    const isMatch = String(myMakerId) === String(makerIdForApi);
+    
+    console.log("[MakerPublicPage] isOwner 체크:", {
+      myMakerId,
+      currentMakerId: makerIdForApi,
+      isMatch,
+    });
+    
+    return isMatch;
+  }, [myMakerId, makerIdForApi]);
 
   // 한글 설명: 로딩 중이거나 에러 발생 시 처리
   if (loading) {
@@ -186,8 +231,6 @@ export const MakerPublicPage: React.FC = () => {
       </Container>
     );
   }
-
-  const isOwner = !!user && maker && user.id === maker.ownerUserId;
   const selectedKeywords = maker
     ? allKeywords.filter((kw) => maker.keywords.includes(kw.id))
     : [];

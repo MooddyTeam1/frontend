@@ -14,9 +14,9 @@ export const ThemeBanner: React.FC = () => {
   };
 
   return (
-    <section className="border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-white py-12">
+    <section className="border-b border-neutral-200/50 bg-gradient-to-br from-neutral-100/50 via-white to-neutral-50 py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-neutral-200 bg-white p-8">
+        <div className="rounded-3xl border border-neutral-200/50 bg-gradient-to-br from-white via-neutral-50/50 via-white to-neutral-100/30 p-8 shadow-xl">
           <div className="mb-4 flex items-center gap-3">
             <span className="text-3xl">{theme.emoji}</span>
             <div>
@@ -33,7 +33,7 @@ export const ThemeBanner: React.FC = () => {
               {/* 한글 설명: 테마별 프로젝트 카드 표시 (추후 구현) */}
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-neutral-200 bg-neutral-50 p-6 text-center text-sm text-neutral-500">
+            <div className="rounded-xl border border-dashed border-neutral-200/50 bg-gradient-to-br from-neutral-50/50 to-white p-6 text-center text-sm text-neutral-500">
               테마별 프로젝트를 준비 중이에요.
             </div>
           )}

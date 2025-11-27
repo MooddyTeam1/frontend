@@ -9,7 +9,7 @@ export const CategoryQuickFilter: React.FC = () => {
     new URLSearchParams(location.search).get("category") || "all";
 
   return (
-    <section className="border-b border-neutral-200 bg-white py-6">
+    <section className="border-b border-neutral-200/50 bg-gradient-to-b from-neutral-50 via-white to-neutral-100/50 py-6">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-wrap gap-2">
           {CATEGORY_OPTIONS.map((category) => {
@@ -18,10 +18,10 @@ export const CategoryQuickFilter: React.FC = () => {
               <Link
                 key={category.key}
                 to={`/projects${category.key === "all" ? "" : `?category=${category.key}`}`}
-                className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
+                className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-all ${
                   isActive
-                    ? "border-neutral-900 bg-neutral-900 !text-white"
-                    : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                    ? "border-neutral-900 bg-gradient-to-r from-neutral-900 to-neutral-800 text-white shadow-md"
+                    : "border-neutral-200/50 bg-gradient-to-br from-white to-neutral-50/50 text-neutral-600 shadow-sm hover:border-neutral-400 hover:shadow-md"
                 }`}
               >
                 {category.icon} {category.label}

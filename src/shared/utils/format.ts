@@ -12,8 +12,8 @@ export const daysLeft = (endISO: string) => {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 };
 
-// 한글 설명: 모금 진행률을 퍼센트로 계산 (0~100 사이 값 반환, 목표 금액이 0이면 0 반환)
+// 한글 설명: 모금 진행률을 퍼센트로 계산 (목표 금액이 0이면 0 반환, 100% 초과도 그대로 표시)
 export const progressPct = (raised: number, goal: number) => {
   if (!goal) return 0;
-  return Math.min(100, Math.round((raised / goal) * 100));
+  return Math.round((raised / goal) * 100);
 };

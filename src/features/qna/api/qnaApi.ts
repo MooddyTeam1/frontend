@@ -57,19 +57,29 @@ export const getMyQna = async (
  * URL: /api/maker/projects/{projectId}/qna
  * Query: unansweredOnly (boolean, optional, default=false)
  */
+type PageResponse<T> = {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
+};
+
 export const getQnaListForMaker = async (
   projectId: number,
-  params?: { unansweredOnly?: boolean }
+  params?: { unansweredOnly?: boolean; page?: number; size?: number }
 ): Promise<ProjectQnaResponse[]> => {
-  const { data } = await api.get<ProjectQnaResponse[]>(
+  const { data } = await api.get<PageResponse<ProjectQnaResponse>>(
     `/api/maker/projects/${projectId}/qna`,
     {
       params: {
         unansweredOnly: params?.unansweredOnly ?? false,
+        page: params?.page ?? 0,
+        size: params?.size ?? 50,
       },
     }
   );
-  return data;
+  return Array.isArray(data?.content) ? data.content : [];
 };
 
 /**
@@ -85,6 +95,20 @@ export const answerQuestion = async (
   const { data } = await api.put<ProjectQnaResponse>(
     `/api/maker/projects/${projectId}/qna/${qnaId}/answer`,
     payload
+  );
+  return data;
+};
+
+/**
+ * 한글 설명: 공개 Q&A 목록 조회 (비로그인 사용자도 조회 가능)
+ * Method: GET
+ * URL: /public/projects/{projectId}/qna
+ */
+export const getPublicQnaList = async (
+  projectId: number
+): Promise<ProjectQnaResponse[]> => {
+  const { data } = await api.get<ProjectQnaResponse[]>(
+    `/public/projects/${projectId}/qna`
   );
   return data;
 };

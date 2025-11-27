@@ -108,18 +108,50 @@ export const getProjectOrders = async (
   }
 ): Promise<{ orders: OrderItemDTO[]; totalCount: number }> => {
   const queryParams = new URLSearchParams();
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
-        queryParams.append(key, String(value));
-      }
-    });
+
+  // 백엔드 페이지는 0-based, 프론트는 1-based → 변환
+  const page = params?.page ? Math.max(params.page - 1, 0) : 0;
+  queryParams.append("page", String(page));
+
+  // 백엔드 파라미터 이름은 size
+  const size = params?.pageSize ?? 50;
+  queryParams.append("size", String(size));
+
+  if (params?.rewardId !== undefined) {
+    queryParams.append("rewardId", String(params.rewardId));
   }
 
-  const { data } = await api.get<{ orders: OrderItemDTO[]; totalCount: number }>(
-    `/api/maker/projects/${projectId}/orders?${queryParams.toString()}`
-  );
-  return data;
+  // 결제 상태 매핑: 프론트 표기 → 백엔드 Enum
+  if (params?.paymentStatus) {
+    const mappedPayment =
+      params.paymentStatus === "SUCCESS" ? "PAID" :
+      params.paymentStatus === "CANCELLED" ? "CANCELED" :
+      params.paymentStatus === "REFUNDED" ? "CANCELED" :
+      params.paymentStatus;
+    queryParams.append("paymentStatus", mappedPayment);
+  }
+
+  // 배송 상태는 그대로 전달 (백엔드: NONE/PREPARING/SHIPPING/DELIVERED/CONFIRMED/ISSUE)
+  if (params?.deliveryStatus) {
+    queryParams.append("deliveryStatus", params.deliveryStatus);
+  }
+
+  if (params?.startDate) queryParams.append("startDate", params.startDate);
+  if (params?.endDate) queryParams.append("endDate", params.endDate);
+
+  const { data } = await api.get<{
+    content: OrderItemDTO[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+  }>(`/api/maker/projects/${projectId}/orders?${queryParams.toString()}`);
+
+  return {
+    orders: data?.content ?? [],
+    totalCount: data?.totalElements ?? 0,
+  };
 };
 
 // 한글 설명: 주문 목록 엑셀 다운로드
@@ -134,8 +166,55 @@ export const exportProjectOrders = async (
   return data;
 };
 
+// 한글 설명: 공지 목록 조회 (메이커용, 페이지네이션)
+// GET /api/maker/projects/:projectId/news
+export const getProjectNotices = async (
+  projectId: number,
+  params?: {
+    page?: number;
+    size?: number;
+    keyword?: string;
+    from?: string; // YYYY-MM-DD
+    to?: string; // YYYY-MM-DD
+  }
+): Promise<{
+  content: ProjectNoticeDTO[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
+}> => {
+  const queryParams = new URLSearchParams();
+  if (params) {
+    if (params.page !== undefined) {
+      queryParams.append("page", String(params.page));
+    }
+    if (params.size !== undefined) {
+      queryParams.append("size", String(params.size));
+    }
+    if (params.keyword) {
+      queryParams.append("keyword", params.keyword);
+    }
+    if (params.from) {
+      queryParams.append("from", params.from);
+    }
+    if (params.to) {
+      queryParams.append("to", params.to);
+    }
+  }
+
+  const { data } = await api.get<{
+    content: ProjectNoticeDTO[];
+    totalElements: number;
+    totalPages: number;
+    page: number;
+    size: number;
+  }>(`/api/maker/projects/${projectId}/news?${queryParams.toString()}`);
+  return data;
+};
+
 // 한글 설명: 공지 생성
-// POST /api/maker/projects/:projectId/notices
+// POST /api/maker/projects/:projectId/news
 export const createProjectNotice = async (
   projectId: number,
   notice: {
@@ -146,14 +225,14 @@ export const createProjectNotice = async (
   }
 ): Promise<ProjectNoticeDTO> => {
   const { data } = await api.post<ProjectNoticeDTO>(
-    `/api/maker/projects/${projectId}/notices`,
+    `/api/maker/projects/${projectId}/news`,
     notice
   );
   return data;
 };
 
 // 한글 설명: 공지 수정
-// PATCH /api/maker/projects/:projectId/notices/:noticeId
+// PUT /api/maker/projects/:projectId/news/:newsId
 export const updateProjectNotice = async (
   projectId: number,
   noticeId: number,
@@ -164,20 +243,20 @@ export const updateProjectNotice = async (
     notifySupporters: boolean;
   }>
 ): Promise<ProjectNoticeDTO> => {
-  const { data } = await api.patch<ProjectNoticeDTO>(
-    `/api/maker/projects/${projectId}/notices/${noticeId}`,
+  const { data } = await api.put<ProjectNoticeDTO>(
+    `/api/maker/projects/${projectId}/news/${noticeId}`,
     notice
   );
   return data;
 };
 
 // 한글 설명: 공지 삭제
-// DELETE /api/maker/projects/:projectId/notices/:noticeId
+// DELETE /api/maker/projects/:projectId/news/:newsId
 export const deleteProjectNotice = async (
   projectId: number,
   noticeId: number
 ): Promise<void> => {
-  await api.delete(`/api/maker/projects/${projectId}/notices/${noticeId}`);
+  await api.delete(`/api/maker/projects/${projectId}/news/${noticeId}`);
 };
 
 // 한글 설명: Q&A 답변 작성

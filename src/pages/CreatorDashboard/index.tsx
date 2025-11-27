@@ -60,7 +60,7 @@ export const CreatorDashboardPage: React.FC = () => {
             </div>
             <Link
               to="/maker/projects"
-              className="rounded-full border border-neutral-900 bg-neutral-900 px-4 py-2 text-xs font-semibold text-white hover:bg-neutral-800"
+              className="rounded-full border border-neutral-900 bg-neutral-900 px-4 py-2 text-xs font-semibold !text-white hover:bg-neutral-800"
             >
               내 프로젝트 관리
             </Link>

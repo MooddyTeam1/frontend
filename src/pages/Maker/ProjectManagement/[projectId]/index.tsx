@@ -4,10 +4,16 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Container } from "../../../../shared/components/Container";
 import { getMakerProjectDetail } from "../../../../features/maker/projectManagement/api/projectManagementService";
 import type { MakerProjectDetailDTO } from "../../../../features/maker/projectManagement/types";
-import { getMockProjectDetail } from "../../../../features/maker/projectManagement/mockData";
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// import { getMockProjectDetail } from "../../../../features/maker/projectManagement/mockData";
 
 // 한글 설명: Mock API 사용 여부 (개발 중 확인용)
-const USE_MOCK_DATA = true;
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// const USE_MOCK_DATA = true;
 import { ProjectHeader } from "./components/ProjectHeader";
 import { StatsSection } from "./components/StatsSection";
 import { RewardsSection } from "./components/RewardsSection";
@@ -85,17 +91,20 @@ export const MakerProjectDetailPage: React.FC = () => {
     if (!projectId) return;
     setLoading(true);
     try {
-      if (USE_MOCK_DATA) {
-        // 한글 설명: Mock 데이터 사용 (프로젝트 ID에 따라 다른 상태 반환)
-        await new Promise((resolve) => setTimeout(resolve, 500)); // 로딩 시뮬레이션
-        const mockData = getMockProjectDetail(projectId);
-        console.log("[MakerProjectDetailPage] Mock 프로젝트 데이터:", mockData);
-        setProject(mockData);
-      } else {
-        // 한글 설명: 실제 API 호출
-        const data = await getMakerProjectDetail(Number(projectId));
-        setProject(data);
-      }
+      // ============================================
+      // Mock 데이터 사용 중단 - 주석처리됨
+      // ============================================
+      // if (USE_MOCK_DATA) {
+      //   // 한글 설명: Mock 데이터 사용 (프로젝트 ID에 따라 다른 상태 반환)
+      //   await new Promise((resolve) => setTimeout(resolve, 500)); // 로딩 시뮬레이션
+      //   const mockData = getMockProjectDetail(projectId);
+      //   console.log("[MakerProjectDetailPage] Mock 프로젝트 데이터:", mockData);
+      //   setProject(mockData);
+      // } else {
+      // 한글 설명: 실제 API 호출
+      const data = await getMakerProjectDetail(Number(projectId));
+      setProject(data);
+      // }
     } catch (error) {
       console.error("프로젝트 상세 조회 실패:", error);
       console.error("에러 상세:", error);

@@ -7,6 +7,8 @@ import type {
   ProjectCategory,
 } from "../types";
 import { PROJECT_CATEGORY_LABELS } from "../types";
+import { currencyKRW, progressPct } from "../../../shared/utils/format";
+import { ProgressBar } from "./ProgressBar";
 
 interface TrendingProjectCardProps {
   project: TrendingProjectResponseDTO | TrendingProjectScoreResponseDTO;
@@ -44,7 +46,7 @@ const formatDaysLeft = (
 
   // 한글 설명: undefined나 null이면 "마감" 표시
   if (actualDaysLeft === null || actualDaysLeft === undefined) return "마감";
-  if (actualDaysLeft === 0) return "오늘 마감";
+  if (actualDaysLeft === 0) return "D-0";
   // 한글 설명: 음수면 "마감" 표시
   if (actualDaysLeft < 0) return "마감";
   return `D-${actualDaysLeft}`;
@@ -94,20 +96,31 @@ export const TrendingProjectCard: React.FC<TrendingProjectCardProps> = ({
   };
 
   const statusLabel = getStatusLabel();
+  const bookmarkCount =
+    ("bookmarkCount" in project && project.bookmarkCount !== undefined)
+      ? project.bookmarkCount ?? 0
+      : 0;
 
   return (
     <Link
       to={`/projects/${projectId}`}
-      className="group flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-900"
+      className="group flex flex-col gap-4 rounded-xl border-2 border-neutral-200 bg-white p-5 shadow-sm transition-all hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/20 hover:scale-[1.02]"
     >
-      <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-100">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
         {project.coverImageUrl ? (
           <img
             src={project.coverImageUrl}
             alt={project.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
-        ) : null}
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <svg className="h-12 w-12 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
         {/* 한글 설명: 진행 상태 뱃지 (live가 아닐 때만 표시) - 오른쪽 위에 배치 */}
         {statusLabel && (
           <span className="absolute right-4 top-4 rounded-full border border-neutral-900 bg-white/80 px-3 py-1 text-xs font-medium text-neutral-900">
@@ -126,19 +139,65 @@ export const TrendingProjectCard: React.FC<TrendingProjectCardProps> = ({
         </span>
       </div>
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold leading-tight text-neutral-900">
+        <h3 className="text-lg font-semibold leading-tight text-neutral-900 line-clamp-2">
           {project.title}
         </h3>
+        {/* 한글 설명: 메이커 이름 표시 */}
+        {"makerName" in project && project.makerName && (
+          <p className="text-xs text-neutral-400">by {project.makerName}</p>
+        )}
         {project.summary && (
-          <p className="text-sm text-neutral-500">{project.summary}</p>
+          <p className="text-sm text-neutral-500 line-clamp-2">
+            {project.summary}
+          </p>
         )}
       </div>
-      <div className="flex items-center gap-2 text-sm text-neutral-600">
-        {"bookmarkCount" in project ? (
-          <span>찜 {project.bookmarkCount}개</span>
-        ) : "score" in project ? (
-          <span>트렌딩 점수 {project.score}</span>
+      <div className="space-y-3 pt-2">
+        {/* 한글 설명: 진행률 바와 달성률 퍼센트 함께 표시 (goalAmount와 raised가 있는 경우) */}
+        {"goalAmount" in project &&
+        project.goalAmount !== null &&
+        project.goalAmount !== undefined &&
+        project.goalAmount > 0 ? (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-neutral-500">달성률</span>
+              <span className="font-semibold text-neutral-900">
+                {progressPct(
+                  ("raised" in project && project.raised) || 0,
+                  project.goalAmount
+                ).toFixed(1)}%
+              </span>
+            </div>
+            <ProgressBar
+              value={progressPct(
+                ("raised" in project && project.raised) || 0,
+                project.goalAmount
+              )}
+            />
+          </div>
         ) : null}
+        <div className="flex items-center justify-between text-sm text-neutral-600">
+          <span>
+            {/* 한글 설명: 모금액 표시 (raised가 있는 경우) */}
+            {"raised" in project &&
+            project.raised !== null &&
+            project.raised !== undefined &&
+            !isNaN(project.raised)
+              ? currencyKRW(project.raised)
+              : currencyKRW(0)}
+          </span>
+          <span>
+            {/* 한글 설명: 후원자 수 표시 (backerCount가 있는 경우) */}
+            {"backerCount" in project &&
+            project.backerCount !== null &&
+            project.backerCount !== undefined &&
+            !isNaN(project.backerCount) &&
+            project.backerCount > 0
+              ? `${project.backerCount}명 후원`
+              : "0명 후원"}
+          </span>
+          <span className="text-xs text-neutral-500">찜 {bookmarkCount}</span>
+        </div>
       </div>
     </Link>
   );

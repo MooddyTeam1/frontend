@@ -28,12 +28,15 @@ export const FirstChallengeMakerSection: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-12">
-      <div className="mb-4 space-y-2">
+    <section className="relative py-12">
+      {/* 한글 설명: 섹션 배경 그라데이션 */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-50/10 to-transparent pointer-events-none" />
+      <div className="relative">
+      <div className="mb-6 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-neutral-900">
             <span className="text-xl">🌱</span>
-            <span>첫 도전 메이커 응원하기</span>
+            <span className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-transparent">첫 도전 메이커 응원하기</span>
           </h2>
         </div>
         <p className="text-sm text-neutral-600">
@@ -61,6 +64,7 @@ export const FirstChallengeMakerSection: React.FC = () => {
           첫 도전 메이커의 프로젝트가 없습니다.
         </div>
       )}
+      </div>
     </section>
   );
 };

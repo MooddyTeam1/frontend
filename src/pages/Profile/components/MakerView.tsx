@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuthStore } from "../../../features/auth/stores/authStore";
 import { useMyProjectsStore } from "../../../features/projects/stores/myProjectsStore";
 import { makerService } from "../../../features/maker/api/makerService";
 import type { MakerDTO } from "../../../features/maker/types";
@@ -14,15 +13,17 @@ interface MakerViewProps {
 
 // 한글 설명: 메이커 탭 뷰. 프로젝트 통계, 상태별 카드, 프로필 정보를 묶어 보여준다.
 export const MakerView: React.FC<MakerViewProps> = ({ displayName }) => {
-  const { user } = useAuthStore();
-  // 한글 설명: URL 형식이 /makers/{id}/ 이므로 숫자만 사용
-  const makerId = user?.id ? String(user.id) : undefined;
-  const makerPageUrl = makerId ? `/makers/${makerId}` : undefined;
-
   // 한글 설명: 메이커 프로필 데이터 상태
   const [makerProfile, setMakerProfile] = React.useState<MakerDTO | null>(null);
   const [profileLoading, setProfileLoading] = React.useState(true);
   const [profileError, setProfileError] = React.useState<string | null>(null);
+
+  // 한글 설명: 메이커 프로필이 로드된 후 메이커 페이지 URL 생성
+  // 한글 설명: makerProfile.id가 실제 메이커 ID이므로 이를 사용
+  const makerPageUrl = React.useMemo(() => {
+    if (!makerProfile?.id) return undefined;
+    return `/makers/${makerProfile.id}`;
+  }, [makerProfile?.id]);
 
   // 한글 설명: 정산 계좌 모달 상태
   const [isSettlementModalOpen, setIsSettlementModalOpen] =

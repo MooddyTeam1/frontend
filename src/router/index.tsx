@@ -10,7 +10,7 @@ import { HomePage } from "../pages/Home";
 import { LoginPage } from "../pages/Auth/Login";
 import { ForgotPasswordPage } from "../pages/Auth/ForgotPassword";
 import { EmailVerificationPage } from "../pages/Auth/EmailVerification";
-import { NotificationCenterPage } from "../pages/NotificationCenter";
+import { NotificationsPage } from "../pages/Notifications";
 import { NotFound } from "../pages/NotFound";
 import { PledgePage } from "../pages/Pledge";
 import {
@@ -43,6 +43,8 @@ import { OAuthCallbackPage } from "../features/auth/pages/OAuthCallbackPage";
 import { ReviewConsolePage } from "../pages/Admin/ReviewConsole";
 import { SettlementConsolePage } from "../pages/Admin/SettlementConsole";
 import { SummaryDashboardPage } from "../pages/Admin/Statistics/SummaryDashboard";
+import { ProjectReviewList } from "../components/admin/projectReview/ProjectReviewList";
+import { ProjectReviewDetail } from "../components/admin/projectReview/ProjectReviewDetail";
 import { DailyStatisticsPage } from "../pages/Admin/Statistics/DailyStatistics";
 import { MonthlyReportPage } from "../pages/Admin/Statistics/MonthlyReport";
 import { RevenueReportPage } from "../pages/Admin/Statistics/RevenueReport";
@@ -212,7 +214,7 @@ export const AppRoutes: React.FC = () => (
       path="/notifications"
       element={
         <RequireAuth>
-          <NotificationCenterPage />
+          <NotificationsPage />
         </RequireAuth>
       }
     />
@@ -262,6 +264,22 @@ export const AppRoutes: React.FC = () => (
       element={
         <RequireAdmin>
           <SummaryDashboardPage />
+        </RequireAdmin>
+      }
+    />
+    <Route
+      path="/admin/project/review/:projectId"
+      element={
+        <RequireAdmin>
+          <ProjectReviewDetail />
+        </RequireAdmin>
+      }
+    />
+    <Route
+      path="/admin/project/review"
+      element={
+        <RequireAdmin>
+          <ProjectReviewList />
         </RequireAdmin>
       }
     />

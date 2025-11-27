@@ -26,13 +26,19 @@ import { ShipmentDetailModal } from "./ShipmentDetailModal";
 import { BulkTrackingUploadModal } from "./BulkTrackingUploadModal";
 import { ShipmentScheduleSection } from "./ShipmentScheduleSection";
 import { ShipmentStatisticsSection } from "./ShipmentStatisticsSection";
-import {
-  mockShipments,
-  mockShipmentSummary,
-} from "../../../../../features/maker/projectManagement/mockData/shipmentMockData";
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// import {
+//   mockShipments,
+//   mockShipmentSummary,
+// } from "../../../../../features/maker/projectManagement/mockData/shipmentMockData";
 
 // 한글 설명: Mock API 사용 여부 (개발 중 확인용)
-const USE_MOCK_DATA = true;
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// const USE_MOCK_DATA = true;
 
 type ShipmentConsoleProps = {
   projectId: number;
@@ -68,50 +74,53 @@ export const ShipmentConsole: React.FC<ShipmentConsoleProps> = ({
   const loadShipments = async () => {
     setLoading(true);
     try {
-      if (USE_MOCK_DATA) {
-        // 한글 설명: Mock 데이터 사용
-        await new Promise((resolve) => setTimeout(resolve, 500)); // 로딩 시뮬레이션
-        
-        // 한글 설명: 필터 적용
-        let filteredShipments = [...mockShipments];
-        
-        if (filter.status && filter.status !== "ALL") {
-          filteredShipments = filteredShipments.filter(
-            (s) => s.shipmentStatus === filter.status
-          );
-        }
-        
-        if (filter.rewardId) {
-          filteredShipments = filteredShipments.filter(
-            (s) => s.reward.id === filter.rewardId
-          );
-        }
-        
-        if (searchQuery) {
-          const query = searchQuery.toLowerCase();
-          filteredShipments = filteredShipments.filter(
-            (s) =>
-              s.orderCode.toLowerCase().includes(query) ||
-              s.supporterName.toLowerCase().includes(query) ||
-              (s.supporterPhone && s.supporterPhone.includes(query)) ||
-              s.address.fullAddress.toLowerCase().includes(query)
-          );
-        }
-        
-        setShipments(filteredShipments);
-        setSummary(mockShipmentSummary);
-      } else {
-        // 한글 설명: 실제 API 호출
-        const [listResponse, summaryData] = await Promise.all([
-          fetchShipments(projectId, {
-            ...filter,
-            search: searchQuery || undefined,
-          }),
-          fetchShipmentSummary(projectId),
-        ]);
-        setShipments(listResponse.shipments);
-        setSummary(summaryData);
-      }
+      // ============================================
+      // Mock 데이터 사용 중단 - 주석처리됨
+      // ============================================
+      // if (USE_MOCK_DATA) {
+      //   // 한글 설명: Mock 데이터 사용
+      //   await new Promise((resolve) => setTimeout(resolve, 500)); // 로딩 시뮬레이션
+      //   
+      //   // 한글 설명: 필터 적용
+      //   let filteredShipments = [...mockShipments];
+      //   
+      //   if (filter.status && filter.status !== "ALL") {
+      //     filteredShipments = filteredShipments.filter(
+      //       (s) => s.shipmentStatus === filter.status
+      //     );
+      //   }
+      //   
+      //   if (filter.rewardId) {
+      //     filteredShipments = filteredShipments.filter(
+      //       (s) => s.reward.id === filter.rewardId
+      //     );
+      //   }
+      //   
+      //   if (searchQuery) {
+      //     const query = searchQuery.toLowerCase();
+      //     filteredShipments = filteredShipments.filter(
+      //       (s) =>
+      //         s.orderCode.toLowerCase().includes(query) ||
+      //         s.supporterName.toLowerCase().includes(query) ||
+      //         (s.supporterPhone && s.supporterPhone.includes(query)) ||
+      //         s.address.fullAddress.toLowerCase().includes(query)
+      //     );
+      //   }
+      //   
+      //   setShipments(filteredShipments);
+      //   setSummary(mockShipmentSummary);
+      // } else {
+      // 한글 설명: 실제 API 호출
+      const [listResponse, summaryData] = await Promise.all([
+        fetchShipments(projectId, {
+          ...filter,
+          search: searchQuery || undefined,
+        }),
+        fetchShipmentSummary(projectId),
+      ]);
+      setShipments(listResponse.shipments);
+      setSummary(summaryData);
+      // }
     } catch (error) {
       console.error("배송 목록 조회 실패", error);
       alert("배송 목록을 불러오는데 실패했습니다.");

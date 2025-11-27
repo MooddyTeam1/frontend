@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import type { ProjectCardResponseDTO } from "../types";
 import {
@@ -7,16 +7,74 @@ import {
   progressPct,
 } from "../../../shared/utils/format";
 import { ProgressBar } from "./ProgressBar";
+import { useTracking } from "../../tracking/hooks/useTracking";
 
 type ProjectCardProps = {
   project: ProjectCardResponseDTO;
+  hideFunding?: boolean;
 };
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => (
-  <Link
-    to={`/projects/${project.id}`}
-    className="group flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-900"
-  >
+export const ProjectCard: React.FC<ProjectCardProps> = ({ project, hideFunding = false }) => {
+  // 한글 설명: 트래킹 훅 사용
+  const { track } = useTracking();
+  // 한글 설명: 카드 요소 참조 (Intersection Observer용)
+  const cardRef = useRef<HTMLDivElement>(null);
+  // 한글 설명: 이미 노출 이벤트를 전송했는지 추적
+  const hasTrackedImpression = useRef(false);
+
+  // 한글 설명: 카드가 화면에 노출될 때 이벤트 전송
+  useEffect(() => {
+    if (!cardRef.current || hasTrackedImpression.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasTrackedImpression.current) {
+            // 한글 설명: 카드가 화면에 노출되었을 때 이벤트 전송
+            const projectId = parseInt(String(project.id), 10);
+            if (!isNaN(projectId)) {
+              track("PROJECT_CARD_IMPRESSION", projectId, {
+                category: project.category,
+                status: project.status,
+              });
+              hasTrackedImpression.current = true;
+            }
+          }
+        });
+      },
+      {
+        // 한글 설명: 카드의 50% 이상이 보일 때 노출로 간주
+        threshold: 0.5,
+      }
+    );
+
+    observer.observe(cardRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [project.id, project.category, project.status, track]);
+
+  // 한글 설명: 카드 클릭 시 이벤트 전송
+  const handleClick = () => {
+    const projectId = parseInt(String(project.id), 10);
+    if (!isNaN(projectId)) {
+      track("PROJECT_CARD_CLICK", projectId, {
+        category: project.category,
+        status: project.status,
+      });
+    }
+  };
+
+  const bookmarkCount = project.bookmarkCount ?? 0;
+
+  return (
+    <div ref={cardRef}>
+      <Link
+        to={`/projects/${project.id}`}
+        onClick={handleClick}
+        className="group flex flex-col gap-4 rounded-xl border-2 border-neutral-200 bg-white p-5 shadow-sm transition-all hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/20 hover:scale-[1.02]"
+      >
     <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-100">
       {project.coverImageUrl ? (
         <img
@@ -41,20 +99,43 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => (
       <span>D-{daysLeft(project.endDate)}</span>
     </div>
     <div className="space-y-2">
-      <h3 className="text-lg font-semibold leading-tight text-neutral-900">
+      <h3 className="text-lg font-semibold leading-tight text-neutral-900 line-clamp-2">
         {project.title}
       </h3>
-      <p className="text-sm text-neutral-500">{project.summary}</p>
+      {/* 한글 설명: 메이커 이름 표시 */}
+      {project.makerName && (
+        <p className="text-xs text-neutral-400">by {project.makerName}</p>
+      )}
+      {project.summary && (
+        <p className="text-sm text-neutral-500 line-clamp-2">
+          {project.summary}
+        </p>
+      )}
     </div>
+    {!hideFunding && (
     <div className="space-y-3 pt-2">
-      <ProgressBar
-        value={progressPct(
-          project.raised && !isNaN(project.raised) ? project.raised : 0,
-          project.goalAmount && !isNaN(project.goalAmount)
-            ? project.goalAmount
-            : 0
-        )}
-      />
+      {/* 한글 설명: 진행률 바와 달성률 퍼센트 함께 표시 */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-neutral-500">달성률</span>
+          <span className="font-semibold text-neutral-900">
+            {progressPct(
+              project.raised && !isNaN(project.raised) ? project.raised : 0,
+              project.goalAmount && !isNaN(project.goalAmount)
+                ? project.goalAmount
+                : 0
+            ).toFixed(1)}%
+          </span>
+        </div>
+        <ProgressBar
+          value={progressPct(
+            project.raised && !isNaN(project.raised) ? project.raised : 0,
+            project.goalAmount && !isNaN(project.goalAmount)
+              ? project.goalAmount
+              : 0
+          )}
+        />
+      </div>
       <div className="flex items-center justify-between text-sm text-neutral-600">
         <span>
           {project.raised && !isNaN(project.raised)
@@ -69,6 +150,15 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => (
             : "0명 후원"}
         </span>
       </div>
+      <div className="flex items-center justify-between text-xs text-neutral-500">
+        <span>찜 {bookmarkCount}</span>
+        {project.backerCount !== undefined && (
+          <span className="sr-only">후원자 {project.backerCount ?? 0}명</span>
+        )}
+      </div>
     </div>
-  </Link>
-);
+    )}
+      </Link>
+    </div>
+  );
+};

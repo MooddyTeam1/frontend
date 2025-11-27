@@ -7,81 +7,85 @@ import type {
 } from "../types";
 
 // 한글 설명: 관리자 프로젝트 심사 목록 조회 API
+// 백엔드 엔드포인트: GET /api/admin/project/review
 export const fetchAdminReviewProjects = async (): Promise<AdminProjectReviewDTO[]> => {
-  console.log("[adminProjectsService] GET /admin/project/review 요청");
+  console.log("[adminProjectsService] GET /api/admin/project/review 요청");
   const { data } = await api.get<AdminProjectReviewDTO[]>(
-    "/admin/project/review"
+    "/api/admin/project/review"
   );
-  console.log("[adminProjectsService] GET /admin/project/review 응답", data);
+  console.log("[adminProjectsService] GET /api/admin/project/review 응답", data);
   return data;
 };
 
 // 한글 설명: 관리자 프로젝트 상세 조회 API
+// 백엔드 엔드포인트: GET /api/admin/project/review/{projectId}
 export const fetchAdminProjectDetail = async (
   projectId: string
 ): Promise<AdminProjectDetailDTO> => {
   console.log(
-    "[adminProjectsService] GET /admin/project/review/{projectId} 요청",
+    "[adminProjectsService] GET /api/admin/project/review/{projectId} 요청",
     {
       projectId,
     }
   );
   const { data } = await api.get<AdminProjectDetailDTO>(
-    `/admin/project/review/${projectId}`
+    `/api/admin/project/review/${projectId}`
   );
   console.log(
-    "[adminProjectsService] GET /admin/project/review/{projectId} 응답",
+    "[adminProjectsService] GET /api/admin/project/review/{projectId} 응답",
     data
   );
   return data;
 };
 
 // 한글 설명: 관리자 프로젝트 승인 처리 API
+// 백엔드 엔드포인트: PATCH /api/admin/project/{projectId}/approve
 export const approveAdminProject = async (
   projectId: string
 ): Promise<AdminProjectStatusResponseDTO> => {
   console.log(
-    "[adminProjectsService] PATCH /admin/project/{projectId}/approve",
+    "[adminProjectsService] PATCH /api/admin/project/{projectId}/approve",
     { projectId }
   );
   const { data } = await api.patch<AdminProjectStatusResponseDTO>(
-    `/admin/project/${projectId}/approve`
+    `/api/admin/project/${projectId}/approve`
   );
   return data;
 };
 
 // 한글 설명: 관리자 프로젝트 반려 처리 API
+// 백엔드 엔드포인트: PATCH /api/admin/project/{projectId}/reject
 // 한글 설명: 백엔드 RejectProjectRequest DTO와 일치: { reason: string }
 export const rejectAdminProject = async (
   projectId: string,
   reason: string
 ): Promise<AdminProjectStatusResponseDTO> => {
   console.log(
-    "[adminProjectsService] PATCH /admin/project/{projectId}/reject",
+    "[adminProjectsService] PATCH /api/admin/project/{projectId}/reject",
     { projectId, reason }
   );
   // 한글 설명: 백엔드 RejectProjectRequest DTO 형태로 전송: { reason: string }
   const { data } = await api.patch<AdminProjectStatusResponseDTO>(
-    `/admin/project/${projectId}/reject`,
+    `/api/admin/project/${projectId}/reject`,
     { reason }
   );
   return data;
 };
 
 // 한글 설명: 관리자용 메이커 프로필 조회 API
-// GET /admin/maker/{makerId}
+// 백엔드 엔드포인트: GET /api/admin/maker/{makerId}
 export const fetchAdminMakerProfile = async (
   makerId: string
 ): Promise<AdminMakerProfileDTO> => {
   console.log(
-    "[adminProjectsService] GET /admin/maker/{makerId} 요청",
+    "[adminProjectsService] GET /api/admin/maker/{makerId} 요청",
     { makerId }
   );
   const { data } = await api.get<AdminMakerProfileDTO>(
-    `/admin/maker/${makerId}`
+    `/api/admin/maker/${makerId}`
   );
   console.log(
-    "[adminProjectsService] GET /admin/maker/{makerId} 응답",
+    "[adminProjectsService] GET /api/admin/maker/{makerId} 응답",
     data
   );
   return data;
@@ -100,7 +104,7 @@ export const fetchAdminRejectReasonPresets =
     );
     try {
       const { data } = await api.get<RejectReasonPresetResponse>(
-        "/admin/project/reject-reason-presets"
+        "/api/admin/project/reject-reason-presets"
       );
       console.log(
         "[adminProjectsService] GET /api/admin/project/reject-reason-presets 응답",

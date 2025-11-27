@@ -1,20 +1,20 @@
-// 한글 설명: 카테고리 한글 옵션
+// ī�װ��� ��/�ڵ� ���� (����Ʈ �� �鿣�� Enum)
+
+// UI�� ����Ǵ� ī�װ��� �� ���� (�����ڵ� �̽��������� �����ϰ� ����)
 export const CATEGORY_OPTIONS = [
-  "테크",
-  "디자인",
-  "푸드",
-  "패션",
-  "뷰티",
-  "홈·리빙",
-  "게임",
-  "예술",
-  "출판",
+  "\uD14C\uD06C",          // ��ũ
+  "\uB514\uC790\uC778",    // ������
+  "\uD478\uB4DC",          // Ǫ��
+  "\uD328\uC158",          // �м�
+  "\uBDF0\uD2F0",          // ��Ƽ
+  "\uD648\u00B7\uB9AC\uBE59", // Ȩ������
+  "\uAC8C\uC784",          // ����
+  "\uC608\uC220",          // ����
+  "\uCD9C\uD310",          // ����
 ] as const;
 
-// 한글 설명: 한글 카테고리 타입
 export type CategoryLabel = (typeof CATEGORY_OPTIONS)[number];
 
-// 한글 설명: 백엔드 Enum 문자열 타입 (스프링의 Category enum 이름과 정확히 맞춰줌)
 export type CategoryEnum =
   | "TECH"
   | "DESIGN"
@@ -26,45 +26,34 @@ export type CategoryEnum =
   | "ART"
   | "PUBLISH";
 
-// 한글 설명: 한글 → 백엔드 enum 코드 매핑 테이블
 const CATEGORY_LABEL_TO_ENUM: Record<CategoryLabel, CategoryEnum> = {
-  테크: "TECH",
-  디자인: "DESIGN",
-  푸드: "FOOD",
-  패션: "FASHION",
-  뷰티: "BEAUTY",
-  "홈·리빙": "HOME_LIVING",
-  게임: "GAME",
-  예술: "ART",
-  출판: "PUBLISH",
+  "\uD14C\uD06C": "TECH",                 // ��ũ
+  "\uB514\uC790\uC778": "DESIGN",         // ������
+  "\uD478\uB4DC": "FOOD",                 // Ǫ��
+  "\uD328\uC158": "FASHION",              // �м�
+  "\uBDF0\uD2F0": "BEAUTY",               // ��Ƽ
+  "\uD648\u00B7\uB9AC\uBE59": "HOME_LIVING", // Ȩ������
+  "\uAC8C\uC784": "GAME",                 // ����
+  "\uC608\uC220": "ART",                  // ����
+  "\uCD9C\uD310": "PUBLISH",              // ����
 };
 
-// 한글 설명: 백엔드 enum 코드 → 한글 라벨 매핑 테이블 (역방향도 필요할 때 사용)
 const CATEGORY_ENUM_TO_LABEL: Record<CategoryEnum, CategoryLabel> = {
-  TECH: "테크",
-  DESIGN: "디자인",
-  FOOD: "푸드",
-  FASHION: "패션",
-  BEAUTY: "뷰티",
-  HOME_LIVING: "홈·리빙",
-  GAME: "게임",
-  ART: "예술",
-  PUBLISH: "출판",
+  TECH: "\uD14C\uD06C",
+  DESIGN: "\uB514\uC790\uC778",
+  FOOD: "\uD478\uB4DC",
+  FASHION: "\uD328\uC158",
+  BEAUTY: "\uBDF0\uD2F0",
+  HOME_LIVING: "\uD648\u00B7\uB9AC\uBE59",
+  GAME: "\uAC8C\uC784",
+  ART: "\uC608\uC220",
+  PUBLISH: "\uCD9C\uD310",
 };
 
-/**
- * 한글 설명: 한글 카테고리 라벨 → 백엔드 enum 문자열로 변환
- * 예) "테크" -> "TECH"
- */
 export function toCategoryEnum(label: CategoryLabel): CategoryEnum {
   return CATEGORY_LABEL_TO_ENUM[label];
 }
 
-/**
- * 한글 설명: 백엔드 enum 문자열 → 한글 카테고리 라벨로 변환
- * 예) "TECH" -> "테크"
- */
 export function toCategoryLabel(code: CategoryEnum): CategoryLabel {
   return CATEGORY_ENUM_TO_LABEL[code];
 }
-

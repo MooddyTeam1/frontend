@@ -188,3 +188,73 @@ export const fetchScheduledProjects = async (
   return data;
 };
 
+// 한글 설명: 프로젝트 공지 목록 조회 (공개)
+// GET /public/projects/{projectId}/news
+export interface ProjectNoticeResponse {
+  id: number;
+  title: string;
+  content: string; // Markdown
+  isPublic: boolean;
+  notifySupporters: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getPublicProjectNews = async (
+  projectId: number
+): Promise<ProjectNoticeResponse[]> => {
+  console.log(
+    "[publicProjectsService] GET /public/projects/{projectId}/news 요청",
+    { projectId }
+  );
+  const { data } = await api.get<ProjectNoticeResponse[]>(
+    `/public/projects/${projectId}/news`
+  );
+  console.log(
+    "[publicProjectsService] GET /public/projects/{projectId}/news 응답",
+    data
+  );
+  return data;
+};
+
+// 한글 설명: 프로젝트 공지 단건 조회 (공개)
+// GET /public/projects/{projectId}/news/{newsId}
+export const getPublicProjectNewsDetail = async (
+  projectId: number,
+  newsId: number
+): Promise<ProjectNoticeResponse> => {
+  console.log(
+    "[publicProjectsService] GET /public/projects/{projectId}/news/{newsId} 요청",
+    { projectId, newsId }
+  );
+  const { data } = await api.get<ProjectNoticeResponse>(
+    `/public/projects/${projectId}/news/${newsId}`
+  );
+  console.log(
+    "[publicProjectsService] GET /public/projects/{projectId}/news/{newsId} 응답",
+    data
+  );
+  return data;
+};
+
+// 한글 설명: 공개 프로젝트 리워드 목록 조회
+// GET /public/projects/{projectId}/rewards
+import type { PublicRewardResponseDTO } from "../types";
+
+export const fetchPublicProjectRewards = async (
+  projectId: number
+): Promise<PublicRewardResponseDTO[]> => {
+  console.log(
+    "[publicProjectsService] GET /public/projects/{projectId}/rewards 요청",
+    { projectId }
+  );
+  const { data } = await api.get<PublicRewardResponseDTO[]>(
+    `/public/projects/${projectId}/rewards`
+  );
+  console.log(
+    "[publicProjectsService] GET /public/projects/{projectId}/rewards 응답",
+    data
+  );
+  return data;
+};
+

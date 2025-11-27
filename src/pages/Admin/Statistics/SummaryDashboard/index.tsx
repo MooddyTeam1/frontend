@@ -107,7 +107,7 @@ const TopProjectCard: React.FC<TopProjectCardProps> = ({
             <span>
               {daysLeft !== null
                 ? daysLeft === 0
-                  ? "오늘 마감"
+                  ? "D-0"
                   : `D-${daysLeft}`
                 : "마감"}
             </span>

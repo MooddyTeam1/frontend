@@ -4,8 +4,14 @@ import { Link } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import { currencyKRW } from "../../../../shared/utils/format";
 import { defaultChartOptions } from "../../../../shared/components/charts/ChartConfig";
-import { fetchAdminDailyStatistics } from "../../../../features/admin/api/adminStatisticsService";
-import type { DailyStatisticsDto } from "../../../../features/admin/types";
+import {
+  fetchAdminDailyStatistics,
+  fetchAdminFunnelReport,
+} from "../../../../features/admin/api/adminStatisticsService";
+import type {
+  DailyStatisticsDto,
+  FunnelReportDto,
+} from "../../../../features/admin/types";
 
 export const DailyStatisticsPage: React.FC = () => {
   // 한글 설명: 필터 상태
@@ -20,7 +26,9 @@ export const DailyStatisticsPage: React.FC = () => {
 
   // 한글 설명: API 데이터 상태
   const [dailyData, setDailyData] = useState<DailyStatisticsDto | null>(null);
+  const [funnelData, setFunnelData] = useState<FunnelReportDto | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingFunnel, setLoadingFunnel] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // 한글 설명: 일일 통계 데이터 조회
@@ -41,11 +49,14 @@ export const DailyStatisticsPage: React.FC = () => {
 
     try {
       // 한글 설명: 필터 타입 변환 (프론트엔드 → 백엔드)
-      let apiFilterType: "PLATFORM" | "CATEGORY" | "MAKER" | undefined = undefined;
+      let apiFilterType: "CATEGORY" | "MAKER" | "PROJECT" | undefined =
+        undefined;
       if (filterType === "category" && filterValue) {
         apiFilterType = "CATEGORY";
       } else if (filterType === "maker" && filterValue) {
         apiFilterType = "MAKER";
+      } else if (filterType === "project" && filterValue) {
+        apiFilterType = "PROJECT";
       }
 
       const data = await fetchAdminDailyStatistics({
@@ -63,9 +74,31 @@ export const DailyStatisticsPage: React.FC = () => {
     }
   };
 
+  // 한글 설명: 퍼널 리포트 데이터 조회
+  const loadFunnelReport = async () => {
+    if (!dateRange.from || !dateRange.to) {
+      return;
+    }
+
+    setLoadingFunnel(true);
+    try {
+      const data = await fetchAdminFunnelReport({
+        startDate: dateRange.from,
+        endDate: dateRange.to,
+      });
+      setFunnelData(data);
+    } catch (err) {
+      console.error("퍼널 리포트 데이터 조회 실패:", err);
+      // 한글 설명: 퍼널 데이터 조회 실패는 에러로 표시하지 않음 (API 미구현 가능성)
+    } finally {
+      setLoadingFunnel(false);
+    }
+  };
+
   // 한글 설명: 날짜 범위 또는 필터 변경 시 자동 조회
   useEffect(() => {
     loadDailyStatistics();
+    loadFunnelReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange.from, dateRange.to, filterType, filterValue]);
 
@@ -206,7 +239,7 @@ export const DailyStatisticsPage: React.FC = () => {
                   <option value="all">플랫폼 전체</option>
                   <option value="category">특정 카테고리</option>
                   <option value="maker">특정 메이커</option>
-                  <option value="project" disabled>특정 프로젝트 (API 미지원)</option>
+                  <option value="project">특정 프로젝트</option>
                 </select>
               </div>
               <div>
@@ -224,9 +257,11 @@ export const DailyStatisticsPage: React.FC = () => {
                         ? "카테고리 Enum (예: TECH, DESIGN)"
                         : filterType === "maker"
                           ? "메이커 ID (예: 1003)"
-                          : "프로젝트 필터는 미지원"
+                          : filterType === "project"
+                            ? "프로젝트 ID (예: 1201)"
+                            : ""
                   }
-                  disabled={filterType === "all" || filterType === "project"}
+                  disabled={filterType === "all"}
                   className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none disabled:bg-neutral-50"
                 />
                 {filterType === "category" && (
@@ -248,8 +283,11 @@ export const DailyStatisticsPage: React.FC = () => {
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-2xl border border-neutral-200 bg-white p-4">
                 <p className="text-xs text-neutral-500">
-                  방문자 수 (UV) {summaryData.visitors === 0 && (
-                    <span className="text-xs text-neutral-400">(추후 제공 예정)</span>
+                  방문자 수 (UV){" "}
+                  {summaryData.visitors === 0 && (
+                    <span className="text-xs text-neutral-400">
+                      (추후 제공 예정)
+                    </span>
                   )}
                 </p>
                 <p className="mt-2 text-xl font-semibold text-neutral-900">
@@ -258,8 +296,11 @@ export const DailyStatisticsPage: React.FC = () => {
               </div>
               <div className="rounded-2xl border border-neutral-200 bg-white p-4">
                 <p className="text-xs text-neutral-500">
-                  페이지뷰 (PV) {summaryData.pageViews === 0 && (
-                    <span className="text-xs text-neutral-400">(추후 제공 예정)</span>
+                  페이지뷰 (PV){" "}
+                  {summaryData.pageViews === 0 && (
+                    <span className="text-xs text-neutral-400">
+                      (추후 제공 예정)
+                    </span>
                   )}
                 </p>
                 <p className="mt-2 text-xl font-semibold text-neutral-900">
@@ -274,8 +315,11 @@ export const DailyStatisticsPage: React.FC = () => {
               </div>
               <div className="rounded-2xl border border-neutral-200 bg-white p-4">
                 <p className="text-xs text-neutral-500">
-                  재방문자 비율 {summaryData.returnRate === 0 && (
-                    <span className="text-xs text-neutral-400">(추후 제공 예정)</span>
+                  재방문자 비율{" "}
+                  {summaryData.returnRate === 0 && (
+                    <span className="text-xs text-neutral-400">
+                      (추후 제공 예정)
+                    </span>
                   )}
                 </p>
                 <p className="mt-2 text-xl font-semibold text-neutral-900">
@@ -322,7 +366,9 @@ export const DailyStatisticsPage: React.FC = () => {
                     </p>
                   </div>
                   <div className="rounded-2xl border border-neutral-200 p-4">
-                    <p className="text-xs text-neutral-500">승인된 프로젝트 수</p>
+                    <p className="text-xs text-neutral-500">
+                      승인된 프로젝트 수
+                    </p>
                     <p className="mt-2 text-2xl font-semibold text-neutral-900">
                       {summaryData.approvedProjects}
                     </p>
@@ -517,6 +563,90 @@ export const DailyStatisticsPage: React.FC = () => {
             )}
           </section>
 
+          {/* 퍼널 리포트 섹션 */}
+          <section className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-6">
+            <h2 className="text-lg font-semibold text-neutral-900">
+              사용자 행동 퍼널
+            </h2>
+            {loadingFunnel ? (
+              <div className="py-8 text-center text-sm text-neutral-500">
+                퍼널 데이터를 불러오는 중...
+              </div>
+            ) : funnelData && funnelData.steps.length > 0 ? (
+              <div className="space-y-4">
+                {/* 한글 설명: 퍼널 단계별 데이터 표시 */}
+                <div className="space-y-3">
+                  {funnelData.steps.map((step, index) => (
+                    <div
+                      key={step.eventType}
+                      className="rounded-xl border border-neutral-200 bg-neutral-50 p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-neutral-500">
+                              {index + 1}단계
+                            </span>
+                            <h3 className="text-sm font-semibold text-neutral-900">
+                              {step.stepName}
+                            </h3>
+                          </div>
+                          <p className="mt-1 text-xs text-neutral-500">
+                            이벤트 타입: {step.eventType}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-semibold text-neutral-900">
+                            {step.count.toLocaleString()}건
+                          </p>
+                          {index > 0 && (
+                            <p className="text-xs text-neutral-500">
+                              전환율: {step.conversionRate.toFixed(1)}%
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {index > 0 && step.dropOffRate > 0 && (
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between text-xs text-neutral-500">
+                            <span>이탈율</span>
+                            <span>{step.dropOffRate.toFixed(1)}%</span>
+                          </div>
+                          <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
+                            <div
+                              className="h-full bg-red-400 transition-all"
+                              style={{ width: `${step.dropOffRate}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {/* 한글 설명: 전체 전환율 표시 */}
+                <div className="rounded-xl border border-neutral-900 bg-neutral-900 p-4 text-center text-white">
+                  <p className="text-xs text-neutral-300">전체 전환율</p>
+                  <p className="mt-1 text-2xl font-semibold">
+                    {funnelData.totalConversionRate.toFixed(1)}%
+                  </p>
+                  <p className="mt-1 text-xs text-neutral-400">
+                    {funnelData.steps[0]?.count.toLocaleString()}건 →{" "}
+                    {funnelData.steps[
+                      funnelData.steps.length - 1
+                    ]?.count.toLocaleString()}
+                    건
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="py-8 text-center text-sm text-neutral-500">
+                {funnelData === null
+                  ? "퍼널 데이터를 불러올 수 없습니다. (API 미구현 가능)"
+                  : "해당 기간에 퍼널 데이터가 없습니다."}
+              </div>
+            )}
+          </section>
+
           {/* 프로젝트별/메이커별 상세 테이블 */}
           <div className="grid gap-6 lg:grid-cols-2">
             {/* 프로젝트별 상세 */}
@@ -551,7 +681,9 @@ export const DailyStatisticsPage: React.FC = () => {
                           </td>
                           <td className="px-3 py-2 text-right text-neutral-600">
                             {project.visitors === 0 ? (
-                              <span className="text-xs text-neutral-400">추후 제공</span>
+                              <span className="text-xs text-neutral-400">
+                                추후 제공
+                              </span>
                             ) : (
                               project.visitors.toLocaleString()
                             )}
@@ -564,7 +696,9 @@ export const DailyStatisticsPage: React.FC = () => {
                           </td>
                           <td className="px-3 py-2 text-right text-neutral-600">
                             {project.conversionRate === 0 ? (
-                              <span className="text-xs text-neutral-400">추후 제공</span>
+                              <span className="text-xs text-neutral-400">
+                                추후 제공
+                              </span>
                             ) : (
                               `${project.conversionRate.toFixed(1)}%`
                             )}
@@ -636,4 +770,3 @@ export const DailyStatisticsPage: React.FC = () => {
     </div>
   );
 };
-

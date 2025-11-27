@@ -26,7 +26,7 @@ const calculateDaysLeft = (endDate: string | null): number | null => {
 // 한글 설명: D-day 표기 포맷팅
 const formatDaysLeft = (daysLeft: number | null): string => {
   if (daysLeft === null) return "마감";
-  if (daysLeft === 0) return "오늘 마감";
+  if (daysLeft === 0) return "D-0";
   return `D-${daysLeft}`;
 };
 
@@ -40,6 +40,9 @@ export const PublicProjectCard: React.FC<PublicProjectCardProps> = ({
     project.category;
   const daysLeft = calculateDaysLeft(project.endDate);
   const daysLeftText = formatDaysLeft(daysLeft);
+  const bookmarkCount = project.bookmarkCount ?? 0;
+  const isScheduled =
+    project.scheduled === true || project.lifecycleStatus === "SCHEDULED";
 
   // 한글 설명: 뱃지 목록 생성
   const badges: Array<{ label: string; className: string }> = [];
@@ -65,7 +68,7 @@ export const PublicProjectCard: React.FC<PublicProjectCardProps> = ({
   return (
     <Link
       to={`/projects/${project.id}`}
-      className="group flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-900"
+      className="group flex flex-col gap-4 rounded-xl border-2 border-neutral-200 bg-white p-5 shadow-sm transition-all hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/20 hover:scale-[1.02]"
     >
       <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-100">
         {project.coverImageUrl ? (
@@ -94,57 +97,86 @@ export const PublicProjectCard: React.FC<PublicProjectCardProps> = ({
         <span>{daysLeftText}</span>
       </div>
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold leading-tight text-neutral-900">
+        <h3 className="text-lg font-semibold leading-tight text-neutral-900 line-clamp-2">
           {project.title}
         </h3>
+        {/* 한글 설명: 메이커 이름 표시 */}
+        {project.maker && (
+          <p className="text-xs text-neutral-400">by {project.maker}</p>
+        )}
         {project.summary && (
-          <p className="text-sm text-neutral-500">{project.summary}</p>
+          <p className="text-sm text-neutral-500 line-clamp-2">
+            {project.summary}
+          </p>
         )}
       </div>
       <div className="space-y-3 pt-2">
-        {/* 한글 설명: 달성률 표시 (achievementRate가 있을 때만) */}
-        {project.achievementRate !== null &&
-        project.achievementRate !== undefined ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-neutral-500">
-              <span>달성률</span>
-              <span className="font-semibold text-neutral-900">
-                {project.achievementRate}%
+        {!isScheduled ? (
+          <>
+            {/* 한글 설명: 달성률 표시 (achievementRate가 있을 때만) */}
+            {project.achievementRate !== null &&
+            project.achievementRate !== undefined ? (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-neutral-500">달성률</span>
+                  <span className="font-semibold text-neutral-900">
+                    {project.achievementRate}%
+                  </span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100">
+                  <div
+                    className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all shadow-sm"
+                    style={{ width: `${Math.min(project.achievementRate, 100)}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              // 한글 설명: achievementRate가 없으면 raised/goalAmount로 진행률 표시
+              project.goalAmount !== null &&
+              project.goalAmount !== undefined &&
+              project.goalAmount > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-neutral-500">달성률</span>
+                    <span className="font-semibold text-neutral-900">
+                      {progressPct(
+                        project.raised ?? 0,
+                        project.goalAmount ?? 0
+                      ).toFixed(1)}%
+                    </span>
+                  </div>
+                  <ProgressBar
+                    value={progressPct(project.raised ?? 0, project.goalAmount ?? 0)}
+                  />
+                </div>
+              )
+            )}
+            <div className="flex items-center justify-between text-sm text-neutral-600">
+              <span>
+                {project.raised !== null &&
+                project.raised !== undefined &&
+                !isNaN(project.raised)
+                  ? currencyKRW(project.raised)
+                  : currencyKRW(0)}
+              </span>
+              <span>
+                {project.backerCount !== null &&
+                project.backerCount !== undefined &&
+                !isNaN(project.backerCount) &&
+                project.backerCount > 0
+                  ? `${project.backerCount}명 후원`
+                  : "0명 후원"}
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-neutral-100">
-              <div
-                className="h-full bg-neutral-900 transition-all"
-                style={{ width: `${Math.min(project.achievementRate, 100)}%` }}
-              />
-            </div>
-          </div>
+          </>
         ) : (
-          // 한글 설명: achievementRate가 없으면 raised/goalAmount로 진행률 표시
-          project.goalAmount !== null &&
-          project.goalAmount !== undefined &&
-          project.goalAmount > 0 && (
-            <ProgressBar
-              value={progressPct(project.raised ?? 0, project.goalAmount ?? 0)}
-            />
-          )
+          <div className="flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
+            <span className="font-semibold text-neutral-900">공개 예정</span>
+            {project.startDate && <span>{project.startDate} 공개</span>}
+          </div>
         )}
-        <div className="flex items-center justify-between text-sm text-neutral-600">
-          <span>
-            {project.raised !== null &&
-            project.raised !== undefined &&
-            !isNaN(project.raised)
-              ? currencyKRW(project.raised)
-              : currencyKRW(0)}
-          </span>
-          <span>
-            {project.backerCount !== null &&
-            project.backerCount !== undefined &&
-            !isNaN(project.backerCount) &&
-            project.backerCount > 0
-              ? `${project.backerCount}명 후원`
-              : "0명 후원"}
-          </span>
+        <div className="flex items-center justify-between text-xs text-neutral-500">
+          <span>찜 {bookmarkCount}</span>
         </div>
       </div>
     </Link>

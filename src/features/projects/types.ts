@@ -182,6 +182,7 @@ export interface ProjectDetailResponseDTO {
   id: ProjectId;
   makerId: MakerId;
   makerName: string; // makers.name
+  makerImageUrl?: string | null;
   slug: string;
   title: string;
   summary: string;
@@ -227,6 +228,7 @@ export interface ProjectCardResponseDTO {
   goalAmount: number;
   raised: number;
   backerCount: number;
+  bookmarkCount?: number | null;
   endDate: string;
   status: ProjectStatus;
   progressPercent: number;
@@ -251,6 +253,12 @@ export interface TrendingProjectResponseDTO {
   daysLeft: number | null; // endDate 기준 오늘부터 남은 일수, 지났으면 0
   scheduled: boolean; // lifecycleStatus === "SCHEDULED"
   live: boolean; // lifecycleStatus === "LIVE"
+  // 한글 설명: 카드 정보 일치를 위한 optional 필드
+  goalAmount?: number | null; // 목표 모금액
+  raised?: number | null; // 누적 모금액
+  backerCount?: number | null; // 후원자 수
+  makerName?: string | null; // 메이커 이름
+  bookmarkCount?: number | null;
 }
 
 /**
@@ -273,6 +281,11 @@ export interface TrendingProjectScoreResponseDTO {
   liveEndAt?: string | null; // 한글 설명: LIVE 종료 일시 (ISO 8601 형식)
   scheduled: boolean; // lifecycleStatus === "SCHEDULED"
   live: boolean; // lifecycleStatus === "LIVE"
+  // 한글 설명: 카드 정보 일치를 위한 optional 필드
+  goalAmount?: number | null; // 목표 모금액
+  raised?: number | null; // 누적 모금액
+  backerCount?: number | null; // 후원자 수
+  makerName?: string | null; // 메이커 이름
 }
 
 /**
@@ -293,6 +306,12 @@ export interface MostViewedProjectResponseDTO {
   daysLeft: number | null; // endDate 기준 오늘부터 남은 일수, 지났으면 0
   scheduled: boolean; // lifecycleStatus === "SCHEDULED"
   live: boolean; // lifecycleStatus === "LIVE"
+  // 한글 설명: 카드 정보 일치를 위한 optional 필드
+  makerName?: string | null; // 메이커 이름
+  goalAmount?: number | null; // 목표 모금액
+  raised?: number | null; // 누적 모금액
+  backerCount?: number | null; // 후원자 수
+  bookmarkCount?: number | null;
 }
 
 /**
@@ -307,6 +326,8 @@ export interface ProjectListResponseDTO {
   goalAmount: number | null;
   raised: number | null; // 한글 설명: 누적 모금액 (null 가능)
   backerCount: number | null; // 한글 설명: 후원자 수 (null 가능)
+   bookmarkCount?: number | null; // 한글 설명: 찜 수
+   bookmarkedByMe?: boolean | null; // 한글 설명: 내가 찜했는지 여부
   startDate: string | null; // YYYY-MM-DD 형식
   endDate: string | null; // YYYY-MM-DD 형식
   category: CategoryEnum;
@@ -315,6 +336,10 @@ export interface ProjectListResponseDTO {
   resultStatus: ResultStatus;
   liveStartAt: string | null; // 한글 설명: 필요 시 상세에서 사용
   liveEndAt: string | null; // 한글 설명: 필요 시 상세에서 사용
+   lifecycleStatus?: ProjectLifecycleStatus;
+   reviewStatus?: ProjectReviewStatus | null;
+   live?: boolean | null;
+   scheduled?: boolean | null;
   // 한글 설명: 뱃지 플래그들
   badgeNew: boolean; // "신규" 뱃지 여부
   badgeClosingSoon: boolean; // "마감 임박" 뱃지 여부
@@ -341,6 +366,79 @@ export interface RewardResponseDTO {
   displayOrder: number;
   // 한글 설명: 리워드 정보고시 (전자상거래법에 따른 필수 정보)
   disclosure?: RewardDisclosureDTO | null;
+}
+
+// ─────────────────────────
+// Public Reward API Types (공개 프로젝트 리워드 조회)
+// ─────────────────────────
+
+/**
+ * 한글 설명: 옵션 값 DTO (공개 리워드 API 응답)
+ */
+export interface PublicRewardOptionValueDTO {
+  optionValue: string; // 옵션 값 (예: "화이트", "블랙")
+  addPrice: number; // 추가 가격
+  stockQuantity: number; // 재고 수량
+}
+
+/**
+ * 한글 설명: 옵션 그룹 DTO (공개 리워드 API 응답)
+ */
+export interface PublicRewardOptionGroupDTO {
+  groupName: string; // 그룹 이름 (예: "색상")
+  optionValues: PublicRewardOptionValueDTO[]; // 옵션 값 목록
+}
+
+/**
+ * 한글 설명: 리워드 세트 DTO (공개 리워드 API 응답)
+ */
+export interface PublicRewardSetDTO {
+  setName: string; // 세트 이름 (예: "2개 세트")
+  stockQuantity: number; // 재고 수량
+  optionGroups: PublicRewardOptionGroupDTO[]; // 옵션 그룹 목록 (빈 배열 가능)
+}
+
+/**
+ * 한글 설명: 공개 리워드 정보고시 공통 정보 DTO
+ */
+export interface PublicRewardDisclosureCommonDTO {
+  manufacturer?: string | null; // 제조자
+  brandName?: string | null; // 브랜드명
+  originCountry?: string | null; // 원산지
+  deliveryInfo?: string | null; // 배송 정보
+}
+
+/**
+ * 한글 설명: 공개 리워드 정보고시 카테고리별 정보 DTO
+ */
+export interface PublicRewardDisclosureCategorySpecificDTO {
+  certifications?: string | null; // 인증 정보 (예: "환경부 인증")
+  [key: string]: unknown; // 기타 카테고리별 필드
+}
+
+/**
+ * 한글 설명: 공개 리워드 정보고시 DTO
+ */
+export interface PublicRewardDisclosureDTO {
+  category: string; // 카테고리 (예: "GENERAL")
+  common: PublicRewardDisclosureCommonDTO; // 공통 정보
+  categorySpecific: PublicRewardDisclosureCategorySpecificDTO; // 카테고리별 정보
+}
+
+/**
+ * 한글 설명: 공개 프로젝트 리워드 응답 DTO (GET /public/projects/{projectId}/rewards)
+ */
+export interface PublicRewardResponseDTO {
+  id: number; // 리워드 ID
+  name: string; // 리워드 이름 (title 대신)
+  description: string | null; // 리워드 설명
+  stockQuantity: number; // 재고 수량 (limitQty 대신)
+  price: number; // 가격
+  estimatedDeliveryDate: string | null; // 예상 배송일 (YYYY-MM-DD 형식, estShippingMonth 대신)
+  active: boolean; // 활성화 여부 (available 대신)
+  optionGroups: PublicRewardOptionGroupDTO[]; // 옵션 그룹 목록 (optionConfig 대신)
+  rewardSets: PublicRewardSetDTO[]; // 리워드 세트 목록
+  disclosure: PublicRewardDisclosureDTO | null; // 정보고시
 }
 
 /**

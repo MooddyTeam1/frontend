@@ -5,34 +5,39 @@ import {
   exportProjectOrders,
 } from "../../../../../features/maker/projectManagement/api/projectManagementService";
 import type { OrderItemDTO } from "../../../../../features/maker/projectManagement/types";
-import { mockOrders } from "../../../../../features/maker/projectManagement/mockData";
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// import { mockOrders } from "../../../../../features/maker/projectManagement/mockData";
 import { currencyKRW } from "../../../../../shared/utils/format";
 
 // 한글 설명: Mock API 사용 여부 (개발 중 확인용)
-const USE_MOCK_DATA = true;
+// ============================================
+// Mock 데이터 사용 중단 - 주석처리됨
+// ============================================
+// const USE_MOCK_DATA = true;
 
 type OrdersSectionProps = {
   projectId: number;
 };
 
-const PAYMENT_STATUS_LABELS: Record<
-  OrderItemDTO["paymentStatus"],
-  string
-> = {
+const PAYMENT_STATUS_LABELS: Record<OrderItemDTO["paymentStatus"], string> = {
   SUCCESS: "결제완료",
+  PAID: "결제완료",
   CANCELLED: "취소됨",
+  CANCELED: "취소됨",
   REFUNDED: "환불됨",
   PENDING: "대기중",
 };
 
-const DELIVERY_STATUS_LABELS: Record<
-  OrderItemDTO["deliveryStatus"],
-  string
-> = {
+const DELIVERY_STATUS_LABELS: Record<OrderItemDTO["deliveryStatus"], string> = {
   PREPARING: "준비중",
-  SHIPPED: "발송완료",
+  SHIPPING: "배송중",
+  SHIPPED: "발송완료", // 하위호환
   DELIVERED: "전달완료",
   NONE: "배송없음",
+  CONFIRMED: "수령확정",
+  ISSUE: "배송이슈",
 };
 
 export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
@@ -47,35 +52,38 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
     async function fetchOrders() {
       setLoading(true);
       try {
-        if (USE_MOCK_DATA) {
-          // 한글 설명: Mock 데이터 사용
-          await new Promise((resolve) => setTimeout(resolve, 300)); // 로딩 시뮬레이션
-          
-          // 한글 설명: 필터 적용
-          let filteredOrders = [...mockOrders];
-          
-          if (filter.paymentStatus) {
-            filteredOrders = filteredOrders.filter(
-              (o) => o.paymentStatus === filter.paymentStatus
-            );
-          }
-          
-          if (filter.deliveryStatus) {
-            filteredOrders = filteredOrders.filter(
-              (o) => o.deliveryStatus === filter.deliveryStatus
-            );
-          }
-          
-          setOrders(filteredOrders);
-        } else {
-          // 한글 설명: 실제 API 호출
-          const data = await getProjectOrders(projectId, {
-            ...filter,
-            page: 1,
-            pageSize: 50,
-          });
-          setOrders(data.orders);
-        }
+        // ============================================
+        // Mock 데이터 사용 중단 - 주석처리됨
+        // ============================================
+        // if (USE_MOCK_DATA) {
+        //   // 한글 설명: Mock 데이터 사용
+        //   await new Promise((resolve) => setTimeout(resolve, 300)); // 로딩 시뮬레이션
+        //
+        //   // 한글 설명: 필터 적용
+        //   let filteredOrders = [...mockOrders];
+        //
+        //   if (filter.paymentStatus) {
+        //     filteredOrders = filteredOrders.filter(
+        //       (o) => o.paymentStatus === filter.paymentStatus
+        //     );
+        //   }
+        //
+        //   if (filter.deliveryStatus) {
+        //     filteredOrders = filteredOrders.filter(
+        //       (o) => o.deliveryStatus === filter.deliveryStatus
+        //     );
+        //   }
+        //
+        //   setOrders(filteredOrders);
+        // } else {
+        // 한글 설명: 실제 API 호출
+        const data = await getProjectOrders(projectId, {
+          ...filter,
+          page: 1,
+          pageSize: 50,
+        });
+        setOrders(data.orders);
+        // }
       } catch (error) {
         console.error("주문 목록 조회 실패:", error);
         alert("주문 목록을 불러오는데 실패했습니다.");
@@ -137,9 +145,8 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
           className="rounded border border-neutral-200 bg-white px-3 py-2 text-xs"
         >
           <option value="">결제 상태 전체</option>
-          <option value="SUCCESS">결제완료</option>
-          <option value="CANCELLED">취소됨</option>
-          <option value="REFUNDED">환불됨</option>
+          <option value="PAID">결제완료</option>
+          <option value="CANCELED">취소/환불</option>
           <option value="PENDING">대기중</option>
         </select>
         <select
@@ -161,7 +168,7 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
         <div className="py-10 text-center text-sm text-neutral-500">
           로딩 중...
         </div>
-      ) : orders.length === 0 ? (
+      ) : orders?.length === 0 ? (
         <div className="py-10 text-center text-sm text-neutral-500">
           주문이 없습니다.
         </div>
@@ -173,9 +180,7 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
                 <th className="px-3 py-2 text-left text-neutral-500">
                   주문번호
                 </th>
-                <th className="px-3 py-2 text-left text-neutral-500">
-                  서포터
-                </th>
+                <th className="px-3 py-2 text-left text-neutral-500">서포터</th>
                 <th className="px-3 py-2 text-left text-neutral-500">리워드</th>
                 <th className="px-3 py-2 text-right text-neutral-500">금액</th>
                 <th className="px-3 py-2 text-center text-neutral-500">
@@ -188,7 +193,7 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {orders?.map((order) => (
                 <tr key={order.orderId} className="border-b border-neutral-100">
                   <td className="px-3 py-3 font-mono text-neutral-700">
                     {order.orderCode}
@@ -205,9 +210,10 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
                   <td className="px-3 py-3 text-center">
                     <span
                       className={`rounded-full px-2 py-1 text-[10px] font-medium ${
-                        order.paymentStatus === "SUCCESS"
+                        order.paymentStatus === "SUCCESS" || order.paymentStatus === "PAID"
                           ? "bg-green-100 text-green-700"
                           : order.paymentStatus === "CANCELLED" ||
+                              order.paymentStatus === "CANCELED" ||
                               order.paymentStatus === "REFUNDED"
                             ? "bg-red-100 text-red-700"
                             : "bg-yellow-100 text-yellow-700"
@@ -243,4 +249,3 @@ export const OrdersSection: React.FC<OrdersSectionProps> = ({ projectId }) => {
     </div>
   );
 };
-
