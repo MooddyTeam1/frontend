@@ -131,8 +131,8 @@ export interface OrderItemDTO {
   rewardTitle: string;
   rewardId: number;
   amount: number;
-  paymentStatus: "SUCCESS" | "CANCELLED" | "REFUNDED" | "PENDING";
-  deliveryStatus: "PREPARING" | "SHIPPED" | "DELIVERED" | "NONE";
+  paymentStatus: "SUCCESS" | "CANCELLED" | "REFUNDED" | "PENDING" | "PAID" | "CANCELED";
+  deliveryStatus: "PREPARING" | "SHIPPED" | "DELIVERED" | "NONE" | "SHIPPING" | "CONFIRMED" | "ISSUE";
   orderedAt: string;
   paidAt: string | null;
 }
